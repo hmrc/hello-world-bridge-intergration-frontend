@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package viewmodels
+package models.registration
 
-sealed trait LabelSize
+import play.api.libs.json.{Json, OFormat}
 
-object LabelSize {
-  case object ExtraLarge extends WithCssClass("govuk-label--xl") with LabelSize
-  case object Large      extends WithCssClass("govuk-label--l") with LabelSize
-  case object Medium     extends WithCssClass("govuk-label--m") with LabelSize
-  case object Small      extends WithCssClass("govuk-label--s") with LabelSize
+final case class Address(line1: String,
+                         line2: Option[String],
+                         town: String,
+                         county: Option[String],
+                         postcode: Postcode,
+                         ) {
+  override def toString: String = Seq(line1, line2.getOrElse(""), town, county.getOrElse(""), postcode.toString).mkString(", ")
+}
+
+object Address {
+  implicit val format: OFormat[Address] = Json.format[Address]
 }

@@ -1,5 +1,5 @@
-@*
- * Copyright 2026 HM Revenue & Customs
+/*
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,16 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this(
-    layout: templates.Layout
-)
+package models.registration
 
-@(pageTitle: String, heading: String, message: String)(implicit rh: RequestHeader, messages: Messages)
+import enumeratum.*
 
-@layout(pageTitle = titleNoForm(pageTitle)) {
-    <h1 class="govuk-heading-xl">@messages(heading)</h1>
+sealed trait AgentStatus extends EnumEntry
 
-    <p class="govuk-body">@messages(message)</p>
+object AgentStatus extends Enum[AgentStatus] with PlayJsonEnum[AgentStatus]  {
+
+  val values: IndexedSeq[AgentStatus] = findValues
+
+  case object Agent  extends AgentStatus
+  case object Autonomous extends AgentStatus
+
 }
