@@ -32,7 +32,6 @@ final case class RatepayerRegistration(userType: Option[UserType] = None,
                                        recoveryId: Option[String] = None
                                  )
 
-
 object RatepayerRegistration {
 
   implicit val format: Format[RatepayerRegistration] = Json.format[RatepayerRegistration]
