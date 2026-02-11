@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-package models
+package models.registration
 
-case class Field(name: String, errorKeys: Map[ErrorType, String])
+import org.scalatest.matchers.should.Matchers.*
+import play.api.data.Form
+import play.api.libs.json.Json
+import helpers.TestSupport
+import models.registration.Name
 
-object Field {
-
-  def apply(name: String, errors: (ErrorType, String)*): Field =
-    Field(name, errors.toMap)
+class NameSpec extends TestSupport{
+  "Name model" should {
+    "serialise into json" in {
+      Json.toJson(nameModel) mustBe nameJson
+    }
+    "deserialize from json" in {
+      nameJson.as[Name] mustBe nameModel
+    }
+  }
 }
-
-sealed trait ErrorType
-case object Required extends ErrorType
-case object Invalid extends ErrorType

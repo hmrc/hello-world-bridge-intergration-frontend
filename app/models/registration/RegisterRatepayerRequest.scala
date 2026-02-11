@@ -18,7 +18,7 @@ package models.registration
 
 import play.api.libs.json.{Format, Json}
 
-final case class RatepayerRegistration(userType: Option[UserType] = None,
+final case class RegisterRatepayerRequest(userType: Option[UserType] = None,
                                        agentStatus: Option[AgentStatus] = None,
                                        name: Option[Name] = None,
                                        tradingName: Option[TradingName] = None,
@@ -32,8 +32,8 @@ final case class RatepayerRegistration(userType: Option[UserType] = None,
                                        recoveryId: Option[String] = None
                                  )
 
-object RatepayerRegistration {
+object RegisterRatepayerRequest {
 
-  implicit val format: Format[RatepayerRegistration] = Json.format[RatepayerRegistration]
+  implicit val format: Format[RegisterRatepayerRequest] = Json.format[RegisterRatepayerRequest]
 
 }
