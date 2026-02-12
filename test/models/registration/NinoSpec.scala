@@ -16,18 +16,20 @@
 
 package models.registration
 
-import play.api.libs.json.Format
+import helpers.TestSupport
+import models.registration.PhoneNumber
+import org.scalatest.matchers.should.Matchers.*
+import play.api.data.Form
+import play.api.libs.json.Json
 
-enum ReferenceType {
-  case Trn, Nino, Sautr
+class NinoSpec extends TestSupport{
+  "Nino model" should {
+    "serialise into json" in {
+      Json.toJson(ninoModel) mustBe ninoJson
+    }
+    "deserialize from json" in {
+      ninoJson.as[Nino] mustBe ninoModel
+    }
+  }
 }
 
-object ReferenceType {
-  
-    implicit val format: Format[ReferenceType] =
-      implicitly[Format[String]].bimap(
-        str => ReferenceType.valueOf(str.capitalize),
-        _.toString.toLowerCase
-      )
-      
-  }

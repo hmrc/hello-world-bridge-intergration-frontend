@@ -16,15 +16,18 @@
 
 package models.registration
 
-import enumeratum.*
+import play.api.libs.json.Format
 
-sealed trait AgentStatus extends EnumEntry
+enum AgentStatus {
+  case Agent, Autonomous
+}
 
-object AgentStatus extends Enum[AgentStatus] with PlayJsonEnum[AgentStatus]  {
+object AgentStatus {
 
-  val values: IndexedSeq[AgentStatus] = findValues
-
-  case object Agent  extends AgentStatus
-  case object Autonomous extends AgentStatus
+  implicit val format: Format[AgentStatus] =
+    implicitly[Format[String]].bimap(
+      str => AgentStatus.valueOf(str.capitalize),
+      _.toString.toLowerCase
+    )
 
 }

@@ -16,15 +16,18 @@
 
 package models.registration
 
-import enumeratum.*
+import play.api.libs.json.Format
 
-sealed trait UserType extends EnumEntry
+enum RatepayerType {
+  case Individual, Organisation
+}
 
-object UserType extends Enum[UserType] with PlayJsonEnum[UserType]  {
+object RatepayerType {
 
-  val values: IndexedSeq[UserType] = findValues
-
-  case object Individual  extends UserType
-  case object Organisation extends UserType
+  implicit val format: Format[RatepayerType] =
+    implicitly[Format[String]].bimap(
+      str => RatepayerType.valueOf(str.capitalize),
+      _.toString.toLowerCase
+    )
 
 }

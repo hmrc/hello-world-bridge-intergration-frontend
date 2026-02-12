@@ -18,12 +18,12 @@ package models.registration
 
 import play.api.libs.json.{Format, Json}
 
-final case class RegisterRatepayerRequest(userType: Option[UserType] = None,
+final case class RegisterRatepayerRequest(userType: Option[RatepayerType] = None,
                                        agentStatus: Option[AgentStatus] = None,
                                        name: Option[Name] = None,
                                        tradingName: Option[TradingName] = None,
                                        email: Option[Email] = None,
-                                       nino: Option[String] = None,
+                                       nino: Option[Nino] = None,
                                        contactNumber: Option[PhoneNumber] = None,
                                        secondaryNumber: Option[PhoneNumber] = None,
                                        address: Option[Address] = None,

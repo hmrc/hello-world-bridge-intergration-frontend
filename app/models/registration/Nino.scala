@@ -16,18 +16,12 @@
 
 package models.registration
 
-import play.api.libs.json.Format
+import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
-enum ReferenceType {
-  case Trn, Nino, Sautr
+final case class Nino(nino: String) {
+  def value: String = nino
 }
 
-object ReferenceType {
-  
-    implicit val format: Format[ReferenceType] =
-      implicitly[Format[String]].bimap(
-        str => ReferenceType.valueOf(str.capitalize),
-        _.toString.toLowerCase
-      )
-      
-  }
+object Nino {
+  implicit val format: OFormat[Nino] = Json.format[Nino]
+}

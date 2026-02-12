@@ -56,5 +56,11 @@ trait TestData {
       |{"value":"test@digital.hmrc.gov.uk"}
       |""".stripMargin)
 
+  val ninoModel: Nino = Nino("AA123456A")
+
+  val ninoJson: JsValue = Json.parse(
+    """
+      |{"nino":"AA123456A"}
+      |""".stripMargin)
 
 }

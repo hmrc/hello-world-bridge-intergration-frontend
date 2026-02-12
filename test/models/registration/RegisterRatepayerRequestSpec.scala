@@ -18,25 +18,25 @@ package models.registration
 
 import helpers.TestSupport
 import models.registration.Address
+import models.registration.ReferenceType.Trn
 import play.api.libs.json.{JsValue, Json}
-
-import org.scalatestplus.play.PlaySpec 
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsSuccess, Json}
 
   class RegisterRatepayerRequestSpec extends PlaySpec {
     "RatepayerRegistration JSON format" should {
       "serialize and deserialize correctly with all fields present" in {
         val model = RegisterRatepayerRequest(
-          userType = Some(UserType.Individual),
+          userType = Some(RatepayerType.Individual),
           agentStatus = Some(AgentStatus.Agent),
           name = Some(Name("Test Name")),
           tradingName = Some(TradingName("Trading Name")),
           email = Some(Email("test@email.com")),
-          nino = Some("AA123456A"),
+          nino = Some(Nino("AA123456A")),
           contactNumber = Some(PhoneNumber("0123456789")),
           secondaryNumber = Some(PhoneNumber("0987654321")),
           address = Some(Address("1 Test St", Some("Suite 2"), "Testville", Some("Testshire"), Postcode("TE5 7ST"))),
-          trnReferenceNumber = Some(TRNReferenceNumber(ReferenceType.TRN, "TRN-123")),
+          trnReferenceNumber = Some(TRNReferenceNumber(ReferenceType.Trn, "TRN-123")),
           isRegistered = Some(true),
           recoveryId = Some("1234567890")
         )
