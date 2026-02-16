@@ -77,7 +77,7 @@ class ContactNumberControllerSpec
       }
 
       "must return OK and pre-populate form when answer exists" in {
-        val userAnswers = emptyUserAnswers.set(ContactNumberPage, "07777777777".toInt).success.value
+        val userAnswers = emptyUserAnswers.set(ContactNumberPage, 777735677).success.value
         val application = applicationWithAnswers(Some(userAnswers))
 
         val request = FakeRequest(GET, routes.ContactNumberController.onPageLoad(NormalMode).url).withCSRFToken
@@ -85,32 +85,31 @@ class ContactNumberControllerSpec
         val view = application.injector.instanceOf[ContactNumberView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("07777777777".toInt), NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill( 777735677), NormalMode)(request, messages(application)).toString
 
         application.stop()
       }
     }
 
     "onSubmit" - {
-
       "must save the answer and redirect on valid submission" in {
-        val application = applicationWithAnswers(Some(emptyUserAnswers))
+        val app = applicationWithAnswers(Some(emptyUserAnswers))
+        when(mockSessionRepository.set(any()))
+          .thenReturn(Future.successful(true)) // ensure not null
 
         val request =
           FakeRequest(POST, routes.ContactNumberController.onSubmit(NormalMode).url)
-            .withFormUrlEncodedBody("value" -> "07777777777")
+            .withFormUrlEncodedBody("value" -> "777735677")
             .withCSRFToken
 
-        val result = route(application, request).value
-
+        val result = route(app, request).value
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
 
-        // Ensure repository was called with updated answers
         verify(mockSessionRepository, times(1)).set(any())
-
-        application.stop()
+        app.stop()
       }
+
 
       "must return bad request and display errors on invalid submission" in {
         val application = applicationWithAnswers(Some(emptyUserAnswers))
@@ -124,7 +123,9 @@ class ContactNumberControllerSpec
         val view = application.injector.instanceOf[ContactNumberView]
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(form.withError("value", "contactNumber.error.required"), NormalMode)(request, messages(application)).toString
+
+        val boundForm = form.bind(Map("value" -> ""))
+        contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
 
         application.stop()
       }
