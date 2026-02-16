@@ -31,6 +31,9 @@ index.title = hello-world-bridge-intergration-frontend
 index.heading = hello-world-bridge-intergration-frontend
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
+contactNumber.heading = Enter your main contact number
+contactNumber.error.required = Please enter your main contact number
+
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers
 

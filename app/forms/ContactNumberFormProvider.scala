@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,25 +12,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import views.html.components._
+package forms
 
-@this(
-    layout: templates.Layout,
-    startNowButton: startNowButton
-)
+import forms.mappings.Mappings
+import javax.inject.Inject
+import play.api.data.Form
 
-@()(implicit request: Request[_], messages: Messages)
+class ContactNumberFormProvider @Inject() extends Mappings {
 
-@layout(
-    pageTitle    = titleNoForm(messages("index.title")),
-    showBackLink = false
-) {
-
-    <h1 class="govuk-heading-xl">@messages("index.heading")</h1>
-
-    <p class="govuk-body">@messages("index.guidance")</p>
-
-    @startNowButton(routes.ContactNumberController.onPageLoad(NormalMode).url)
+  def apply(): Form[Int] =
+    Form(
+      "value" -> int(
+        "contactNumber.error.required",
+        "contactNumber.error.wholeNumber",
+        "contactNumber.error.nonNumeric")
+          .verifying(inRange(0, 1000000000, "contactNumber.error.outOfRange"))
+    )
 }

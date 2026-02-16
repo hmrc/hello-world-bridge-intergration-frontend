@@ -12,6 +12,11 @@ GET         /refresh-session                             controllers.KeepAliveCo
 
 GET         /there-is-a-problem                          controllers.JourneyRecoveryController.onPageLoad(continueUrl: Option[RedirectUrl] ?= None)
 
+GET         /contact-number                              controllers.ContactNumberController.onPageLoad(mode: Mode = NormalMode)
+GET         /contact-number                              controllers.ContactNumberController.onPageLoad(mode: Mode = CheckMode)
+POST        /contact-number                              controllers.ContactNumberController.onSubmit(mode: Mode = NormalMode)
+POST        /contact-number                              controllers.ContactNumberController.onSubmit(mode: Mode = CheckMode)
+
 GET         /check-your-answers                          controllers.CheckYourAnswersController.onPageLoad()
 
 GET         /account/sign-out-survey                     controllers.auth.AuthController.signOut()
