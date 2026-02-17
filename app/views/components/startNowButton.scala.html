@@ -14,23 +14,15 @@
  * limitations under the License.
  *@
 
-@import views.html.components._
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(
-    layout: templates.Layout,
-    startNowButton: startNowButton
-)
+@this(govukButton : GovukButton)
 
-@()(implicit request: Request[_], messages: Messages)
+@(link: String)
 
-@layout(
-    pageTitle    = titleNoForm(messages("index.title")),
-    showBackLink = false
-) {
 
-    <h1 class="govuk-heading-xl">@messages("index.heading")</h1>
-
-    <p class="govuk-body">@messages("index.guidance")</p>
-
-    @startNowButton(routes.ContactNumberController.onPageLoad(NormalMode).url)
-}
+@govukButton(Button(
+  href = Some(link),
+  isStartButton = true,
+  content = Text("Start now")
+))
