@@ -10,6 +10,8 @@ site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
+site.change = Change
+site.continue = Continue
 
 date.day = Day
 date.month = Month
@@ -36,6 +38,8 @@ contactNumber.error.required = Please enter your main contact number
 
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers
+checkAnswers.contactNumber = Contact number
+checkAnswers.userName = User name
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service

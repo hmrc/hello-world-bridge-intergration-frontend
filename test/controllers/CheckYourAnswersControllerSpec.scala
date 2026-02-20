@@ -17,43 +17,68 @@
 package controllers
 
 import base.SpecBase
+import forms.{ContactNumberFormProvider, UserNameFormProvider}
+import helpers.ControllerSpecSupport
+import models.{NormalMode, UserAnswers}
+import navigation.{FakeNavigator, Navigator}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.*
+import org.scalatestplus.mockito.MockitoSugar
+import pages.UserNamePage
+import play.api.inject.bind
+import play.api.libs.json.Json
+import play.api.mvc.Call
+import play.api.test.CSRFTokenHelper.*
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
+import play.test.Helpers.fakeRequest
+import repositories.SessionRepository
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
+import uk.gov.hmrc.http.NotFoundException
 import viewmodels.govuk.SummaryListFluency
-import views.html.CheckYourAnswersView
+import views.html.{CheckYourAnswersView, UserNameView}
 
-class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
+import java.time.Instant
+import scala.concurrent.Future
 
-  "Check Your Answers Controller" - {
+class CheckAnswersControllerSpec extends SpecBase with MockitoSugar {
 
-    "must return OK and the correct view for a GET" in {
+  private val onwardRoute = Call("GET", "/foo")
+  private val pageTitle = "Check your answers"
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+  private val mockSessionRepository = mock[SessionRepository]
 
-      running(application) {
-        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+  def beforeEach(): Unit = {
+    reset(mockSessionRepository)
+    when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+  }
 
+  private def applicationWithAnswers(userAnswers: Option[UserAnswers]) =
+    applicationBuilder(userAnswers)
+      .overrides(
+        bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+        bind[SessionRepository].toInstance(mockSessionRepository)
+      )
+      .build()
+
+  "CheckAnswersController" - {
+    "onPageLoad" - {
+      "must return OK and the correct view with empty form when no existing answer" in {
+        val application = applicationWithAnswers(Some(UserAnswers(
+          "1234", Json.obj(
+            "contactNumber" ->  12345,
+            "userName" -> "Jake"
+          ), Instant.now)))
+        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url).withCSRFToken
         val result = route(application, request).value
-
         val view = application.injector.instanceOf[CheckYourAnswersView]
-        val list = SummaryListViewModel(Seq.empty)
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(list)(request, messages(application)).toString
-      }
-    }
+        contentAsString(result) must include(pageTitle)
+        contentAsString(result) must include ("Jake")
+        contentAsString(result) must include ("12345")
 
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        application.stop()
       }
     }
   }

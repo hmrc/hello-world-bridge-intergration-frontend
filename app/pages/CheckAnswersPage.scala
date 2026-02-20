@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package models.registration
+package pages
 
-import play.api.libs.json.Format
+import play.api.libs.json.JsPath
 
-import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
+case object CheckAnswersPage extends QuestionPage[String]{
 
-sealed trait AgentStatus extends EnumEntry
+  override def toString: String = "checkYourAnswers"
 
-object AgentStatus extends Enum[AgentStatus] with PlayJsonEnum[AgentStatus] {
-
-  val values = findValues
-
-  case object Agent extends AgentStatus
-
-  case object Autonomous extends AgentStatus
+  override def path: JsPath = JsPath \ toString
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-package models.registration
+package models.checkAnswers
 
-import play.api.libs.json.Format
+import play.api.mvc.Call
 
-import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
-
-sealed trait AgentStatus extends EnumEntry
-
-object AgentStatus extends Enum[AgentStatus] with PlayJsonEnum[AgentStatus] {
-
-  val values = findValues
-
-  case object Agent extends AgentStatus
-
-  case object Autonomous extends AgentStatus
-
-}
+final case class Link(href: Call, linkId: String, messageKey: String, visuallyHiddenMessageKey: Option[String] = None)

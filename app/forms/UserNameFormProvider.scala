@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-package models.registration
+package forms
 
-import play.api.libs.json.Format
+import forms.mappings.Mappings
+import javax.inject.Inject
+import play.api.data.Form
 
-import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 
-sealed trait AgentStatus extends EnumEntry
 
-object AgentStatus extends Enum[AgentStatus] with PlayJsonEnum[AgentStatus] {
+class UserNameFormProvider @Inject() extends Mappings {
 
-  val values = findValues
-
-  case object Agent extends AgentStatus
-
-  case object Autonomous extends AgentStatus
-
+  def apply(): Form[String] =
+    Form(
+      "value" -> text("userName.error.required")
+        .verifying(
+          firstError(
+            maxLength(53, "userName.error.length"),
+          )
+        )
+    )
 }

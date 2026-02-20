@@ -1,5 +1,5 @@
-/*
- * Copyright 2025 HM Revenue & Customs
+@*
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,22 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models.registration
+@import uk.gov.hmrc.govukfrontend.views.Aliases.{Button, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukButton
 
-import play.api.libs.json.Format
+@this(govukButton: GovukButton)
 
-import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
+@(msg: String, isStartButton: Boolean = false, href: Option[String] = None)(implicit messages: Messages)
 
-sealed trait AgentStatus extends EnumEntry
-
-object AgentStatus extends Enum[AgentStatus] with PlayJsonEnum[AgentStatus] {
-
-  val values = findValues
-
-  case object Agent extends AgentStatus
-
-  case object Autonomous extends AgentStatus
-
-}
+@govukButton(
+ Button(
+  content = Text(messages(msg)),
+  attributes = Map("id" -> "continue"),
+  preventDoubleClick = Some(true),
+  href = None,
+  isStartButton = isStartButton
+ )
+)
