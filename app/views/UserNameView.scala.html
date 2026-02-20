@@ -24,15 +24,19 @@
         govukButton: GovukButton
 )
 
-@(form: Form[String])(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = messages("userName.heading")) {
 
-    @formWithCSRF(action = routes.UserNameController.onSubmit()) {
-        
+    @formWithCSRF(action = routes.UserNameController.onSubmit(mode), Symbol("autoComplete") -> "off") {
+
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
+        }
+
         @govukInput(
             InputViewModel(
-                field = form("name"),
+                field = form("value"),
                 label = LabelViewModel(messages("userName.heading")).asPageHeading()
             )
         )

@@ -26,7 +26,7 @@ import play.api.libs.json.{JsSuccess, Json}
   class RegisterRatepayerRequestSpec extends PlaySpec {
     "RatepayerRegistration JSON format" should {
       "serialize and deserialize correctly with all fields present" in {
-        val model = RegisterRatepayerRequest(
+        val model = RegisterRatepayer(
           userType = Some(RatepayerType.Individual),
           agentStatus = Some(AgentStatus.Agent),
           name = Some(Name("Test Name")),
@@ -41,13 +41,13 @@ import play.api.libs.json.{JsSuccess, Json}
           recoveryId = Some("1234567890")
         )
         val json = Json.toJson(model)
-        json.as[RegisterRatepayerRequest] mustEqual model
+        json.as[RegisterRatepayer] mustEqual model
       }
 
       "serialize and deserialize correctly with only required fields (all None except isRegistered)" in {
-        val model = RegisterRatepayerRequest()
+        val model = RegisterRatepayer()
         val json = Json.toJson(model)
-        json.as[RegisterRatepayerRequest] mustEqual model
+        json.as[RegisterRatepayer] mustEqual model
       }
 
       "deserialize from JSON with missing optional fields" in {
@@ -58,7 +58,7 @@ import play.api.libs.json.{JsSuccess, Json}
           }
           """
         )
-        json.validate[RegisterRatepayerRequest] mustEqual JsSuccess(RegisterRatepayerRequest(isRegistered = Some(false)))
+        json.validate[RegisterRatepayer] mustEqual JsSuccess(RegisterRatepayer(isRegistered = Some(false)))
       }
     }
   }

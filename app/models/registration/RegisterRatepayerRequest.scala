@@ -18,22 +18,24 @@ package models.registration
 
 import play.api.libs.json.{Format, Json}
 
-final case class RegisterRatepayerRequest(userType: Option[RatepayerType] = None,
-                                       agentStatus: Option[AgentStatus] = None,
-                                       name: Option[Name] = None,
-                                       tradingName: Option[TradingName] = None,
-                                       email: Option[Email] = None,
-                                       nino: Option[Nino] = None,
-                                       contactNumber: Option[PhoneNumber] = None,
-                                       secondaryNumber: Option[PhoneNumber] = None,
-                                       address: Option[Address] = None,
-                                       trnReferenceNumber: Option[TRNReferenceNumber] = None,
-                                       isRegistered: Option[Boolean] = Some(false),
-                                       recoveryId: Option[String] = None
-                                 )
+final case class RegisterRatepayer(
+                                           ratepayerCredId: Option[String] = None,
+                                           userType: Option[RatepayerType] = None,
+                                           agentStatus: Option[AgentStatus] = None,
+                                           name: Option[Name] = None,
+                                           tradingName: Option[TradingName] = None,
+                                           email: Option[Email] = None,
+                                           nino: Option[Nino] = None,
+                                           contactNumber: Option[PhoneNumber] = None,
+                                           secondaryNumber: Option[PhoneNumber] = None,
+                                           address: Option[Address] = None,
+                                           trnReferenceNumber: Option[TRNReferenceNumber] = None,
+                                           isRegistered: Option[Boolean] = Some(false),
+                                           recoveryId: Option[String] = None
+                                         )
 
-object RegisterRatepayerRequest {
+object RegisterRatepayer {
 
-  implicit val format: Format[RegisterRatepayerRequest] = Json.format[RegisterRatepayerRequest]
+  implicit val format: Format[RegisterRatepayer] = Json.format[RegisterRatepayer]
 
 }

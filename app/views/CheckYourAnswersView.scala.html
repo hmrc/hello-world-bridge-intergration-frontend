@@ -14,16 +14,24 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import views.html.components.saveAndContinueButton
+
 @this(
     layout: templates.Layout,
-    govukSummaryList: GovukSummaryList
+    formHelper: FormWithCSRF,
+    govukSummaryList: GovukSummaryList,
+    saveAndContinueButton: saveAndContinueButton
 )
 
 @(list: SummaryList)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
+    @formHelper(action =   routes.CheckYourAnswersController.onSubmit(), Symbol("autoComplete") -> "off") {
+        <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
 
-    <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
+        @govukSummaryList(list)
 
-    @govukSummaryList(list)
+        @saveAndContinueButton(msg = messages("site.continue"), isStartButton = false)
+    }
 }
