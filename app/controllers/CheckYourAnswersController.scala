@@ -18,7 +18,7 @@ package controllers
 
 import Connector.BridgeIntegrationConnector
 import com.google.inject.Inject
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.actions.*
 import models.registration.{Name, PhoneNumber, RegisterRatepayer}
 import pages.{ContactNumberPage, UserNamePage}
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -68,9 +68,6 @@ class CheckYourAnswersController @Inject()(
 
         bridgeIntegrationConnector.registerRatePayer(updatedRatepayerData).flatMap { notifySuccess =>
           if (notifySuccess) {
-            // Treat userId as the credId for auditing (adjust if you have a distinct credId)
-            println(Console.GREEN + "hit the bridge-integration" + Console.RESET)
-            // recoveryId is set to Some(...) above, so .get is safe here
             Future.successful(
               Redirect(routes.IndexController.onPageLoad())
             )
@@ -87,18 +84,16 @@ class CheckYourAnswersController @Inject()(
   // POST /check-answers
   def onSubmit: Action[AnyContent] =
     (identify andThen getData andThen requireData).async { implicit request =>
-      // Typically: sessionRepository.get(userId): Future[Option[UserAnswers]]
       sessionRepository.get(request.userId).flatMap {
         case None =>
           Future.successful(Redirect(routes.IndexController.onPageLoad()))
 
         case Some(existingAnswers) =>
-          // Map stored answers into your domain models
           val nameOpt: Option[Name] =
-            existingAnswers.get(UserNamePage).map(Name(_)) // <-- Fixes Gettable[Name] mismatch
+            existingAnswers.get(UserNamePage).map(Name(_))
 
           val contactNumberOpt: Option[PhoneNumber] =
-            existingAnswers.get(ContactNumberPage).map(number => PhoneNumber(number.toString)) // <-- Fixes Gettable[PhoneNumber] mismatch
+            existingAnswers.get(ContactNumberPage).map(number => PhoneNumber(number.toString))
 
           val ratepayerRequest = RegisterRatepayer(
             ratepayerCredId     = None,
@@ -123,9 +118,4 @@ class CheckYourAnswersController @Inject()(
           }
       }
     }
-
-  // If you need a local helper to build your summary rows, uncomment and adapt:
-  // private def createSummaryRows(answers: UserAnswers): Seq[SummaryListRow] = {
-  //   // build your rows from answers
-  // }
 }

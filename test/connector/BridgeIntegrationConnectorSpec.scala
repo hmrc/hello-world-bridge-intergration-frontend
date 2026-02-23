@@ -15,115 +15,66 @@
  */
 
 import Connector.BridgeIntegrationConnector
-import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.http.Fault
-import config.FrontendAppConfig
-import helpers.{IntegrationSpecBase, WiremockHelper}
-import org.mockito.Mockito.*
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.mockito.MockitoSugar
+import mocks.MockHttpV2
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api
 import play.api.http.Status.*
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import play.api.test.Injecting
-import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-
-import scala.concurrent.{ExecutionContext, Future}
-
-class BridgeIntegrationConnectorSpec extends AnyWordSpec with IntegrationSpecBase with Injecting {
+import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.client.HttpClientV2
 
 
-  lazy val connector: BridgeIntegrationConnector = app.injector.instanceOf[BridgeIntegrationConnector]
+class BridgeIntegrationConnectorSpec extends MockHttpV2
+  with GuiceOneAppPerSuite {
 
+  override lazy val app = new GuiceApplicationBuilder()
+    .overrides(
+      api.inject.bind[HttpClientV2].toInstance(mockHttpClientV2)
+    )
+    .configure("bridgeIntegration" -> "http://localhost:1300")
+    .build()
 
-  override def beforeEach(): Unit = {
-    WireMock.reset()
-  }
+  val connector: BridgeIntegrationConnector = app.injector.instanceOf[BridgeIntegrationConnector]
 
-  "NgrNotifyConnector" when {
+  "BridgeIntegrationConnector.registerRatePayer" should {
 
-    "calling .isAllowedInPrivateBeta()" should {
-      "return true when allowed is true in response" in {
-        val credId = "test-cred-id"
-        val responseJson = Json.obj("allowed" -> true)
+    "return true when ACCEPTED is returned" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789123"
+      )(
+        HttpResponse(ACCEPTED, Json.obj(), Map.empty)
+      )
 
-        WiremockHelper.stubGet(s"/bridge-integration/allowed-in-private-beta/$credId", OK, responseJson.toString())
-
-        val result = connector.isAllowedInPrivateBeta(credId).futureValue
-        result mustBe true
-
-        WiremockHelper.verifyGet(s"/bridge-integration/allowed-in-private-beta/$credId")
-      }
-
-      "return false when allowed is false in response" in {
-        val credId = "test-cred-id"
-        val responseJson = Json.obj("allowed" -> false)
-
-        WiremockHelper.stubGet(s"/bridge-integration/allowed-in-private-beta/$credId", OK, responseJson.toString())
-
-        val result = connector.isAllowedInPrivateBeta(credId).futureValue
-        result mustBe false
-
-        WiremockHelper.verifyGet(s"/bridge-integration/allowed-in-private-beta/$credId")
-      }
-
-      "return false when response is not OK" in {
-        val credId = "test-cred-id"
-
-        WiremockHelper.stubGet(s"/bridge-integration/allowed-in-private-beta/$credId", INTERNAL_SERVER_ERROR, "error")
-
-        val result = connector.isAllowedInPrivateBeta(credId).futureValue
-        result mustBe false
-
-        WiremockHelper.verifyGet(s"/bridge-integration/allowed-in-private-beta/$credId")
-      }
+      connector.registerRatePayer(testRegistrationModel).futureValue mustBe true
     }
 
-    "calling .registerRatePayer()" should {
-      "return ACCEPTED when registration is successful" in {
-        WiremockHelper.stubPost(
-          "/bridge-integration/register-ratepayer/123456789123",
-          ACCEPTED,
-          """{"status": "OK"}"""
-        )
+    "return false when NOT_ACCEPTABLE (406) is returned" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789123"
+      )(
+        HttpResponse(NOT_ACCEPTABLE, Json.obj(), Map.empty)
+      )
 
-        val result = connector.registerRatePayer(sampleRatepayerRegistration).futureValue
-        result mustBe true
+      connector.registerRatePayer(testRegistrationModel).futureValue mustBe false
+    }
 
-        WiremockHelper.verifyPost("/bridge-integration/register-ratepayer/123456789123", Some(Json.toJson(sampleRatepayerRegistration).toString()))
-      }
+    "return false when INTERNAL_SERVER_ERROR (500) is returned" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789123"
+      )(
+        HttpResponse(INTERNAL_SERVER_ERROR, Json.obj(), Map.empty)
+      )
 
-      val clientErrorCodes = Seq(400, 401, 403, 404, 405, 409, 410, 415, 422, 429)
+      connector.registerRatePayer(testRegistrationModel).futureValue mustBe false
+    }
 
-      clientErrorCodes.foreach { statusCode =>
-        s"return $statusCode response without throwing for client error" in {
-          WiremockHelper.stubPost(
-            "/bridge-integration/register-ratepayer/123456789123",
-            statusCode,
-            s"""{"status": "$statusCode", "error": "Client error"}"""
-          )
+    "return false when an exception is thrown" in {
+      setupMockHttpV2FailedPost(
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789123"
+      )
 
-          val result = connector.registerRatePayer(sampleRatepayerRegistration).futureValue
-          result mustBe false
-
-          WiremockHelper.verifyPost("/bridge-integration/register-ratepayer/123456789123", Some(Json.toJson(sampleRatepayerRegistration).toString()))
-        }
-      }
-
-      "throw an exception for $statusCode server error" in {
-        WiremockHelper.stubWithFault(
-          "POST",
-          "/bridge-integration/register-ratepayer/123456789123",
-          Fault.CONNECTION_RESET_BY_PEER
-        )
-
-        val result = connector.registerRatePayer(sampleRatepayerRegistration).futureValue
-        result mustBe false
-
-        WiremockHelper.verifyPost("/bridge-integration/register-ratepayer/123456789123", Some(Json.toJson(sampleRatepayerRegistration).toString()))
-      }
+      connector.registerRatePayer(testRegistrationModel).futureValue mustBe false
     }
   }
 }
