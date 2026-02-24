@@ -17,14 +17,17 @@ GET         /contact-number                              controllers.ContactNumb
 POST        /contact-number                              controllers.ContactNumberController.onSubmit(mode: Mode = NormalMode)
 POST        /contact-number                              controllers.ContactNumberController.onSubmit(mode: Mode = CheckMode)
 
+GET         /user-name                                   controllers.UserNameController.onPageLoad(mode: Mode = NormalMode)
+GET         /user-name                                   controllers.UserNameController.onPageLoad(mode: Mode = CheckMode)
+POST        /user-name                                   controllers.UserNameController.onSubmit(mode: Mode = NormalMode)
+POST        /user-name                                   controllers.UserNameController.onSubmit(mode: Mode = CheckMode)
+
 GET         /check-your-answers                          controllers.CheckYourAnswersController.onPageLoad()
+POST        /check-your-answers                          controllers.CheckYourAnswersController.onSubmit()
 
 GET         /account/sign-out-survey                     controllers.auth.AuthController.signOut()
 GET         /account/sign-out                            controllers.auth.AuthController.signOutNoSurvey()
 GET         /account/signed-out                          controllers.auth.SignedOutController.onPageLoad()
 
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad()
-
-GET         /user-name                                   controllers.UserNameController.onPageLoad()
-POST        /user-name                                   controllers.UserNameController.onSubmit()
 

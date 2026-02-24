@@ -19,11 +19,33 @@ package helpers
 import play.api.libs.json.{JsValue, Json}
 import models.registration.*
 import models.*
+import models.registration.RatepayerType.Individual
 
 import java.time.{Instant, LocalDate}
 
 trait TestData {
-
+  
+  val testRegistrationModel: RegisterRatepayer =
+    RegisterRatepayer(
+      userType = Some(Individual),
+      agentStatus = Some(AgentStatus.Agent),
+      name = Some(Name("John Doe")),
+      tradingName = Some(TradingName("CompanyLTD")),
+      email = Some(Email("JohnDoe@digital.hmrc.gov.uk")),
+      contactNumber = Some(PhoneNumber("07123456789")),
+      secondaryNumber = Some(PhoneNumber("07123456789")),
+      address = Some(
+        Address(line1 = "99",
+          line2 = Some("Wibble Rd"),
+          town = "Worthing",
+          county = Some("West Sussex"),
+          postcode = Postcode("BN110AA")
+        )
+      ),
+      trnReferenceNumber = Some(TRNReferenceNumber(ReferenceType.Nino, "12345")),
+      isRegistered = Some(false)
+    )
+  
   val testPostcode: Postcode = Postcode(value = "BH1 7EY")
   val time: Instant = Instant.now()
   val nameModel: Name = Name("Lovely Fella")
