@@ -47,7 +47,6 @@ class CheckYourAnswersController @Inject()(
   // GET /check-answers
   def onPageLoad(): Action[AnyContent] =
     (identify andThen getData andThen requireData) { implicit request =>
-      // Assumes you have a createSummaryRows(UserAnswers) defined elsewhere in scope.
       Ok(view(createSummaryRows(request.userAnswers)))
     }
 
