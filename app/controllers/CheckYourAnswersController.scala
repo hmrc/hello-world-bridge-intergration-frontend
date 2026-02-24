@@ -38,10 +38,10 @@ class CheckYourAnswersController @Inject()(
                                             getData: DataRetrievalAction,
                                             requireData: DataRequiredAction,
                                             sessionRepository: SessionRepository,
-                                            bridgeIntegrationConnector: BridgeIntegrationConnector, // <-- injected
+                                            bridgeIntegrationConnector: BridgeIntegrationConnector,
                                             val controllerComponents: MessagesControllerComponents,
                                             view: CheckYourAnswersView
-                                          )(implicit ec: ExecutionContext)                              // <-- fixes missing EC
+                                          )(implicit ec: ExecutionContext)                         
   extends FrontendBaseController with I18nSupport {
 
   // GET /check-answers
