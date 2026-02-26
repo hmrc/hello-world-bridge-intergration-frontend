@@ -33,3 +33,10 @@ GET         /dashboard                                   controllers.DashboardCo
 
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad()
 
+GET         /user-name                                   controllers.UserNameController.onPageLoad()
+POST        /user-name                                   controllers.UserNameController.onSubmit()
+
+GET        /property-search                              controllers.FindAPropertyController.onPageLoad()
+POST       /property-search                              controllers.FindAPropertyController.onSubmit()
+
+GET        /no-results                                   controllers.NoResultsFoundController.onPageLoad
