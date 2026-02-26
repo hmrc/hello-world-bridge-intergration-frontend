@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package Connector
+package connector
 
 import config.FrontendAppConfig
 import models.registration.RegisterRatepayer
-import play.api.http.Status.{ACCEPTED, OK}
+import play.api.http.Status.*
 import play.api.i18n.Lang.logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpReads.Implicits.*
@@ -53,13 +53,35 @@ class BridgeIntegrationConnector @Inject()(
 
   def registerRatePayer(ratepayerRegistration: RegisterRatepayer)
                        (implicit hc: HeaderCarrier): Future[Boolean] = {
-    http.post(uri(s"register-ratepayer/${"123456789123"}").toURL)
+
+    http.post(uri(s"register-ratepayer/123456789123").toURL)
       .withBody(Json.toJson(ratepayerRegistration))
       .execute[HttpResponse]
-      .map(_.status == ACCEPTED)
-      .recover { case ex: Exception =>
-        logger.error(s"Call to ngr-notify ratepayer failed: ${ex.getMessage}")
-        false
+      .map { response =>
+        response.status match {
+          case OK => true
+          case NOT_FOUND =>
+            logger.warn("Ratepayer not found")
+            false
+          case BAD_REQUEST =>
+            logger.warn("Invalid register ratepayer request")
+            false
+          case BAD_GATEWAY =>
+            logger.error("Upstream service unavailable")
+            false
+          case INTERNAL_SERVER_ERROR =>
+            logger.error(s"Server error: ${response.body}")
+            false
+          case other =>
+            logger.error(s"Unexpected response status: $other")
+            false
+        }
+      }
+      .recover {
+        case ex: Exception =>
+          logger.error(s"Call to ngr-notify register-ratepayer failed: ${ex.getMessage}", ex)
+          false
       }
   }
+
 }
