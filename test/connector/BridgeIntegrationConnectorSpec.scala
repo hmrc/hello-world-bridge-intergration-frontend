@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import Connector.BridgeIntegrationConnector
+package connector
+
+import connector.BridgeIntegrationConnector
 import mocks.MockHttpV2
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api
@@ -39,11 +41,11 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
   "BridgeIntegrationConnector.registerRatePayer" should {
 
-    "return true when ACCEPTED is returned" in {
+    "return true when OK is returned" in {
       setupMockHttpV2Post(
         "http://localhost:1300/bridge-integration/register-ratepayer/123456789123"
       )(
-        HttpResponse(ACCEPTED, Json.obj(), Map.empty)
+        HttpResponse(OK, Json.obj(), Map.empty)
       )
 
       connector.registerRatePayer(testRegistrationModel).futureValue mustBe true
