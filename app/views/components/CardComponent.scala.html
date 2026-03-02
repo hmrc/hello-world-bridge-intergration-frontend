@@ -1,0 +1,95 @@
+@*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import models.components.Card
+@import uk.gov.hmrc.govukfrontend.views.html.components.{toClasses as govukToClasses}
+
+@(dashboardCard: Card)(implicit messages: Messages)
+
+<div id="" class="card">
+
+    <div class="card-body active">
+        <a href =@{
+           dashboardCard.links match {
+           case None => {}
+            case Some(cardAction) => {
+            cardAction.links.head.href.url
+            }
+            }
+            }>
+        @dashboardCard.titleKey.map { cardTitle =>
+            <h@{cardTitle.headingLevel.getOrElse(2)} class="@govukToClasses("govuk-heading-s card-heading", cardTitle.classes)">
+            @cardTitle.content.asHtml
+            </h@{cardTitle.headingLevel.getOrElse(2)}>
+        }
+
+        @dashboardCard.captionKey.map { cardCaption =>
+            <h@{cardCaption.headingLevel.getOrElse(2)} class="@govukToClasses("govuk-body", cardCaption.classes)">
+            @cardCaption.content.asHtml
+            </h@{cardCaption.headingLevel.getOrElse(2)}>
+        }
+
+        @dashboardCard.captionKey2.map { cardCaption =>
+        <h@{cardCaption.headingLevel.getOrElse(2)} class="@govukToClasses("govuk-body", cardCaption.classes)">
+        @cardCaption.content.asHtml
+        </h@{cardCaption.headingLevel.getOrElse(2)}>
+        }
+
+        @dashboardCard.captionKey3.map { cardCaption =>
+            <h@{cardCaption.headingLevel.getOrElse(2)} class="@govukToClasses("govuk-body", cardCaption.classes)">
+            @cardCaption.content.asHtml
+            </h@{cardCaption.headingLevel.getOrElse(2)}>
+            @dashboardCard.voaReference.map { voaReference =>
+                <h@{cardCaption.headingLevel.getOrElse(2)} class="@govukToClasses("govuk-body", cardCaption.classes)">
+                    @voaReference.content.asHtml
+                </h@{cardCaption.headingLevel.getOrElse(2)}>
+            }
+        }
+
+
+        @dashboardCard.tag.map { tag =>
+        <td class="govuk-table__cell">
+            <strong class="govuk-tag govuk-tag--red">
+                @tag.content.asHtml
+            </strong>
+        </td>
+        }
+        </a>
+    </div>
+
+    <div class="card-action">
+        @dashboardCard.links match {
+            case None => {}
+            case Some(cardAction) => {
+                @if(cardAction.links.nonEmpty) {
+                    @if(cardAction.links.length == 1) {
+                        <div class="@govukToClasses("govuk-link", cardAction.classes)">
+                            @LinkComponent(cardAction.links.head)
+                        </div>
+                    } else {
+                        <ul class="govuk-list">
+                            @cardAction.links.map { link =>
+                                <li>
+                                    @LinkComponent(link)
+                                </li>
+                            }
+                        </ul>
+                    }
+                }
+            }
+        }
+    </div>
+</div>
