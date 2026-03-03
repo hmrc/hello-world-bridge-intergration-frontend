@@ -29,5 +29,7 @@ GET         /account/sign-out-survey                     controllers.auth.AuthCo
 GET         /account/sign-out                            controllers.auth.AuthController.signOutNoSurvey()
 GET         /account/signed-out                          controllers.auth.SignedOutController.onPageLoad()
 
+GET         /dashboard                                   controllers.DashboardController.onPageLoad()
+
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad()
 

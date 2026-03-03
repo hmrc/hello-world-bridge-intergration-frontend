@@ -68,7 +68,7 @@ class CheckYourAnswersController @Inject()(
         bridgeIntegrationConnector.registerRatePayer(updatedRatepayerData).flatMap { notifySuccess =>
           if (notifySuccess) {
             Future.successful(
-              Redirect(routes.IndexController.onPageLoad())
+              Redirect(routes.DashboardController.onPageLoad())
             )
           } else {
             Future.failed(new Exception(s"Failed to send to the bridge for credId: $userId"))
