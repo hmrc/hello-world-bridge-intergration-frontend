@@ -56,3 +56,51 @@ unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
 
 userName.heading = Enter your name
+
+home.caption=Account home
+
+#addPropertiesCard
+home.addPropertiesCard.title=Add a property
+home.addPropertiesCard.caption=Add a property you have a connection with.
+home.addPropertiesCard.caption2=You must tell us within 60 days of becoming the ratepayer. Do this by adding the property to your account.
+home.addPropertiesCard.tag=Action needed
+home.addPropertiesCard.addProperty=Add a property
+home.addPropertiesCard.manageProperties=Manage your properties
+
+#yourPropertiesCard
+home.yourPropertiesCard.title=Your property
+home.yourPropertiesCard.caption=You have added your property to your account.
+home.yourPropertiesCard.link.1 =View property
+home.yourPropertiesCard.link.2 =Review your property details
+
+#yourAccountCard
+home.yourAccountCard.title=Account home
+home.yourAccountCard.caption=Add and manage rating agents.
+home.yourAccountCard.caption2=Rating agents can deal with the VOA and your business rates on your behalf.
+home.yourAccountCard.caption3=Your client code is:
+home.yourAccountCard.tag=Action needed
+home.yourAccountCard.link1=Add and manage rating agents
+
+#ReportChangeCard
+home.reportChangeCard.title=Tell us about changes to your property, rent or agreement
+home.reportChangeCard.caption=You must tell us within 60 days of a change.
+home.reportChangeCard.caption2=Telling us will help us rate your property.
+home.reportChangeCard.link1=Tell us about a change
+
+#messageCard
+home.messagesCard.title=Your messages
+home.messagesCard.caption=Read secure messages from us.
+home.messagesCard.none=You have no new messages
+home.messagesCard.single=You have {0} new message
+home.messagesCard.multiple=You have {0} new messages
+home.messagesCard.viewAllMessages=Go to your messages
+
+#helpCard
+home.helpAndGuidanceCard.title=Help
+home.helpAndGuidanceCard.link1=Help with adding and managing properties
+home.helpAndGuidanceCard.link2=Help with Check and Challenge cases
+home.helpAndGuidanceCard.link3=Help with appointing and managing agents
+home.helpAndGuidanceCard.link4=How business properties are valued
+home.helpAndGuidanceCard.link5=More help with business rates
+
+nav.actionNeeded = Action Needed

@@ -35,13 +35,11 @@ class DashboardController  @Inject()(override val messagesApi: MessagesApi,
                                      val controllerComponents: MessagesControllerComponents,
                                      view: DashboardView) extends FrontendBaseController with I18nSupport{
 
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async { implicit request =>
+  def onPageLoad(): Action[AnyContent] = identify { implicit request =>
       val cards: Seq[Card] = DashboardHelper.getDashboardCards(false, Approved)
-      Future.successful(
       Ok(view(
         cards = cards,
         name = "Joe Bloggs",
       ))
-    )
     }
   }
