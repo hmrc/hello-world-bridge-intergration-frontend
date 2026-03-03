@@ -41,7 +41,7 @@ class CheckYourAnswersController @Inject()(
                                             bridgeIntegrationConnector: BridgeIntegrationConnector,
                                             val controllerComponents: MessagesControllerComponents,
                                             view: CheckYourAnswersView
-                                          )(implicit ec: ExecutionContext)
+                                          )(implicit ec: ExecutionContext)                         
   extends FrontendBaseController with I18nSupport {
 
   // GET /check-answers
