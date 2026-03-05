@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package connector
+package connectors
 
 import config.FrontendAppConfig
 import models.registration.RegisterRatepayer

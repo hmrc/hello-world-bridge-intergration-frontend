@@ -45,6 +45,8 @@ class FrontendAppConfig @Inject()(
 
   override val bridgeIntegrationStubHost: String = getString("microservice.services.bridge-integration-stub.host")
 
+  val bridgeIntegration: String = servicesConfig.baseUrl("bridge-integration")
+
   override val timeToLive: String = servicesConfig.getString("time-to-live.time")
 
   override val useStubForVmv: Boolean = config.get[Boolean]("features.vmvPropertyLookupTestEnabled")
