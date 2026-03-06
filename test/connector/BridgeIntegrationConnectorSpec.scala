@@ -16,7 +16,7 @@
 
 package connector
 
-import connector.BridgeIntegrationConnector
+import connectors.BridgeIntegrationConnector
 import mocks.MockHttpV2
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api

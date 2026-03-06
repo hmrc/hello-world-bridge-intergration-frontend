@@ -1,0 +1,87 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package config
+
+import javax.inject.{Inject, Singleton}
+import play.api.Configuration
+import play.api.i18n.Lang
+import play.api.mvc.RequestHeader
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+trait AppConfig {
+  val appName: String
+  val host: String
+  val vmvAddressLookup: String
+  val bridgeIntegrationStubHost: String
+  val timeToLive: String
+  val useStubForVmv: Boolean
+}
+
+@Singleton
+class FrontendAppConfig @Inject()(
+                                   config: Configuration,
+                                   servicesConfig: ServicesConfig
+                                 ) extends AppConfig {
+
+  override val appName: String =servicesConfig.getString("appName")
+  
+  override val host: String = servicesConfig.getString("host")
+
+  override val vmvAddressLookup: String = servicesConfig.baseUrl("vmv")
+
+  override val bridgeIntegrationStubHost: String = getString("microservice.services.bridge-integration-stub.host")
+
+  val bridgeIntegration: String = servicesConfig.baseUrl("bridge-integration")
+
+  override val timeToLive: String = servicesConfig.getString("time-to-live.time")
+
+  override val useStubForVmv: Boolean = config.get[Boolean]("features.vmvPropertyLookupTestEnabled")
+
+  val cacheTtl: Long = config.get[Int]("mongodb.timeToLiveInSeconds")
+
+  def languageMap: Map[String, Lang] = Map(
+    "en" -> Lang("en"),
+    "cy" -> Lang("cy")
+  )
+
+  val loginUrl: String = config.get[String]("urls.login")
+  val loginContinueUrl: String = config.get[String]("urls.loginContinue")
+  val signOutUrl: String = config.get[String]("urls.signOut")
+  
+  private val exitSurveyBaseUrl: String = config.get[Service]("microservice.services.feedback-frontend").baseUrl
+  val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/hello-world-bridge-intergration-frontend"
+
+  private val contactHost = config.get[String]("contact-frontend.host")
+  private val contactFormServiceIdentifier = "hello-world-bridge-intergration-frontend"
+
+  def feedbackUrl(implicit request: RequestHeader): String =
+    s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier&backUrl=${host + request.uri}"
+  
+  val timeout: Int   = config.get[Int]("timeout-dialog.timeout")
+  val countdown: Int = config.get[Int]("timeout-dialog.countdown")
+  val languageTranslationEnabled: Boolean =
+    config.get[Boolean]("features.welsh-translation")
+  
+  private def getString(key: String): String =
+    config.getOptional[String](key)
+      .filter(_.nonEmpty)
+      .getOrElse(throwConfigNotFoundError(key))
+
+  private def throwConfigNotFoundError(key: String): String =
+    throw new RuntimeException(s"Could not find config key '$key'")
+}
+
