@@ -15,7 +15,7 @@
  */
 
 import base.SpecBase
-import connector.BridgeIntegrationConnector
+import connectors.BridgeIntegrationConnector
 import controllers.routes
 import models.UserAnswers
 import org.mockito.ArgumentMatchers.any

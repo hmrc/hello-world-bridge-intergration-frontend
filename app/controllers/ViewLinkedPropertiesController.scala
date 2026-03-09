@@ -16,7 +16,7 @@
 
 package controllers
 
-import connector.BridgeIntegrationConnector
+import connectors.BridgeIntegrationConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import forms.ContactNumberFormProvider
 import navigation.Navigator

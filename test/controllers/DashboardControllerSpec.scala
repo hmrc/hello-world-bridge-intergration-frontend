@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connector.BridgeIntegrationConnector
+import connectors.BridgeIntegrationConnector
 import models.Status.{Approved, Pending}
 import models.components.Card
 import models.dashboard.RatepayerStatusResponse
