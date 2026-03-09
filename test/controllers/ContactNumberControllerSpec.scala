@@ -16,8 +16,6 @@
 
 package controllers
 
-package controllers
-
 import base.SpecBase
 import forms.ContactNumberFormProvider
 import models.{NormalMode, UserAnswers}

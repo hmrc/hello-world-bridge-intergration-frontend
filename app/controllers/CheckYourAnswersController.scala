@@ -17,17 +17,18 @@
 package controllers
 
 import com.google.inject.Inject
+import connector.BridgeIntegrationConnector
 import connectors.BridgeIntegrationConnector
 import controllers.actions.*
 import models.registration.{Name, PhoneNumber, RegisterRatepayer}
 import pages.{ContactNumberPage, UserNamePage}
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
+import play.api.mvc.*
 import repositories.SessionRepository
 import service.CheckAnswers.createSummaryRows
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.UniqueIdGenerator
-import viewmodels.govuk.summarylist.*
 import views.html.CheckYourAnswersView
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,7 +43,7 @@ class CheckYourAnswersController @Inject()(
                                             val controllerComponents: MessagesControllerComponents,
                                             view: CheckYourAnswersView
                                           )(implicit ec: ExecutionContext)                         
-  extends FrontendBaseController with I18nSupport {
+  extends FrontendBaseController with I18nSupport with Logging {
 
   // GET /check-answers
   def onPageLoad(): Action[AnyContent] =
@@ -51,7 +52,7 @@ class CheckYourAnswersController @Inject()(
     }
 
   /**
-   * Submits the ratepayer data to the bridge and redirects based on success.
+   * Submits the ratepayer data as a job to the bridge and redirects based on success.
    */
   private def submitData(
                           userId: String,
@@ -67,15 +68,18 @@ class CheckYourAnswersController @Inject()(
 
         bridgeIntegrationConnector.registerRatePayer(updatedRatepayerData).flatMap { notifySuccess =>
           if (notifySuccess) {
+            logger.info(s"Registered user: $userId")
             Future.successful(
               Redirect(routes.DashboardController.onPageLoad())
             )
           } else {
+            logger.error(s"Failed to send to the bridge for credId: $userId")
             Future.failed(new Exception(s"Failed to send to the bridge for credId: $userId"))
           }
         }
 
       case None =>
+        logger.error(s"No ratepayer data found in request: $userId")
         Future.failed(new Exception("No ratepayer data found in request"))
     }
   }
@@ -94,6 +98,7 @@ class CheckYourAnswersController @Inject()(
           val contactNumberOpt: Option[PhoneNumber] =
             existingAnswers.get(ContactNumberPage).map(number => PhoneNumber(number.toString))
 
+          //Making the model you can send to the bridge.
           val ratepayerRequest = RegisterRatepayer(
             ratepayerCredId     = None,
             userType            = None,
@@ -112,7 +117,7 @@ class CheckYourAnswersController @Inject()(
 
           submitData(request.userId, Some(ratepayerRequest)).recover {
             case _ =>
-              // Fallback UX on submission failure; adjust as desired
+              // Fallback on submission failure; adjust as desired
               Redirect(routes.IndexController.onPageLoad())
           }
       }
