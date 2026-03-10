@@ -22,7 +22,6 @@ import models.Status.Approved
 import models.dashboard.RatepayerStatusResponse
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.DashboardHelper
@@ -64,7 +63,6 @@ class DashboardController  @Inject()(override val messagesApi: MessagesApi,
         )
       case None =>
         logger.warn(s"[bridgeIntegrationConnector][getDashboard] user not registered")
-//        Future.successful(Redirect(routes.IndexController.onPageLoad()))
         Future.successful(
           Ok(
             view(
