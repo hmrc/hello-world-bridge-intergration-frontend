@@ -34,7 +34,7 @@ object DashboardHelper {
     links = Some(
       Seq(
         Link(
-          href = Call(method = "GET", url = ""),
+          href = Call(method = "GET", url = controllers.routes.FindAPropertyController.onPageLoad().url),
           linkId = "LinkId-Card",
           messageKey = "home.addPropertiesCard.addProperty",
         )
