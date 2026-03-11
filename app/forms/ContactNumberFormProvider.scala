@@ -17,17 +17,21 @@
 package forms
 
 import forms.mappings.Mappings
+
 import javax.inject.Inject
 import play.api.data.Form
+import utils.PhoneNumberValidation.*
 
 class ContactNumberFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Int] =
+  def apply(): Form[String] =
     Form(
-      "value" -> int(
+      "value" -> validatedText(
         "contactNumber.error.required",
-        "contactNumber.error.wholeNumber",
-        "contactNumber.error.nonNumeric")
-          .verifying(inRange(0, 1000000000, "contactNumber.error.outOfRange"))
+        "contactNumber.error.invalid",
+        "contactNumber.error.length",
+        phoneRegex,
+        maximumLength
+      )
     )
 }

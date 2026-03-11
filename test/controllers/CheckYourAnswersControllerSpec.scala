@@ -59,7 +59,7 @@ class CheckYourAnswersControllerSpec
       "must return OK and render the CheckYourAnswersView" in {
         val answers = emptyUserAnswers
           .set(UserNamePage, "John Doe").success.value
-          .set(ContactNumberPage, 777777777).success.value
+          .set(ContactNumberPage, "07943009607").success.value
 
         val application = applicationWithAnswers(Some(answers))
         val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
@@ -86,7 +86,7 @@ class CheckYourAnswersControllerSpec
 
         val answers = emptyUserAnswers
           .set(UserNamePage, "John Doe").success.value
-          .set(ContactNumberPage, 777777777).success.value
+          .set(ContactNumberPage, "07943039406").success.value
 
         when(mockSessionRepository.get(any()))
           .thenReturn(Future.successful(Some(answers)))

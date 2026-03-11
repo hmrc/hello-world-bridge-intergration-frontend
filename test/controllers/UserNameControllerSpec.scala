@@ -97,7 +97,7 @@ class UserNameControllerSpec
 
         val request =
           FakeRequest(POST, routes.ContactNumberController.onSubmit(NormalMode).url)
-            .withFormUrlEncodedBody("value" -> "777735677")
+            .withFormUrlEncodedBody("value" -> "07944239506")
             .withCSRFToken
 
         val result = route(app, request).value
