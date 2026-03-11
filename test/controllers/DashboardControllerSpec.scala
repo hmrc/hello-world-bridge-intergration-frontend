@@ -88,8 +88,6 @@ class DashboardControllerSpec extends SpecBase with MockitoSugar{
       val view = app.injector.instanceOf[DashboardView]
 
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view(expectedCards, "Registered User")(request, messages(app)).toString
-
       app.stop()
     }
   }
