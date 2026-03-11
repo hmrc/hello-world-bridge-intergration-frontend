@@ -17,7 +17,7 @@
 package controllers
 
 import com.google.inject.Inject
-import connector.BridgeIntegrationConnector
+import connectors.BridgeIntegrationConnector
 import connectors.BridgeIntegrationConnector
 import controllers.actions.*
 import models.registration.{Name, PhoneNumber, RegisterRatepayer}
