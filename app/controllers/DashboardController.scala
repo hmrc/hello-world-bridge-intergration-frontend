@@ -16,9 +16,11 @@
 
 package controllers
 
+import connectors.BridgeIntegrationConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
-import models.Status.{Approved, Rejected}
-import models.components.Card
+import models.Status.Approved
+import models.dashboard.RatepayerStatusResponse
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -26,20 +28,52 @@ import utils.DashboardHelper
 import views.html.DashboardView
 
 import javax.inject.Inject
-import scala.concurrent.Future
+import scala.concurrent
+import scala.concurrent.{ExecutionContext, Future}
 
 class DashboardController  @Inject()(override val messagesApi: MessagesApi,
                                      identify: IdentifierAction,
                                      getData: DataRetrievalAction,
                                      requireData: DataRequiredAction,
+                                     bridgeIntegrationConnector: BridgeIntegrationConnector,
                                      val controllerComponents: MessagesControllerComponents,
-                                     view: DashboardView) extends FrontendBaseController with I18nSupport{
+                                     view: DashboardView)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging{
 
-  def onPageLoad(): Action[AnyContent] = identify { implicit request =>
-      val cards: Seq[Card] = DashboardHelper.getDashboardCards(false, Approved)
-      Ok(view(
-        cards = cards,
-        name = "Joe Bloggs",
-      ))
+  def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
+    
+    bridgeIntegrationConnector.getDashboard().flatMap {
+      case Some(answer) if answer.activeRatepayerPersonaExists =>
+        Future.successful(
+          Ok(
+            view(
+              cards = DashboardHelper.getDashboardCards(answer.activePropertyLinkCount > 0, Approved),
+              name = "Registered User"
+            )
+          )
+        )
+
+      case Some(answer) =>
+        Future.successful(
+          Ok(
+            view(
+              cards = DashboardHelper.getDashboardCards(answer.activePropertyLinkCount > 0, Approved),
+              name = "Non Registered User"
+            )
+          )
+        )
+      case None =>
+        logger.warn(s"[bridgeIntegrationConnector][getDashboard] user not registered")
+        Future.successful(
+          Ok(
+            view(
+              cards = DashboardHelper.getDashboardCards(false, Approved),
+              name = "Non Registered User"
+            )
+          )
+        )
+    }.recover {
+      case e =>
+        Redirect(routes.IndexController.onPageLoad())
     }
   }
+}

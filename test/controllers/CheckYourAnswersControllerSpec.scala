@@ -14,71 +14,132 @@
  * limitations under the License.
  */
 
-package controllers
-
 import base.SpecBase
-import forms.{ContactNumberFormProvider, UserNameFormProvider}
-import helpers.ControllerSpecSupport
-import models.{NormalMode, UserAnswers}
-import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import connectors.BridgeIntegrationConnector
+import controllers.routes
+import models.UserAnswers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
-import pages.UserNamePage
+import pages.{ContactNumberPage, UserNamePage}
 import play.api.inject.bind
-import play.api.libs.json.Json
-import play.api.mvc.Call
 import play.api.test.CSRFTokenHelper.*
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import play.test.Helpers.fakeRequest
 import repositories.SessionRepository
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
-import uk.gov.hmrc.http.NotFoundException
-import viewmodels.govuk.SummaryListFluency
-import views.html.{CheckYourAnswersView, UserNameView}
+import views.html.CheckYourAnswersView
 
-import java.time.Instant
 import scala.concurrent.Future
 
-class CheckAnswersControllerSpec extends SpecBase with MockitoSugar {
-
-  private val onwardRoute = Call("GET", "/foo")
-  private val pageTitle = "Check your answers"
+class CheckYourAnswersControllerSpec
+  extends SpecBase
+    with MockitoSugar {
 
   private val mockSessionRepository = mock[SessionRepository]
+  private val mockBridgeConnector   = mock[BridgeIntegrationConnector]
 
-  def beforeEach(): Unit = {
-    reset(mockSessionRepository)
-    when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-  }
-
-  private def applicationWithAnswers(userAnswers: Option[UserAnswers]) =
-    applicationBuilder(userAnswers)
+  private def applicationWithAnswers(answers: Option[UserAnswers]) =
+    applicationBuilder(answers)
       .overrides(
-        bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-        bind[SessionRepository].toInstance(mockSessionRepository)
+        bind[SessionRepository].toInstance(mockSessionRepository),
+        bind[BridgeIntegrationConnector].toInstance(mockBridgeConnector)
       )
       .build()
 
-  "CheckAnswersController" - {
+  def beforeEach(): Unit = {
+    reset(mockSessionRepository, mockBridgeConnector)
+    when(mockSessionRepository.get(any()))
+      .thenReturn(Future.successful(Some(emptyUserAnswers)))
+  }
+
+  "CheckYourAnswersController" - {
+
     "onPageLoad" - {
-      "must return OK and the correct view with empty form when no existing answer" in {
-        val application = applicationWithAnswers(Some(UserAnswers(
-          "1234", Json.obj(
-            "contactNumber" ->  12345,
-            "userName" -> "Jake"
-          ), Instant.now)))
-        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url).withCSRFToken
+
+      "must return OK and render the CheckYourAnswersView" in {
+        val answers = emptyUserAnswers
+          .set(UserNamePage, "John Doe").success.value
+          .set(ContactNumberPage, "07943009607").success.value
+
+        val application = applicationWithAnswers(Some(answers))
+        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+          .withCSRFToken
+
         val result = route(application, request).value
         val view = application.injector.instanceOf[CheckYourAnswersView]
 
         status(result) mustEqual OK
-        contentAsString(result) must include(pageTitle)
-        contentAsString(result) must include ("Jake")
-        contentAsString(result) must include ("12345")
+        contentAsString(result) mustEqual view(
+          service.CheckAnswers.createSummaryRows(answers)(messages(application))
+        )(request, messages(application)).toString
 
         application.stop()
+      }
+    }
+
+    "onSubmit" - {
+
+      "must call the bridge connector and redirect to Dashboard on success" in {
+        // Mock bridge connector success
+        when(mockBridgeConnector.registerRatePayer(any())(any()))
+          .thenReturn(Future.successful(true))
+
+        val answers = emptyUserAnswers
+          .set(UserNamePage, "John Doe").success.value
+          .set(ContactNumberPage, "07943039406").success.value
+
+        when(mockSessionRepository.get(any()))
+          .thenReturn(Future.successful(Some(answers)))
+
+        val app = applicationWithAnswers(Some(answers))
+        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+          .withCSRFToken
+
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.DashboardController.onPageLoad().url
+
+        verify(mockBridgeConnector, times(1)).registerRatePayer(any())(any())
+        app.stop()
+      }
+
+      "must redirect to IndexController if no session data found" in {
+        when(mockSessionRepository.get(any()))
+          .thenReturn(Future.successful(None))
+
+        val app = applicationWithAnswers(Some(emptyUserAnswers))
+
+        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+          .withCSRFToken
+
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
+
+        app.stop()
+      }
+
+      "must redirect to IndexController when bridge submission fails" in {
+        when(mockBridgeConnector.registerRatePayer(any())(any()))
+          .thenReturn(Future.failed(new Exception("bridge failure")))
+
+        val answers = emptyUserAnswers
+
+        when(mockSessionRepository.get(any()))
+          .thenReturn(Future.successful(Some(answers)))
+
+        val app = applicationWithAnswers(Some(answers))
+        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+          .withCSRFToken
+
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
+
+        app.stop()
       }
     }
   }

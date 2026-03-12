@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package pages
+package models.dashboard
 
-import play.api.libs.json.JsPath
+case class RatepayerStatusResponse( activeRatepayerPersonExists: Boolean,
+                                    activeRatepayerPersonaExists: Boolean,
+                                    activePropertyLinkCount: Int
+                                  )
 
-case object ContactNumberPage extends QuestionPage[String] {
+object RatepayerStatusResponse {
 
-  override def path: JsPath = JsPath \ toString
+  import play.api.libs.json.{Json, OFormat}
 
-  override def toString: String = "contactNumber"
+  implicit val format: OFormat[RatepayerStatusResponse] = Json.format
 }

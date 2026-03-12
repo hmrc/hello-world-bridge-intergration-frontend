@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package pages
+package utils
 
-import play.api.libs.json.JsPath
+object PhoneNumberValidation {
 
-case object ContactNumberPage extends QuestionPage[String] {
+  val ukPhoneRegex: String =
+    """^(?:0\s?7\d{3}[ \-]?\d{6}|0\s?1\d{3}[ \-]?\d{6,7}|0\s?2\d{2}[ \-]?\d{7}|0\s?3\d{2}[ \-]?\d{7}|0800[ \-]?\d{4,6}|0\s?8\d{2}[ \-]?\d{7})$"""
 
-  override def path: JsPath = JsPath \ toString
+  val internationalPhoneRegex: String =
+    """^\+?[0-9]{1,3}[ \-\.]?(?:\(?[0-9]{1,4}\)?[ \-\.]?)*[0-9]{3,}$"""
 
-  override def toString: String = "contactNumber"
+  val phoneRegex: String =
+    s"(?:$ukPhoneRegex)|(?:$internationalPhoneRegex)"
+
+  val maximumLength: Int = 25
+
 }

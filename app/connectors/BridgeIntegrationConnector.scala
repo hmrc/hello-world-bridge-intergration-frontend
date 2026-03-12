@@ -17,6 +17,8 @@
 package connectors
 
 import config.FrontendAppConfig
+import models.dashboard.RatepayerStatusResponse
+import models.properties.RatepayerPropertyLinksResponse
 import models.registration.RegisterRatepayer
 import play.api.http.Status.*
 import play.api.i18n.Lang.logger
@@ -84,4 +86,38 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
+  //123456789123
+  def getDashboard(credId: String = "123456789567")
+                  (implicit hc: HeaderCarrier): Future[Option[RatepayerStatusResponse]] = {
+    val url = uri(s"dashboard/${credId}").toURL
+    http.get(url)
+      .execute[Option[RatepayerStatusResponse]]
+      .recover {
+        case ex =>
+          logger.warn(s"Failed to retrieve dashboard for credId=$credId: ${ex.getMessage}")
+          None
+      }
+  }
+
+
+  def getProperties(implicit hc: HeaderCarrier): Future[Option[RatepayerPropertyLinksResponse]] = {
+    http.get(uri(s"properties").toURL)
+      .execute[Option[RatepayerPropertyLinksResponse]]
+      .recover {
+        case ex =>
+          logger.warn(s"Failed to retrieve properties: ${ex.getMessage}")
+          None
+      }
+  }
+
+  def getRatepayerProperties(credId: String = "123456789234")
+                            (implicit hc: HeaderCarrier): Future[Option[RatepayerPropertyLinksResponse]] = {
+    http.get(uri(s"ratepayer-properties/$credId").toURL)
+      .execute[Option[RatepayerPropertyLinksResponse]]
+      .recover {
+        case ex =>
+          logger.warn(s"Failed to retrieve ratepayer properties for credId=$credId: ${ex.getMessage}")
+          None
+      }
+  }
 }

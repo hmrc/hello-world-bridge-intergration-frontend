@@ -16,8 +16,6 @@
 
 package controllers
 
-package controllers
-
 import base.SpecBase
 import forms.ContactNumberFormProvider
 import models.{NormalMode, UserAnswers}
@@ -77,7 +75,7 @@ class ContactNumberControllerSpec
       }
 
       "must return OK and pre-populate form when answer exists" in {
-        val userAnswers = emptyUserAnswers.set(ContactNumberPage, 777735677).success.value
+        val userAnswers = emptyUserAnswers.set(ContactNumberPage, "777735677").success.value
         val application = applicationWithAnswers(Some(userAnswers))
 
         val request = FakeRequest(GET, routes.ContactNumberController.onPageLoad(NormalMode).url).withCSRFToken
@@ -85,7 +83,7 @@ class ContactNumberControllerSpec
         val view = application.injector.instanceOf[ContactNumberView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill( 777735677), NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill( "777735677"), NormalMode)(request, messages(application)).toString
 
         application.stop()
       }
@@ -99,7 +97,7 @@ class ContactNumberControllerSpec
 
         val request =
           FakeRequest(POST, routes.ContactNumberController.onSubmit(NormalMode).url)
-            .withFormUrlEncodedBody("value" -> "777735677")
+            .withFormUrlEncodedBody("value" -> "07943039567")
             .withCSRFToken
 
         val result = route(app, request).value

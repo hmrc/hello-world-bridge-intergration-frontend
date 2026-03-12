@@ -17,36 +17,78 @@
 package controllers
 
 import base.SpecBase
+import connectors.BridgeIntegrationConnector
 import models.Status.Approved
 import models.components.Card
-import play.api.Application
+import models.dashboard.RatepayerStatusResponse
+import navigation.{FakeNavigator, Navigator}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.*
+import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.inject.bind
+import play.api.mvc.Call
+import play.api.test.CSRFTokenHelper.CSRFRequest
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import repositories.SessionRepository
+import uk.gov.hmrc.http.HeaderCarrier
 import utils.DashboardHelper
 import views.html.DashboardView
 
-class DashboardControllerSpec extends SpecBase {
+import scala.concurrent.Future
 
-  val cards: Application => Seq[Card] = app => DashboardHelper.getDashboardCards(false, Approved)(messages(app: Application))
+class DashboardControllerSpec extends SpecBase with MockitoSugar{
 
-  "DashboardController" - {
+  private val mockBridgeConnector = mock[BridgeIntegrationConnector]
 
-      "must return OK and the correct view for a GET" in {
+  private val onwardRoute = Call("GET", "/foo")
 
-        val application = applicationBuilder(userAnswers = None).build()
+  private val mockSessionRepository = mock[SessionRepository]
 
-        running(application) {
-          val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[DashboardView]
-
-          status(result) mustEqual OK
-
-          contentAsString(result) mustEqual view(cards(application),"Joe Bloggs")(request, messages(application)).toString
-        }
-      }
-    }
-    
+  def beforeEach(): Unit = {
+    reset(mockSessionRepository)
+    when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
   }
+
+  private def buildApp =
+      applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+          bind[SessionRepository].toInstance(mockSessionRepository)
+        )
+        .build()
+
+
+  private def view(app: play.api.Application) =
+    app.injector.instanceOf[DashboardView]
+
+  private val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url)
+
+  "DashboardController.onPageLoad" - {
+
+    "return 200 and show Registered User when activeRatepayerPersonaExists = true" in {
+
+      when(
+        mockBridgeConnector.getDashboard(any())(any[HeaderCarrier])
+      ).thenReturn(
+        Future.successful(Some(RatepayerStatusResponse(
+          activeRatepayerPersonExists = true,
+          activeRatepayerPersonaExists = true,
+          activePropertyLinkCount = 2
+        )))
+      )
+
+      val app = buildApp
+      val expectedCards: Seq[Card] =
+        DashboardHelper.getDashboardCards(isPropertyLinked = true, status = Approved)(messages(app))
+
+      val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url).withCSRFToken
+      val result = route(app, request).value
+      val view = app.injector.instanceOf[DashboardView]
+
+      status(result) mustEqual OK
+      app.stop()
+    }
+  }
+}

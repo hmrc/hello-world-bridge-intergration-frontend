@@ -54,7 +54,7 @@ class DashboardHelperSpec extends ViewBaseSpec {
 
         assert(links.size == 2)
         assert(link1.linkId == "LinkId1-Card")
-        assert(link1.href.url == "")
+        assert(link1.href.url == "/hello-world-bridge-intergration-frontend/view-linked-properties")
         assert(link2.linkId == "LinkId2-Card")
         assert(link2.href.url == "")
       }

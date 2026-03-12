@@ -17,15 +17,26 @@
 package mocks
 
 import helpers.TestSupport
-import org.mockito.ArgumentMatchers.any
+import helpers.WiremockHelper.url
+import models.properties.RatepayerPropertyLinksResponse
+
+import java.net.URL
+import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
+import models.properties.RatepayerPropertyLinksResponse
+import org.apache.pekko.http.scaladsl.model.headers.EntityTagRange.*
+import org.checkerframework.checker.units.qual.A
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.mockito.stubbing.OngoingStubbing
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.BeforeAndAfterEach
-import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, StringContextOps}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 
-import scala.concurrent.Future
+import java.net.URL
+import scala.concurrent.{ExecutionContext, Future}
 
 trait MockHttpV2  extends TestSupport with BeforeAndAfterEach {
 
@@ -91,12 +102,20 @@ trait MockHttpV2  extends TestSupport with BeforeAndAfterEach {
     when(mockRequestBuilder.execute(any(), any())).thenReturn(Future.failed(new RuntimeException("Request Failed")))
   }
 
-  def setupMockFailedHttpV2Get[T](url: String): OngoingStubbing[Future[T]] = {
-    when(mockHttpClientV2
-      .get(ArgumentMatchers.eq(url"$url"))(ArgumentMatchers.any())).thenReturn(mockRequestBuilder)
 
-    when(mockRequestBuilder
-      .execute[T](ArgumentMatchers.any(), ArgumentMatchers.any()))
-      .thenReturn(Future.failed(new Exception("unknown error")))
+  def setupMockFailedHttpV2Get(url: String)(implicit hc: HeaderCarrier): Unit = {
+    val builder = mock[RequestBuilder]
+
+    // mock the GET: url must match EXACTLY
+    when(mockHttpClientV2.get(ArgumentMatchers.eq(new URL(url)))(any[HeaderCarrier]))
+      .thenReturn(builder)
+
+    // mock the execute to fail
+    when(builder.execute[Option[RatepayerPropertyLinksResponse]](
+      any[HttpReads[Option[RatepayerPropertyLinksResponse]]],
+      any[ExecutionContext]
+    )).thenReturn(Future.failed(new RuntimeException("boom")))
   }
+
+
 }
