@@ -119,6 +119,43 @@ findAProperty.postcode.empty.error=Enter postcode
 findAProperty.postcode.invalid.error=Enter a full UK postcode
 findAProperty.property.invalid.error=Property name or number must be 100 characters or less
 
+# PropertyResultsPage
+propertyResults.title = Search results for {0}
+propertyResults.heading = {0} properties found
+
+propertyResults.address = Address
+propertyResults.uarn = UARN
+propertyResults.laRef = Local authority reference
+propertyResults.description = Description
+propertyResults.select = Select property
+
+propertyResults.searchAgain = Search again
+
+propertyResults.sortBy.apply = Apply
+
+propertyResults.sortBy.label = Sort results by
+propertyResults.sortBy.addressAsc = Address (A to Z)
+propertyResults.sortBy.addressDesc = Address (Z to A)
+propertyResults.sortBy.referenceAsc = Reference (ascending)
+propertyResults.sortBy.referenceDesc = Reference (descending)
+propertyResults.sortBy.descriptionAsc = Description (A to Z)
+propertyResults.sortBy.descriptionDesc = Description (Z to A)
+propertyResults.sortBy.rateableAsc = Rateable value (low to high)
+propertyResults.sortBy.rateableDesc = Rateable value (high to low)
+
+propertyResults.details.summary = Help if you cannot find your property
+propertyResults.details.content.1 = Check the details you entered are correct.
+propertyResults.details.content.2 = You can try searching again using a different postcode or property name.
+propertyResults.details.link = Search again
+propertyResults.details.telephone = Telephones:
+propertyResults.details.telephoneNumber = 03000 501501
+propertyResults.details.england = (England)
+propertyResults.details.telephoneNumber.welsh = 03000 505505
+propertyResults.details.wales = (Wales / Cymru)
+propertyResults.details.openTime = Opening times:
+propertyResults.details.openDaysAndTime = Monday to Friday: 9:00am to 4:30pm
+
+
 #NoResultsFound
 noResultsFound.title=No results found
 noResultsFound.p1=Check the detail you entered are correct.

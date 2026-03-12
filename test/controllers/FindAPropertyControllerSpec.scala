@@ -151,7 +151,7 @@ class FindAPropertyControllerSpec
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual ""
+      redirectLocation(result).value mustEqual routes.PropertyResultsController.onPageLoad().url
 
       app.stop()
     }

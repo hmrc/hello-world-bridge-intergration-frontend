@@ -26,6 +26,7 @@ import views.html.NoResultsFoundView
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class NoResultsFoundController @Inject()(noResultsFoundView: NoResultsFoundView,
                                          identify: IdentifierAction,
                                          mcc: MessagesControllerComponents)(implicit appConfig: AppConfig)

@@ -28,9 +28,17 @@
     alphaBanner: StandardAlphaBanner,
     hmrcStandardPage: HmrcStandardPage,
     stylesheets: Stylesheets,
+    fullWidthLayout: FullWidthLayout,
+    twoThirdsLayout: TwoThirdLayout
 )
 
-@(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true, showHmrcBanner: Boolean = false)(contentBlock: Html)(implicit rh: RequestHeader, messages: Messages)
+@(pageTitle: String,
+        fullWidth: Boolean = false,
+        showBackLink: Boolean = true,
+        timeout: Boolean = true,
+        showSignOut: Boolean = true,
+        showHmrcBanner: Boolean = false
+)(contentBlock: Html)(implicit rh: RequestHeader, messages: Messages)
 
 @head = {
     @stylesheets()
@@ -57,6 +65,11 @@
 @hmrcStandardPage(HmrcStandardPageParams(
     pageTitle = Some(pageTitle),
     templateOverrides = TemplateOverrides(
+        mainContentLayout =
+            if (fullWidth)
+                Some((_: Html) => fullWidthLayout(contentBlock))
+            else
+                Some((_: Html) => twoThirdsLayout(contentBlock)),
         additionalHeadBlock = Some(head)
     ),
     serviceURLs = ServiceURLs(
@@ -70,3 +83,4 @@
     isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
     backLink = if (showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None
 ))(content)
+
