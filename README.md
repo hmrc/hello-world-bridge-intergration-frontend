@@ -64,7 +64,8 @@ sbt run
 
 Frontend runs at:
 - http://localhost:1302/hello-world-bridge-intergration-frontend
-
+- Note: To access the service the user must reach a 250 level of confidence.
+- Note: In auth wizard this can be done by selecting a 250 level confidence and adding a Nino like: AA000003D
 ### License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
