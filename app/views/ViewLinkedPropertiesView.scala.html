@@ -23,22 +23,36 @@
 
 @this(
     layout: templates.Layout,
+    govukSummaryList : GovukSummaryList,
     formWithCSRF: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukInput: GovukInput,
     govukButton: GovukButton
 )
 
-@(linkedProperties: Boolean, property: List[Property])(implicit request: Request[_], messages: Messages)
+@(
+    linkedProperties: Boolean,
+    propertySummaryList: SummaryList,
+    personSummaryList: SummaryList,
+    relationshipSummaryList: SummaryList
+)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = messages("userName.heading")) {
     <h1 class="govuk-heading-l">
         @if(linkedProperties){@messages("dashboard.viewLinkedProperties.title.linked")}else{@messages("dashboard.viewLinkedProperties.title.noLinked")}
     </h1>
-
-    @if(property.nonEmpty){
-        <p class="govuk-body">@property</p>
-    }
-
-
+    <p class="govuk-body">
+        <p class="govuk-body">
+        "property"
+        </p>
+        @govukSummaryList(propertySummaryList)
+        <p class="govuk-body">
+            "person"
+        </p>
+        @govukSummaryList(personSummaryList)
+        <p class="govuk-body">
+            "relationship"
+        </p>
+        @govukSummaryList(relationshipSummaryList)
+    </p>
 }
