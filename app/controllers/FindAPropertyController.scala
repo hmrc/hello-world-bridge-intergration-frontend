@@ -61,7 +61,7 @@ extends FrontendController(mcc) with I18nSupport {
 
             case Right(properties) =>
               repo.upsert(request.userId, properties).map { _ =>
-                Redirect("") // TODO SinglePropertySearch
+                Redirect(routes.PropertyResultsController.onPageLoad())
               }
           }
         }
