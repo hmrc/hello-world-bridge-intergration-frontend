@@ -42,7 +42,7 @@ class DashboardController  @Inject()(override val messagesApi: MessagesApi,
   def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
     
     bridgeIntegrationConnector.getDashboard().flatMap {
-      case Some(answer) if answer.activeRatepayerPersonaExists =>
+      case Some(answer) if answer.activeRatepayerPersonExists =>
         Future.successful(
           Ok(
             view(
@@ -54,23 +54,15 @@ class DashboardController  @Inject()(override val messagesApi: MessagesApi,
 
       case Some(answer) =>
         Future.successful(
-          Ok(
-            view(
-              cards = DashboardHelper.getDashboardCards(answer.activePropertyLinkCount > 0, Approved),
-              name = "Non Registered User"
-            )
-          )
+          Redirect(routes.IndexController.onPageLoad())
         )
+
       case None =>
         logger.warn(s"[bridgeIntegrationConnector][getDashboard] user not registered")
         Future.successful(
-          Ok(
-            view(
-              cards = DashboardHelper.getDashboardCards(false, Approved),
-              name = "Non Registered User"
-            )
-          )
+          Redirect(routes.IndexController.onPageLoad())
         )
+
     }.recover {
       case e =>
         Redirect(routes.IndexController.onPageLoad())
