@@ -93,7 +93,6 @@ trait PropertySummaryList {
 
 
           person.category.code.map { code =>
-            println(Console.MAGENTA + code + Console.RESET)
             BridgeSummaryListRow(
               messages("person category.code:"),
               None,
@@ -694,7 +693,6 @@ trait PropertySummaryList {
 
 
           relationship.data.manifestations.map { m =>
-            println(Console.MAGENTA + m + Console.RESET)
             BridgeSummaryListRow(
               titleMessageKey = messages("relationship.data.manifestations:"),
               captionKey = None,

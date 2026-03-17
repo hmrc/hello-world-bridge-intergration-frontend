@@ -49,7 +49,6 @@ class ViewLinkedPropertiesController @Inject()(
     implicit request =>
       bridgeIntegrationConnector.getRatepayerProperties().flatMap{
         case Some(ratepayerPropertyLinksResponse) =>
-          println(Console.MAGENTA + ratepayerPropertyLinksResponse + Console.RESET)
           Future.successful(Ok(view(
             linkedProperties = true,
             createPropertySummaryList(ratepayerPropertyLinksResponse.properties),
