@@ -137,4 +137,24 @@ class BridgeIntegrationConnector @Inject()(
           Json.obj("error" -> "Unable to fetch properties")
       }
   }
+
+  def getPropertiesForAssessment(
+                                  credId: String,
+                                  assessmentId: String
+                                )(implicit hc: HeaderCarrier): Future[JsValue] = {
+
+    val url = uri(s"ratepayer-properties/$credId/assessment/$assessmentId").toURL
+
+    http.get(url)
+      .execute[JsValue]
+      .recover {
+        case ex =>
+          logger.warn(
+            s"Failed to retrieve properties for credId=$credId assessment=$assessmentId: ${ex.getMessage}"
+          )
+          Json.obj("error" -> "Unable to fetch properties")
+      }
+  }
+
+
 }

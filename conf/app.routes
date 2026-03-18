@@ -45,3 +45,5 @@ GET     /property-results/select/:index                  controllers.PropertyRes
 
 
 GET        /no-results                                   controllers.NoResultsFoundController.onPageLoad
+
+GET        /ratepayer-properties/:credId/assessment/:assessmentId                controllers.PropertiesController.getPropertiesForAssessment(credId: String, assessmentId: String)
