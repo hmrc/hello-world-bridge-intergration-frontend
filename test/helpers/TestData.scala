@@ -19,11 +19,150 @@ package helpers
 import play.api.libs.json.{JsValue, Json}
 import models.registration.*
 import models.*
+import models.bridge.common.{CodeMeaning, ForeignId, Metadata, MetadataStage, ProtoData, ReceivingMetadata, SendingMetadata}
+import models.bridge.person.{Communications, NameData, Person, PersonItemData}
+import models.bridge.property.{AddressData, ListData, LocationData, Property, PropertyAssessment, PropertyAssessmentData, PropertyData, PropertyReference, PropertyUse, ValuationData, WorkflowData}
+import models.bridge.relationhship.{Manifestation, Persistence, Relationship, RelationshipData, RelationshipItem, Transportation}
 import models.registration.RatepayerType.Individual
 
 import java.time.{Instant, LocalDate}
 
 trait TestData {
+
+
+  val proto = ProtoData("application/pdf", "Doc", false, "", "xyz")
+  val stage = MetadataStage(selecting = Map("a" -> "b"))
+  val metadata = Metadata(
+    SendingMetadata(stage, stage, stage),
+    ReceivingMetadata(stage, stage, stage)
+  )
+  
+  val assessment = PropertyAssessment(
+    id = 42L,
+    idx = "PA",
+    name = "Assessment",
+    label = "Label",
+    description = "Desc",
+    origination = "2021",
+    termination = Some("2023"),
+    category = CodeMeaning(Some("C1"), Some("Cat1")),
+    `type` = CodeMeaning(Some("T1"), Some("Type1")),
+    `class` = CodeMeaning(Some("CL1"), Some("Class1")),
+    data = PropertyAssessmentData(
+      foreign_ids = List(ForeignId("SYS", "A", "1")),
+      foreign_names = Nil,
+      foreign_labels = Nil,
+      property = PropertyReference(100, 200),
+      use = PropertyUse(None, None, Some("Industrial")),
+      valuation_surveys = Nil,
+      valuations = Nil,
+      valuation = ValuationData(None, None, None),
+      list = ListData(None, None, None, None),
+      workflow = WorkflowData(None)
+    ),
+    protodata = List(proto),
+    metadata = metadata,
+    compartments = Map("zone" -> "restricted"),
+    items = List(Json.obj("x" -> "y"))
+  )
+  
+  val testProperty = Property(
+    id = 777,
+    idx = "PROP",
+    name = "Main Property",
+    label = "Main Label",
+    description = "Property description",
+    origination = "2020",
+    termination = None,
+    category = CodeMeaning(Some("PCAT"), Some("PersonCat")),
+    `type` = CodeMeaning(Some("PT"), Some("Type")),
+    `class` = CodeMeaning(Some("PCL"), Some("Class")),
+    data = PropertyData(
+      foreign_ids = List(ForeignId("SYS", "R1", "001")),
+      foreign_names = Nil,
+      foreign_labels = Nil,
+      addresses = AddressData(Some("123 St"), None, Some("ZZ1 1ZZ"), None),
+      location = LocationData(None, None, Some("gmaps")),
+      assessments = List(assessment)
+    ),
+    protodata = List(proto),
+    metadata = metadata,
+    compartments = Map("meta" -> "data"),
+    items = List(Json.obj("child" -> "item"))
+  )
+
+  val codeMeaning = CodeMeaning(Some("C"), Some("Meaning"))
+
+  val personData = PersonItemData(
+    foreign_ids = List(ForeignId("SYS", "LOC", "1")),
+    foreign_names = Nil,
+    foreign_labels = Nil,
+    names = NameData(Some("Mr"), None, Some("John"), Some("Doe"), None, None, None, None),
+    communications = Communications(Some("A Street"), None, Some("john@example.com"))
+  )
+  
+  val testPerson = Person(
+    id = 100,
+    idx = "P1",
+    name = "John Doe",
+    label = "Label",
+    description = "A person",
+    origination = "2020",
+    termination = None,
+    category = codeMeaning,
+    `type` = codeMeaning,
+    `class` = codeMeaning,
+    data = personData,
+    protodata = List(proto),
+    metadata = metadata,
+    compartments = Map("zone" -> "safe"),
+    items = Nil
+  )
+
+  val relationshipItem = RelationshipItem(
+    transportation = Transportation("/org/rel"),
+    persistence = Persistence("STORE", "ID123")
+  )
+
+  val manifestation = Manifestation(
+    artifact_reference = Some("REF"),
+    artifact_code = Some("CODE"),
+    artifact_description = None,
+    issued_date = None,
+    withdrawn_date = None,
+    effective_from_date = None,
+    effective_to_date = None,
+    observed_date = None,
+    operative_area_code = None,
+    operative_area_name = None,
+    protodata_ptr = None,
+    notes = Some("Note")
+  )
+  
+  val relationshipData = RelationshipData(
+    foreign_ids = List(ForeignId("SYS", "X", "5")),
+    foreign_names = Nil,
+    foreign_labels = Nil,
+    manifestations = List(manifestation)
+  )
+  
+  val testRelationship = Relationship(
+    id = 300,
+    idx = "R1",
+    name = "Rel Name",
+    label = "Label",
+    description = "Relationship",
+    origination = "2019",
+    termination = None,
+    category = codeMeaning,
+    `type` = codeMeaning,
+    `class` = codeMeaning,
+    data = relationshipData,
+    protodata = List(proto),
+    metadata = metadata,
+    compartments = Map("comp" -> "val"),
+    items = List(relationshipItem)
+  )
   
   val testRegistrationModel: RegisterRatepayer =
     RegisterRatepayer(

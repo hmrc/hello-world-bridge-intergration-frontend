@@ -25,7 +25,6 @@ import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.CSRFTokenHelper.CSRFRequest
@@ -35,35 +34,41 @@ import repositories.SessionRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.DashboardHelper
 import views.html.DashboardView
+import actions.*
 
 import scala.concurrent.Future
 
-class DashboardControllerSpec extends SpecBase with MockitoSugar{
+class DashboardControllerSpec extends SpecBase with MockitoSugar {
 
   private val mockBridgeConnector = mock[BridgeIntegrationConnector]
+  private val mockSessionRepository = mock[SessionRepository]
 
   private val onwardRoute = Call("GET", "/foo")
 
-  private val mockSessionRepository = mock[SessionRepository]
-
   def beforeEach(): Unit = {
     reset(mockSessionRepository)
-    when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+    reset(mockBridgeConnector)
+
+    when(mockSessionRepository.set(any()))
+      .thenReturn(Future.successful(true))
   }
 
   private def buildApp =
-      applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-          bind[SessionRepository].toInstance(mockSessionRepository)
-        )
-        .build()
+    applicationBuilder(userAnswers = Some(emptyUserAnswers))
+      .overrides(
+        bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+        bind[SessionRepository].toInstance(mockSessionRepository),
+        bind[BridgeIntegrationConnector].toInstance(mockBridgeConnector),
+        bind[DataRequiredAction].to[DataRequiredActionImpl],
+        bind[IdentifierAction].to[FakeIdentifierAction],
+      )
+      .build()
 
+  private val request =
+    FakeRequest(GET, routes.DashboardController.onPageLoad().url).withCSRFToken
 
   private def view(app: play.api.Application) =
     app.injector.instanceOf[DashboardView]
-
-  private val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url)
 
   "DashboardController.onPageLoad" - {
 
@@ -80,14 +85,66 @@ class DashboardControllerSpec extends SpecBase with MockitoSugar{
       )
 
       val app = buildApp
-      val expectedCards: Seq[Card] =
-        DashboardHelper.getDashboardCards(isPropertyLinked = true, status = Approved)(messages(app))
 
       val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url).withCSRFToken
       val result = route(app, request).value
-      val view = app.injector.instanceOf[DashboardView]
 
       status(result) mustEqual OK
+      app.stop()
+    }
+
+    "return 303 when a user is not registered" in {
+
+      when(
+        mockBridgeConnector.getDashboard(any())(any[HeaderCarrier])
+      ).thenReturn(
+        Future.successful(Some(RatepayerStatusResponse(
+          activeRatepayerPersonExists = false,
+          activeRatepayerPersonaExists = false,
+          activePropertyLinkCount = 0
+        )))
+      )
+
+      val app = buildApp
+
+      val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url).withCSRFToken
+      val result = route(app, request).value
+
+      status(result) mustEqual SEE_OTHER
+      app.stop()
+    }
+
+    "redirect to Journey Recovery when API returns None" in {
+
+      when(mockBridgeConnector.getDashboard(any())(any[HeaderCarrier]))
+        .thenReturn(Future.successful(None))
+
+      val app = buildApp
+
+      val request = FakeRequest(GET, routes.DashboardController.onPageLoad().url).withCSRFToken
+      val result = route(app, request).value
+
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustBe
+        routes.IndexController.onPageLoad().url
+
+      app.stop()
+    }
+
+    "return 500 when connector throws an unexpected exception" in {
+
+      when(mockBridgeConnector.getDashboard(any())(any[HeaderCarrier]))
+        .thenReturn(Future.failed(new RuntimeException("boom")))
+
+      val app = buildApp
+
+      val result = route(app, request).value
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustBe
+        routes.IndexController.onPageLoad().url
+
       app.stop()
     }
   }

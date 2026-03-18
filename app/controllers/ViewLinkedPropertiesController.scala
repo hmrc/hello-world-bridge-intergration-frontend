@@ -19,6 +19,7 @@ package controllers
 import connectors.BridgeIntegrationConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import forms.ContactNumberFormProvider
+import models.viewModels.property.PropertySummaryList
 import navigation.Navigator
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -42,19 +43,34 @@ class ViewLinkedPropertiesController @Inject()(
                                                 val controllerComponents: MessagesControllerComponents,
                                                 bridgeIntegrationConnector: BridgeIntegrationConnector,
                                                 view: ViewLinkedPropertiesView
-                                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging with PropertySummaryList {
 
   def onPageLoad(): Action[AnyContent] = identify.async {
     implicit request =>
       bridgeIntegrationConnector.getRatepayerProperties().flatMap{
-          case Some(ratepayerPropertyLinksResponse) =>
-            Future.successful(Ok(view(linkedProperties = true, property = ratepayerPropertyLinksResponse.properties)))
-          case None =>
-            Future.successful(Ok(view(linkedProperties = false, property = List.empty)))
+        case Some(ratepayerPropertyLinksResponse) =>
+          Future.successful(Ok(view(
+            linkedProperties = true,
+            createPropertySummaryList(ratepayerPropertyLinksResponse.properties),
+            createPersonSummaryList(ratepayerPropertyLinksResponse.persons),
+            createRelationshipSummaryList(ratepayerPropertyLinksResponse.relationships)
+          )))
+        case None =>
+          Future.successful(Ok(view(
+            linkedProperties = false,
+            createPropertySummaryList(List.empty),
+            createPersonSummaryList(List.empty),
+            createRelationshipSummaryList(List.empty)
+          )))
       }.recover{
         case e =>
           logger.error(s"[bridgeIntegrationConnector][getDashboard] Failed for ${request.userId}: ${e.getMessage}")
-          Ok(view(linkedProperties = false, property = List.empty))
+          Ok(view(
+            linkedProperties = false,
+            createPropertySummaryList(List.empty),
+            createPersonSummaryList(List.empty),
+            createRelationshipSummaryList(List.empty)
+          ))
       }
   }
 }
