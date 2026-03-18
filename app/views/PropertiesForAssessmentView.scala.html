@@ -14,23 +14,16 @@
  * limitations under the License.
  *@
 
-@import views.html.components._
+@import play.api.libs.json.{JsValue, Json}
 
-@this(
-        layout: templates.Layout,
-        startNowButton: startNowButton
-)
+@this(layout: templates.Layout)
+@(json: JsValue)(implicit request: Request[_], messages: Messages)
 
-@()(implicit request: Request[_], messages: Messages)
+@layout("Properties for Assessment") {
 
-@layout(
-    pageTitle    = titleNoForm(messages("index.title")),
-    showBackLink = false
-) {
+    <h1 class="govuk-heading-l">Properties for Assessment</h1>
 
-    <h1 class="govuk-heading-xl">@messages("index.heading")</h1>
+    <p class="govuk-body">@json
+    </p>
 
-    <p class="govuk-body">@messages("index.guidance")</p>
-
-    @startNowButton(routes.ContactNumberController.onPageLoad(NormalMode).url)
 }

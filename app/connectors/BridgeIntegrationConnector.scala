@@ -22,7 +22,7 @@ import models.properties.RatepayerPropertyLinksResponse
 import models.registration.RegisterRatepayer
 import play.api.http.Status.*
 import play.api.i18n.Lang.logger
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -120,4 +120,24 @@ class BridgeIntegrationConnector @Inject()(
           None
       }
   }
+
+  def getPropertiesForAssessment(
+                                  credId: String,
+                                  assessmentId: String
+                                )(implicit hc: HeaderCarrier): Future[JsValue] = {
+
+    val url = uri(s"ratepayer-properties/$credId/assessment/$assessmentId").toURL
+
+    http.get(url)
+      .execute[JsValue]
+      .recover {
+        case ex =>
+          logger.warn(
+            s"Failed to retrieve properties for credId=$credId assessment=$assessmentId: ${ex.getMessage}"
+          )
+          Json.obj("error" -> "Unable to fetch properties")
+      }
+  }
+
+
 }
