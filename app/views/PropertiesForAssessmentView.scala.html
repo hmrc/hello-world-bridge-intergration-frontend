@@ -1,0 +1,45 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import viewmodels.govuk.all._
+@import models.bridge.property._
+@import models.bridge.person._
+@import models.bridge.common._
+@import models.bridge.relationhship._
+@import models.properties.RatepayerPropertyLinksResponse._
+
+@this(
+    layout: templates.Layout,
+    formWithCSRF: FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    govukInput: GovukInput,
+    govukButton: GovukButton
+)
+
+@(propertiesForAssessment: Boolean, property: List[Property])(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = messages("userName.heading")) {
+    <h1 class="govuk-heading-l">
+        @if(propertiesForAssessment){@messages("dashboard.propertiesForAssessment.title.linked")}else{@messages("dashboard.propertiesForAssessment.title.noLinked")}
+    </h1>
+
+    @if(property.nonEmpty){
+        <p clase="govuk-body">"IT WORKS"</p>
+        <p class="govuk-body">@property</p>
+    }
+
+
+}

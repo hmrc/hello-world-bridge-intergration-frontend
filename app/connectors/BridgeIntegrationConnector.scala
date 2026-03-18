@@ -19,6 +19,7 @@ package connectors
 import config.FrontendAppConfig
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
+import models.properties.PropertiesForAssessmentResponse
 import models.registration.RegisterRatepayer
 import play.api.http.Status.*
 import play.api.i18n.Lang.logger
@@ -117,6 +118,19 @@ class BridgeIntegrationConnector @Inject()(
       .recover {
         case ex =>
           logger.warn(s"Failed to retrieve ratepayer properties for credId=$credId: ${ex.getMessage}")
+          None
+      }
+  }
+
+  def getPropertiesForAssessment(personForeignId: String = "123456789234",
+                                 assessmentId: String = "27399699000")
+                            (implicit hc: HeaderCarrier): Future[Option[PropertiesForAssessmentResponse]] = {
+    
+    http.get(uri(s"properties/$personForeignId/assessment/$assessmentId").toURL)
+      .execute[Option[PropertiesForAssessmentResponse]]
+      .recover {
+        case ex =>
+          logger.warn(s"Failed to retrieve ratepayer properties for personForeignId $personForeignId and assessmentId $assessmentId: ${ex.getMessage}")
           None
       }
   }
