@@ -66,6 +66,14 @@ Frontend runs at:
 - http://localhost:1302/hello-world-bridge-intergration-frontend
 - Note: To access the service the user must reach a 250 level of confidence.
 - Note: In auth wizard this can be done by selecting a 250 level confidence and adding a Nino like: AA000003D
+
+
+## ▶️ Property Search – Local Setup
+- Use postcode BH1 1HU when testing locally, as it’s the only postcode included in the stub.
+
+- Add any additional postcodes directly to the stub if you need more test data.
+- Property search page: /property-search
+
 ### License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
