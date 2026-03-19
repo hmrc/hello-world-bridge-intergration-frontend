@@ -19,9 +19,10 @@
 @this(layout: templates.Layout)
 @(json: JsValue)(implicit request: Request[_], messages: Messages)
 
-@layout("Properties for Assessment") {
+@layout(
+ pageTitle = messages("assessmentForProperties.title")) {
 
-    <h1 class="govuk-heading-l">Properties for Assessment</h1>
+    <h1 class="govuk-heading-l">@messages("assessmentForProperties.title")</h1>
 
     <p class="govuk-body">@json
     </p>
