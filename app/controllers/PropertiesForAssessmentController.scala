@@ -18,13 +18,9 @@ package controllers
 
 import connectors.BridgeIntegrationConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
-import forms.ContactNumberFormProvider
-import navigation.Navigator
-import play.api.Logging
+import play.api.i18n.Lang.logger
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.PropertiesForAssessmentView
 
@@ -32,29 +28,23 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class PropertiesForAssessmentController @Inject()(
-                                                override val messagesApi: MessagesApi,
-                                                sessionRepository: SessionRepository,
-                                                navigator: Navigator,
-                                                identify: IdentifierAction,
-                                                getData: DataRetrievalAction,
-                                                requireData: DataRequiredAction,
-                                                formProvider: ContactNumberFormProvider,
-                                                val controllerComponents: MessagesControllerComponents,
-                                                bridgeIntegrationConnector: BridgeIntegrationConnector,
-                                                view: PropertiesForAssessmentView
-                                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                                   override val messagesApi: MessagesApi,
+                                                   identify: IdentifierAction,
+                                                   connector: BridgeIntegrationConnector,
+                                                   val controllerComponents: MessagesControllerComponents,
+                                                   view: PropertiesForAssessmentView,
+                                                 )(implicit ec: ExecutionContext)
+  extends FrontendBaseController
+    with I18nSupport {
 
-  def onPageLoad(): Action[AnyContent] = identify.async {
-    implicit request =>
-      bridgeIntegrationConnector.getPropertiesForAssessment().flatMap{
-          case Some(propertiesForAssessmentResponse) =>
-            Future.successful(Ok(view(propertiesForAssessment = true, property = propertiesForAssessmentResponse.properties)))
-          case None =>
-            Future.successful(Ok(view(propertiesForAssessment = false, property = List.empty)))
-      }.recover{
-        case e =>
-          logger.error(s"[bridgeIntegrationConnector][getDashboard] Failed for ${request.userId}: ${e.getMessage}")
-          Ok(view(propertiesForAssessment = false, property = List.empty))
-      }
-  }
+  def onPageLoad(credId: String, assessmentId: String): Action[AnyContent] =
+    Action.async { implicit request =>
+      connector.getPropertiesForAssessment(credId, assessmentId)
+        .map(json => Ok(view(json)))
+        .recover {
+          case ex =>
+            logger.error(s"Failed to fetch properties: ${ex.getMessage}", ex)
+            InternalServerError("Internal server error")
+        }
+    }
 }

@@ -109,8 +109,8 @@ dashboard.viewLinkedProperties.title.linked=Linked properties
 dashboard.viewLinkedProperties.title.noLinked=No linked properties
 
 #propertiesForAssessment
-dashboard.propertiesForAssessment.title.linked=propertiesForAssessment
-dashboard.propertiesForAssessment.title.noLinked=No propertiesForAssessment
+dashboard.propertiesForAssessment.title.linked=Properties for Assessment (Job)
+dashboard.propertiesForAssessment.title.noLinked=No Properties for Assessment (Job)
 
 nav.actionNeeded = Action Needed
 #FindAProperty

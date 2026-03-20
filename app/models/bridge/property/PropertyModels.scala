@@ -95,7 +95,7 @@ object PropertyUse:
 
 case class ValuationData(
                           valuation_method_code: Option[String],
-                          valuation_rateable: Option[String],
+                          valuation_rateable: Option[Long],
                           valuation_effective_date: Option[String]
                         )
 

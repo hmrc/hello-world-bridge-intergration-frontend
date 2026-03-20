@@ -94,7 +94,7 @@ class PropertyModelsSpec extends AnyWordSpec with Matchers {
     "serialise and deserialise correctly" in {
       val vd = ValuationData(
         valuation_method_code = Some("M1"),
-        valuation_rateable = Some("15000"),
+        valuation_rateable = Some(150000L),
         valuation_effective_date = Some("2024-04-01")
       )
 
@@ -132,7 +132,7 @@ class PropertyModelsSpec extends AnyWordSpec with Matchers {
         use = PropertyUse(Some(false), None, Some("Commercial")),
         valuation_surveys = List(Json.obj("survey" -> "A")),
         valuations = List(Json.obj("val" -> 123)),
-        valuation = ValuationData(Some("M2"), Some("20000"), Some("2023-04-01")),
+        valuation = ValuationData(Some("M2"), Some(20000L), Some("2023-04-01")),
         list = ListData(Some("A"), Some("B"), Some("2023"), Some("AUTH")),
         workflow = WorkflowData(Some("JOB999"))
       )
@@ -158,7 +158,7 @@ class PropertyModelsSpec extends AnyWordSpec with Matchers {
         use = PropertyUse(Some(true), Some(false), Some("Office")),
         valuation_surveys = List(Json.obj("survey" -> "test")),
         valuations = List(Json.obj("value" -> 50000)),
-        valuation = ValuationData(Some("M3"), Some("50000"), Some("2021-04-01")),
+        valuation = ValuationData(Some("M3"), Some(50000L), Some("2021-04-01")),
         list = ListData(Some("CAT"), Some("FUNC"), Some("2021"), Some("AUTH")),
         workflow = WorkflowData(Some("JOB7"))
       )

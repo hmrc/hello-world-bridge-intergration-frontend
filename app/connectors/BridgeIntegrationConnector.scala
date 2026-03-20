@@ -23,7 +23,7 @@ import models.properties.PropertiesForAssessmentResponse
 import models.registration.RegisterRatepayer
 import play.api.http.Status.*
 import play.api.i18n.Lang.logger
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -122,16 +122,19 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-  def getPropertiesForAssessment(personForeignId: String = "123456789234",
-                                 assessmentId: String = "27399699000")
-                            (implicit hc: HeaderCarrier): Future[Option[PropertiesForAssessmentResponse]] = {
-    
-    http.get(uri(s"properties/$personForeignId/assessment/$assessmentId").toURL)
-      .execute[Option[PropertiesForAssessmentResponse]]
+  def getPropertiesForAssessment(
+                                  credId: String,
+                                  assessmentId: String
+                                )(implicit hc: HeaderCarrier): Future[JsValue] = {
+
+    val url = uri(s"properties/$credId/assessment/$assessmentId").toURL
+
+    http.get(url)
+      .execute[JsValue]
       .recover {
         case ex =>
-          logger.warn(s"Failed to retrieve ratepayer properties for personForeignId $personForeignId and assessmentId $assessmentId: ${ex.getMessage}")
-          None
+          logger.warn(s"Failed to retrieve properties for credId=$credId assessment=$assessmentId: ${ex.getMessage}")
+          Json.obj("error" -> "Unable to fetch properties")
       }
   }
 }

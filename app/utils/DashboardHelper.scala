@@ -56,11 +56,11 @@ object DashboardHelper {
           linkId = "LinkId1-Card",
           messageKey = "home.yourPropertiesCard.link.1",
         ),
-        Link(
-          href = Call(method = "GET", url = controllers.routes.PropertiesForAssessmentController.onPageLoad().url),//TODO
-          linkId = "LinkId1-Card",
-          messageKey = "home.yourPropertiesCard.link.3",
-        ),
+//        Link(
+//          href = Call(method = "GET", url = controllers.routes.PropertiesForAssessmentController.onPageLoad().url),//TODO
+//          linkId = "LinkId1-Card",
+//          messageKey = "home.yourPropertiesCard.link.3",
+//        ),
         Link(
           href = Call(method = "GET", url = ""),
           linkId = "LinkId2-Card",

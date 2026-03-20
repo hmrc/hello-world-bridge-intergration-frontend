@@ -14,32 +14,18 @@
  * limitations under the License.
  *@
 
-@import viewmodels.govuk.all._
-@import models.bridge.property._
-@import models.bridge.person._
-@import models.bridge.common._
-@import models.bridge.relationhship._
-@import models.properties.RatepayerPropertyLinksResponse._
+@import play.api.libs.json.{JsValue, Json}
 
-@this(
-    layout: templates.Layout,
-    formWithCSRF: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukInput: GovukInput,
-    govukButton: GovukButton
-)
+@this(layout: templates.Layout)
+@(json: JsValue)(implicit request: Request[_], messages: Messages)
 
-@(propertiesForAssessment: Boolean, property: List[Property])(implicit request: Request[_], messages: Messages)
+@layout(
+    pageTitle = messages("dashboard.propertiesForAssessment.title.linked")) {
 
-@layout(pageTitle = messages("userName.heading")) {
-    <h1 class="govuk-heading-l">
-        @if(propertiesForAssessment){@messages("dashboard.propertiesForAssessment.title.linked")}else{@messages("dashboard.propertiesForAssessment.title.noLinked")}
-    </h1>
+    <h1 class="govuk-heading-l">@messages("dashboard.propertiesForAssessment.title.linked")</h1>
 
-    @if(property.nonEmpty){
-        <p clase="govuk-body">"IT WORKS"</p>
-        <p class="govuk-body">@property</p>
-    }
+    <p class="govuk-body">@json
+    </p>
 
 
 }
