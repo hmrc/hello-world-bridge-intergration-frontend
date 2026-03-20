@@ -31,6 +31,7 @@ GET         /account/signed-out                          controllers.auth.Signed
 
 GET         /dashboard                                   controllers.DashboardController.onPageLoad()
 GET         /view-linked-properties                      controllers.ViewLinkedPropertiesController.onPageLoad()
+GET         /properties-for-assessment/:credId/assessment/:assessmentId                   controllers.PropertiesForAssessmentJobController.onPageLoad(credId: String, assessmentId: String)
 
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad()
 

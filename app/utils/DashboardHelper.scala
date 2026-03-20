@@ -56,6 +56,34 @@ object DashboardHelper {
           linkId = "LinkId1-Card",
           messageKey = "home.yourPropertiesCard.link.1",
         ),
+//        Link(
+//          href = Call(method = "GET", url = controllers.routes.PropertiesForAssessmentController.onPageLoad().url),//TODO
+//          linkId = "LinkId1-Card",
+//          messageKey = "home.yourPropertiesCard.link.3",
+//        ),
+        Link(
+          href = Call(method = "GET", url = ""),
+          linkId = "LinkId2-Card",
+          messageKey = "home.yourPropertiesCard.link.2",
+        )
+      )
+    )
+  )
+
+  private val dashboardYourProperty123: DashboardCard = DashboardCard(
+    titleKey = "dashboard.propertiesForAssessment.title.linked",
+    captionKey = Some("home.yourPropertiesCard.caption"),
+    captionKey2 = None,
+    captionKey3 = None,
+    voaReference = None,
+    tag = None,
+    links = Some(
+      Seq(
+        Link(
+          href = Call(method = "GET", url = controllers.routes.ViewLinkedPropertiesController.onPageLoad().url), //TODO
+          linkId = "LinkId1-Card",
+          messageKey = "home.yourPropertiesCard.link.1",
+        ),
         Link(
           href = Call(method = "GET", url = ""),
           linkId = "LinkId2-Card",

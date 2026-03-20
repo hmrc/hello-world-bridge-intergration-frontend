@@ -72,6 +72,7 @@ home.yourPropertiesCard.title=Your property
 home.yourPropertiesCard.caption=You have added your property to your account.
 home.yourPropertiesCard.link.1 =View property
 home.yourPropertiesCard.link.2 =Review your property details
+home.yourPropertiesCard.link.3 =Review your property assessment
 
 #yourAccountCard
 home.yourAccountCard.title=Account home
@@ -106,6 +107,10 @@ home.helpAndGuidanceCard.link5=More help with business rates
 #viewLinkedProperties
 dashboard.viewLinkedProperties.title.linked=Linked properties
 dashboard.viewLinkedProperties.title.noLinked=No linked properties
+
+#propertiesForAssessment
+dashboard.propertiesForAssessment.title.linked=Properties for Assessment (Job)
+dashboard.propertiesForAssessment.title.noLinked=No Properties for Assessment (Job)
 
 nav.actionNeeded = Action Needed
 #FindAProperty
