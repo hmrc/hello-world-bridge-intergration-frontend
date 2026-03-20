@@ -49,8 +49,8 @@ class PropertiesForAssessmentJobControllerSpec
       )
       .build()
 
-  private val credId = "123"
-  private val assessmentId = "456"
+  private val credId = "123456789234"
+  private val assessmentId = "273"
 
   "PropertiesForAssessmentController.onPageLoad" - {
 
@@ -59,11 +59,11 @@ class PropertiesForAssessmentJobControllerSpec
 
       val json = Json.obj("foo" -> "bar")
 
-      when(mockConnector.getPropertiesForAssessment(any(), any())(any()))
+      when(mockConnector.getPropertiesForAssessmentJob(any(), any())(any()))
         .thenReturn(Future.successful(json))
 
       val request =
-        FakeRequest(GET, routes.PropertiesForAssessmentController.onPageLoad(credId, assessmentId).url)
+        FakeRequest(GET, routes.PropertiesForAssessmentJobController.onPageLoad(credId, assessmentId).url)
           .withCSRFToken
 
       val result = route(app, request).value
@@ -78,11 +78,11 @@ class PropertiesForAssessmentJobControllerSpec
     "must return INTERNAL_SERVER_ERROR when connector throws" in {
       val app = application
 
-      when(mockConnector.getPropertiesForAssessment(any(), any())(any()))
+      when(mockConnector.getPropertiesForAssessmentJob(any(), any())(any()))
         .thenReturn(Future.failed(new RuntimeException("test crash")))
 
       val request =
-        FakeRequest(GET, routes.PropertiesForAssessmentController.onPageLoad(credId, assessmentId).url)
+        FakeRequest(GET, routes.PropertiesForAssessmentJobController.onPageLoad(credId, assessmentId).url)
           .withCSRFToken
 
       val result = route(app, request).value

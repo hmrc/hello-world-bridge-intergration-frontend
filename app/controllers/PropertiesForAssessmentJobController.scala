@@ -27,7 +27,7 @@ import views.html.PropertiesForAssessmentView
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class PropertiesForAssessmentController @Inject()(
+class PropertiesForAssessmentJobController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    identify: IdentifierAction,
                                                    connector: BridgeIntegrationConnector,
@@ -39,7 +39,7 @@ class PropertiesForAssessmentController @Inject()(
 
   def onPageLoad(credId: String, assessmentId: String): Action[AnyContent] =
     Action.async { implicit request =>
-      connector.getPropertiesForAssessment(credId, assessmentId)
+      connector.getPropertiesForAssessmentJob(credId, assessmentId)
         .map(json => Ok(view(json)))
         .recover {
           case ex =>

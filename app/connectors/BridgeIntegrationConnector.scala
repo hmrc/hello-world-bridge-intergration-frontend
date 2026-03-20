@@ -122,7 +122,7 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-  def getPropertiesForAssessment(
+  def getPropertiesForAssessmentJob(
                                   credId: String,
                                   assessmentId: String
                                 )(implicit hc: HeaderCarrier): Future[JsValue] = {
