@@ -169,5 +169,8 @@ noResultsFound.search.link=Search again
 noResultsFound.returnHome.link=Return to account home
 
 #PropertiesForAssessment
-
 assessmentForProperties.title = Properties for Assessment
+
+
+#RatepayerPropertyLinks
+ratepayerPropertyLinks.title = Ratepayer Property Links

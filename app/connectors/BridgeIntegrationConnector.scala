@@ -19,7 +19,6 @@ package connectors
 import config.FrontendAppConfig
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
-import models.properties.PropertiesForAssessmentResponse
 import models.registration.RegisterRatepayer
 import play.api.http.Status.*
 import play.api.i18n.Lang.logger
@@ -123,9 +122,9 @@ class BridgeIntegrationConnector @Inject()(
   }
 
   def getPropertiesForAssessmentJob(
-                                  credId: String,
-                                  assessmentId: String
-                                )(implicit hc: HeaderCarrier): Future[JsValue] = {
+                                     credId: String,
+                                     assessmentId: String
+                                   )(implicit hc: HeaderCarrier): Future[JsValue] = {
 
     val url = uri(s"properties/$credId/assessment/$assessmentId").toURL
 
@@ -157,4 +156,22 @@ class BridgeIntegrationConnector @Inject()(
   }
 
 
+  def getRatepayerPropertyLinks(
+                                 credId: String,
+                                 assessmentId: String
+                               )(implicit hc: HeaderCarrier
+                               ): Future[JsValue] = {
+
+    val url = uri(s"property-link-job/$credId/assessment/$assessmentId").toURL
+    http
+      .get(url)
+      .execute[JsValue]
+      .recover {
+        case ex =>
+          logger.warn(
+            s"Failed to retrieve property links for person=$credId: ${ex.getMessage}"
+          )
+          Json.obj("error" -> "Unable to fetch property links")
+      }
+  }
 }
