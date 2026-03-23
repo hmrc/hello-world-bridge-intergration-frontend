@@ -69,10 +69,52 @@ Frontend runs at:
 
 
 ## ▶️ Property Search – Local Setup
-- Use postcode BH1 1HU when testing locally, as it’s the only postcode included in the stub.
+- When running the service locally, use postcode BH1 1HU — it’s the only postcode included in the default stub data.
 
-- Add any additional postcodes directly to the stub if you need more test data.
+- If you need more test data, add additional postcodes directly to the bridge‑integration‑stub.
+
 - Property search page: /property-search
+
+## Local Stub
+The local stub lives here:
+https://github.com/hmrc/bridge-integration-stub
+You can extend it by adding more postcode/property JSON entries.
+
+## 🧪 Staging Stub Population
+To populate the staging stub, use the Platform Tools job:
+https://build.tax.service.gov.uk/job/PlatformTools/job/query-mongo/build?delay=0sec
+
+## 📦 Generic Query Body Template
+Use the following structure when submitting data to the staging stub:
+
+{
+"queryType": "insertMany",
+"collection": "data",
+"documents": [
+{
+"_id": "<YOUR_UNIQUE_ID_1>",
+"method": "GET",
+"status": 200,
+"response": {
+"status": "<YOUR_STATUS_VALUE_1>"
+},
+"creationTimestamp": { "$date": "<ISO_TIMESTAMP_1>" }
+},
+{
+"_id": "<YOUR_UNIQUE_ID_2>",
+"method": "GET",
+"status": 200,
+"response": {
+"status": "<YOUR_STATUS_VALUE_2>"
+},
+"creationTimestamp": { "$date": "<ISO_TIMESTAMP_2>" }
+}
+// Add more documents as needed
+]
+}
+Replace placeholders with your own IDs, statuses, and timestamps.
+
+Provide a JSON payload containing the Mongo query/data you want inserted.
 
 ### License
 
