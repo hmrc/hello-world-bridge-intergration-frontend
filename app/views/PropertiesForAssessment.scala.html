@@ -20,12 +20,11 @@
 @(json: JsValue)(implicit request: Request[_], messages: Messages)
 
 @layout(
- pageTitle = messages("dashboard.propertiesForAssessment.title.linked")) {
+    pageTitle = messages("assessmentForProperties.title")) {
 
- <h1 class="govuk-heading-l">@messages("dashboard.propertiesForAssessment.title.linked")</h1>
+    <h1 class="govuk-heading-l">@messages("assessmentForProperties.title")</h1>
 
- <p class="govuk-body">@json
- </p>
-
+    <p class="govuk-body">@json
+    </p>
 
 }

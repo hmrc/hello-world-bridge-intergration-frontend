@@ -27,7 +27,7 @@ import play.api.inject.bind
 import play.api.inject
 import play.api.test.CSRFTokenHelper.CSRFRequest
 import play.api.test.FakeRequest
-import views.html.PropertiesForAssessmentView
+import views.html.PropertiesForAssessment
 
 import scala.concurrent.Future
 
@@ -62,7 +62,7 @@ class PropertiesControllerSpec
           .withCSRFToken
 
       val result = route(app, request).value
-      val view = app.injector.instanceOf[PropertiesForAssessmentView]
+      val view = app.injector.instanceOf[PropertiesForAssessment]
 
       status(result) mustEqual OK
       contentAsString(result) mustEqual view(json)(request, messages(app)).toString

@@ -21,7 +21,7 @@ import play.api.i18n.Lang.logger
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.PropertiesForAssessmentView
+import views.html.PropertiesForAssessment
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,7 +32,7 @@ class PropertiesController @Inject()(
                                       identify: IdentifierAction,
                                       connector: BridgeIntegrationConnector,
                                       val controllerComponents: MessagesControllerComponents,
-                                      view: PropertiesForAssessmentView,
+                                      view: PropertiesForAssessment,
                                     )(implicit ec: ExecutionContext)
   extends FrontendBaseController
     with I18nSupport {
