@@ -67,6 +67,13 @@ Frontend runs at:
 - Note: To access the service the user must reach a 250 level of confidence.
 - Note: In auth wizard this can be done by selecting a 250 level confidence and adding a Nino like: AA000003D
 
+Accessing pages to show connection to HIP/Bridge:
+Using credId and assessmentId provided byt the bridge team, insert the applicable information into the following URLS to see JSON block, showing that there is an active connection
+- Run Frontend as above
+- Use http://localhost:1302/hello-world-bridge-intergration-frontend/properties-for-assessment/:credId/assessment/:assessmentId to see the Properties for Assessment (Job)
+- Use http://localhost:1302/hello-world-bridge-intergration-frontend/ratepayer-properties/:credId/assessment/:assessmentId to see the Properties for Assessment
+
+
 
 ## ▶️ Property Search – Local Setup
 - When running the service locally, use postcode BH1 1HU — it’s the only postcode included in the default stub data.
