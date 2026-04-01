@@ -49,7 +49,7 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
     "return true when OK is returned" in {
       setupMockHttpV2Post(
-        "http://localhost:1300/bridge-integration/register-ratepayer/123456789123"
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789567"
       )(
         HttpResponse(OK, Json.obj(), Map.empty)
       )
@@ -59,7 +59,7 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
     "return false when NOT_ACCEPTABLE (406) is returned" in {
       setupMockHttpV2Post(
-        "http://localhost:1300/bridge-integration/register-ratepayer/123456789123"
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789567"
       )(
         HttpResponse(NOT_ACCEPTABLE, Json.obj(), Map.empty)
       )
@@ -69,7 +69,7 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
     "return false when INTERNAL_SERVER_ERROR (500) is returned" in {
       setupMockHttpV2Post(
-        "http://localhost:1300/bridge-integration/register-ratepayer/123456789123"
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789567"
       )(
         HttpResponse(INTERNAL_SERVER_ERROR, Json.obj(), Map.empty)
       )
@@ -79,7 +79,7 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
     "return false when an exception is thrown" in {
       setupMockHttpV2FailedPost(
-        "http://localhost:1300/bridge-integration/register-ratepayer/123456789123"
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789567"
       )
 
       connector.registerRatePayer(testRegistrationModel).futureValue mustBe false
@@ -789,7 +789,7 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
         )
 
       setupMockHttpV2Get(
-        "http://localhost:1300/bridge-integration/ratepayer-properties/123456789234"
+        "http://localhost:1300/bridge-integration/ratepayer-properties/123456789567"
       )(
         Some(RatepayerPropertyLinksResponse(
           List(
@@ -805,7 +805,7 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
               CodeMeaning(Some("OCC"), Some("Constituted by reference to actual occupation")),
               CodeMeaning(Some("HDT"), Some("Statutory NDR hereditament")),
               PropertyData(
-                List(ForeignId("CDB", "UK", "123456789234")),
+                List(ForeignId("CDB", "UK", "123456789567")),
                 List(),
                 List(),
                 AddressData(None, None, None, None),
@@ -1394,7 +1394,7 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
     "return None when NOT_FOUND (404) is returned" in {
       setupMockHttpV2Get(
-        "http://localhost:1300/bridge-integration/ratepayer-properties/123456789234"
+        "http://localhost:1300/bridge-integration/ratepayer-properties/123456789567"
       )(
         None
       )
@@ -1404,7 +1404,7 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
     "return None when an exception is thrown" in {
       setupMockFailedHttpV2Get(
-        "http://localhost:1300/bridge-integration/ratepayer-properties/123456789234"
+        "http://localhost:1300/bridge-integration/ratepayer-properties/123456789567"
       )
 
       val result = connector.getRatepayerProperties().futureValue
