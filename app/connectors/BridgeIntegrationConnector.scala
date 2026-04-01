@@ -56,7 +56,7 @@ class BridgeIntegrationConnector @Inject()(
   def registerRatePayer(ratepayerRegistration: RegisterRatepayer)
                        (implicit hc: HeaderCarrier): Future[Boolean] = {
 
-    http.post(uri(s"register-ratepayer/123456789123").toURL)
+    http.post(uri(s"register-ratepayer/123456789567").toURL)
       .withBody(Json.toJson(ratepayerRegistration))
       .execute[HttpResponse]
       .map { response =>
@@ -110,7 +110,7 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-  def getRatepayerProperties(credId: String = "123456789234")
+  def getRatepayerProperties(credId: String = "123456789567")
                             (implicit hc: HeaderCarrier): Future[Option[RatepayerPropertyLinksResponse]] = {
     http.get(uri(s"ratepayer-properties/$credId").toURL)
       .execute[Option[RatepayerPropertyLinksResponse]]
