@@ -34,6 +34,20 @@ class NavigatorSpec extends SpecBase {
         case object UnknownPage extends Page
         navigator.nextPage(UnknownPage, NormalMode, UserAnswers("id")) mustBe routes.IndexController.onPageLoad()
       }
+
+      "must go from Contact Number page to User Name page" in {
+        val emptyUA = emptyUserAnswers
+        val result = navigator.nextPage(ContactNumberPage, NormalMode, emptyUA)
+
+        result mustBe routes.UserNameController.onPageLoad(NormalMode)
+      }
+
+      "must go from  User Name page to CYA" in {
+        val emptyUA = emptyUserAnswers
+        val result = navigator.nextPage(UserNamePage, NormalMode, emptyUA)
+
+        result mustBe routes.CheckYourAnswersController.onPageLoad()
+      }
     }
 
     "in Check mode" - {

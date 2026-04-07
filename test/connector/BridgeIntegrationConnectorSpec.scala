@@ -33,6 +33,14 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.http.client.HttpClientV2
 
+import ch.qos.logback.classic.{Level, Logger}
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
+import org.slf4j.LoggerFactory
+import scala.jdk.CollectionConverters._
+
+import scala.concurrent.Future
+
 
 class BridgeIntegrationConnectorSpec extends MockHttpV2
   with GuiceOneAppPerSuite {
@@ -43,6 +51,15 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
     )
     .configure("bridgeIntegration" -> "http://localhost:1300")
     .build()
+
+  private def withLogCapture[T](loggerName: String)(test: ListAppender[ILoggingEvent] => T): T = {
+    val logger = LoggerFactory.getLogger(loggerName).asInstanceOf[Logger]
+    val appender = new ListAppender[ILoggingEvent]()
+    appender.start()
+    logger.addAppender(appender)
+    try test(appender)
+    finally logger.detachAppender(appender)
+  }
 
   val connector: BridgeIntegrationConnector = app.injector.instanceOf[BridgeIntegrationConnector]
 
@@ -1572,6 +1589,43 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
       val result = connector.exploreRatePayer()(hc).futureValue
       result mustBe None
+    }
+  }
+
+
+  "BridgeIntegrationConnector.getPropertiesForAssessmentJob" should {
+
+    "return None when NOT_FOUND (404) is returned" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/properties/123456789567/assessment/27399677001"
+      )(
+        None
+      )
+      connector.getPropertiesForAssessmentJob("123456789567", "27399677001").futureValue mustEqual None
+    }
+  }
+
+  "BridgeIntegrationConnector.getPropertiesForAssessment" should {
+
+    "return None when NOT_FOUND (404) is returned" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/ratepayer-properties/123456789567/assessment/27399677001"
+      )(
+        None
+      )
+      connector.getPropertiesForAssessment("123456789567", "27399677001").futureValue mustEqual None
+    }
+  }
+
+  "BridgeIntegrationConnector.getRatepayerPropertyLinks" should {
+
+    "return None when NOT_FOUND (404) is returned" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/property-link-job/123456789567/assessment/27399677001"
+      )(
+        None
+      )
+      connector.getRatepayerPropertyLinks("123456789567", "27399677001").futureValue mustEqual None
     }
   }
 }
