@@ -50,3 +50,5 @@ GET        /ratepayer-properties/:credId/assessment/:assessmentId               
 
 
 GET   /ratepayer-property-links/:credId/assessment/:assessmentId controllers.RatepayerPropertyLinksController.getRatepayerPropertyLinks(credId: String, assessmentId: String)
+
+GET   /explore-ratepayer                                 controllers.ExploreRatePayerController.exploreRatePayer()

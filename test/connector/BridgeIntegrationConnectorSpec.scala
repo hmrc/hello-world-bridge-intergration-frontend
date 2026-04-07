@@ -19,13 +19,14 @@ package connector
 import connectors.BridgeIntegrationConnector
 import mocks.MockHttpV2
 import models.bridge.common.{CodeMeaning, ForeignId, Metadata, MetadataStage, ProtoData, ReceivingMetadata, SendingMetadata}
-import models.bridge.person.{Communications, NameData, Person, PersonItem, PersonItemData}
+import models.bridge.person.{Communications, NameData, Person, PersonItem, PersonItemData, Persons}
 import models.bridge.property.*
 import models.bridge.relationhship.{Manifestation, Persistence, RelationshipData, RelationshipItem, Transportation}
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api
+import play.api.http.Status
 import play.api.http.Status.*
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
@@ -418,12 +419,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
           ),
           List(
             Person(
-              34,
+              Some(34),
               "1.6.1",
               "John",
               "Active",
               "User account for HR system",
-              "20250101T000000Z",
+              Some("20250101T000000Z"),
               None,
               CodeMeaning(
                 Some(""),
@@ -593,12 +594,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
               Map(),
               List(
                 PersonItem(
-                  23,
+                  Some(23),
                   "1.5.1",
                   "Persona5",
                   "Individual",
                   "Test Desc",
-                  "20250101T000000Z",
+                  Some("20250101T000000Z"),
                   None,
                   CodeMeaning(Some("LTX-DOM-PSA"),Some("Local taxation domain persona")),
                   CodeMeaning(Some("TXP"),Some("LGFA taxpayer")),
@@ -1058,12 +1059,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
           ),
           List(
             Person(
-              34,
+              Some(34),
               "1.6.1",
               "John",
               "Active",
               "User account for HR system",
-              "20250101T000000Z",
+              Some("20250101T000000Z"),
               None,
               CodeMeaning(
                 Some(""),
@@ -1233,12 +1234,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
               Map(),
               List(
                 PersonItem(
-                  23,
+                  Some(23),
                   "1.5.1",
                   "Persona5",
                   "Individual",
                   "Test Desc",
-                  "20250101T000000Z",
+                  Some("20250101T000000Z"),
                   None,
                   CodeMeaning(Some("LTX-DOM-PSA"), Some("Local taxation domain persona")),
                   CodeMeaning(Some("TXP"), Some("LGFA taxpayer")),
@@ -1411,5 +1412,166 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
       result mustBe None
     }
 
+  }
+
+  "BridgeIntegrationConnector.exploreRatePayer" should {
+    val personMax = Person(
+      id = Some(1),
+      idx = "1",
+      name = "John",
+      label = "Active",
+      description = "User account for HR system",
+      origination = Some("2026-02-16T14:40:09Z"),
+      termination = Some("2026-02-16T14:40:09Z"),
+      category = CodeMeaning(Some("LTX-DOM-JOB"), Some("Local taxation domain job")),
+      `type` = CodeMeaning(Some("INF"), Some("")),
+      `class` = CodeMeaning(Some("LTX-DOM-JOB"), Some("Local taxation domain job")),
+      data = PersonItemData(
+        foreign_ids = List(ForeignId(system = "Government_Gateway", location = "UK", value = "123456789234")),
+        foreign_names = List(ForeignId(system = "SystemX", location = "UK", value = "123456789234")),
+        foreign_labels = List(ForeignId(system = "SystemX", location = "UJ", value = "123456789234")),
+        names = NameData(Some("Mr"), None, Some("Clive"), Some("Brown"), None, None, None, None),
+        communications = Communications(Some("Address"), None, Some("c.brown@email.com"))
+      ),
+      protodata = List.empty,
+      metadata = Metadata(
+        sending = SendingMetadata(
+          MetadataStage(
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map()),
+          MetadataStage(
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map()),
+          MetadataStage(
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map()
+          )
+        ),
+        receiving = ReceivingMetadata(
+          MetadataStage(
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map()),
+          MetadataStage(
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map()),
+          MetadataStage(
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map(),
+            Map()
+          )
+        )
+      ),
+      compartments = Map.empty,
+      items = List.empty)
+
+    val personData = Persons(List(personMax))
+
+    "return Some(response) OK (200) is returned" in {
+
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/explore-ratepayer/123456789567"
+      )(
+        Some(personData)
+      )
+
+      val result = connector.exploreRatePayer()(hc).futureValue
+      result mustBe Some(personData)
+    }
+
+    "return None when NOT_FOUND (404) is returned" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/explore-ratepayer/123456789567"
+      )(
+        None
+      )
+      connector.exploreRatePayer()(hc).futureValue mustEqual None
+    }
+
+
+    "return None when an exception is thrown" in {
+      setupMockFailedHttpV2Get(
+        "http://localhost:1300/bridge-integration/explore-ratepayer/123456789567"
+      )
+
+      val result = connector.exploreRatePayer()(hc).futureValue
+      result mustBe None
+    }
   }
 }

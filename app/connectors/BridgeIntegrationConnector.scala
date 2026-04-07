@@ -17,8 +17,10 @@
 package connectors
 
 import config.FrontendAppConfig
+import models.bridge.person.Persons
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
+import models.ratepayer.ExploreRatePayerResponse
 import models.registration.RegisterRatepayer
 import play.api.http.Status.*
 import play.api.i18n.Lang.logger
@@ -98,6 +100,19 @@ class BridgeIntegrationConnector @Inject()(
           None
       }
   }
+
+  def exploreRatePayer(credId: String = "123456789567")
+                  (implicit hc: HeaderCarrier): Future[Option[Persons]] = {
+    val url = uri(s"explore-ratepayer/$credId").toURL
+    http.get(url)
+      .execute[Option[Persons]]
+      .recover {
+        case ex =>
+          logger.warn(s"Failed to retrieve explore ratepayer for credId=$credId: ${ex.getMessage}")
+          None
+      }
+  }
+
 
 
   def getProperties(implicit hc: HeaderCarrier): Future[Option[RatepayerPropertyLinksResponse]] = {

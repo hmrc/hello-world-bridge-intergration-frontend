@@ -103,12 +103,12 @@ class PersonModelJsonFormatSpec extends AnyWordSpec with Matchers {
       )
 
       val item = PersonItem(
-        id = 1001L,
+        id = Some(1001L),
         idx = "IDX001",
         name = "Alice Walker",
         label = "PersonItemLabel",
         description = "Test Person Item",
-        origination = "2020-01-01",
+        origination = Some("2020-01-01"),
         termination = None,
         category = CodeMeaning(Some("CAT"), Some("CategoryDesc")),
         `type` = CodeMeaning(Some("TYPE"), Some("TypeDesc")),
@@ -145,12 +145,12 @@ class PersonModelJsonFormatSpec extends AnyWordSpec with Matchers {
       )
 
       val childItem = PersonItem(
-        id = 2000,
+        id = Some(2000),
         idx = "CHILD",
         name = "Child Item",
         label = "ChildLabel",
         description = "Child Desc",
-        origination = "2020",
+        origination = Some("2020"),
         termination = None,
         category = CodeMeaning(Some("C1"), Some("Cat1")),
         `type` = CodeMeaning(Some("T1"), Some("Type1")),
@@ -163,12 +163,12 @@ class PersonModelJsonFormatSpec extends AnyWordSpec with Matchers {
       )
 
       val person = Person(
-        id = 9999,
+        id = Some(9999),
         idx = "IDX-P",
         name = "Marcus Coleman",
         label = "MainPerson",
         description = "A Test Person",
-        origination = "2021",
+        origination = Some("2021"),
         termination = Some("2025"),
         category = CodeMeaning(Some("PCAT"), Some("PersonCat")),
         `type` = CodeMeaning(Some("PTYPE"), Some("PersonType")),

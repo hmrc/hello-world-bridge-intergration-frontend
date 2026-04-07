@@ -51,12 +51,12 @@ class RatepayerPropertyLinkResponseSpec extends AnyWordSpec with Matchers {
       )
 
       val person = Person(
-        id = 100,
+        id = Some(100),
         idx = "P1",
         name = "John Doe",
         label = "Label",
         description = "A person",
-        origination = "2020",
+        origination = Some("2020"),
         termination = None,
         category = codeMeaning,
         `type` = codeMeaning,
