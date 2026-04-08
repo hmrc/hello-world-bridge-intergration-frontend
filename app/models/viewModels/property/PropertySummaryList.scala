@@ -77,7 +77,7 @@ trait PropertySummaryList {
             BridgeSummaryListRow(
               messages("person origination:"),
               None,
-              Seq(person.origination),
+              Seq(person.origination.getOrElse("")),
               changeLink = None
             )
           ),

@@ -16,7 +16,7 @@
 
 package models.bridge.person
 
-import models.bridge.common._
+import models.bridge.common.*
 import play.api.libs.json.{JsValue, Json, OFormat}
 
 case class NameData(
@@ -46,12 +46,12 @@ object Communications {
 }
 
 case class PersonItem(
-                       id: Long,
+                       id: Option[Long],
                        idx: String,
                        name: String,
                        label: String,
                        description: String,
-                       origination: String,
+                       origination: Option[String],
                        termination: Option[String],
                        category: CodeMeaning,
                        `type`: CodeMeaning,
@@ -80,12 +80,12 @@ object PersonItemData {
 }
 
 case class Person(
-                   id: Long,
+                   id: Option[Long],
                    idx: String,
                    name: String,
                    label: String,
                    description: String,
-                   origination: String,
+                   origination: Option[String],
                    termination: Option[String],
                    category: CodeMeaning,
                    `type`: CodeMeaning,
@@ -99,4 +99,9 @@ case class Person(
 
 object Person {
   implicit val format: OFormat[Person] = Json.format[Person]
+}
+
+case class Persons(persons: List[Person])
+object Persons {
+  implicit val format:OFormat[Persons] = Json.format[Persons]
 }

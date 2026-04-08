@@ -16,8 +16,6 @@
 
 package controllers
 
-package controllers
-
 import base.SpecBase
 import connectors.BridgeIntegrationConnector
 import helpers.TestData

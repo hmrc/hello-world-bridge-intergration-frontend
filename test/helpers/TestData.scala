@@ -20,7 +20,7 @@ import play.api.libs.json.{JsValue, Json}
 import models.registration.*
 import models.*
 import models.bridge.common.{CodeMeaning, ForeignId, Metadata, MetadataStage, ProtoData, ReceivingMetadata, SendingMetadata}
-import models.bridge.person.{Communications, NameData, Person, PersonItemData}
+import models.bridge.person.{Communications, NameData, Person, PersonItemData, Persons}
 import models.bridge.property.{AddressData, ListData, LocationData, Property, PropertyAssessment, PropertyAssessmentData, PropertyData, PropertyReference, PropertyUse, ValuationData, WorkflowData}
 import models.bridge.relationhship.{Manifestation, Persistence, Relationship, RelationshipData, RelationshipItem, Transportation}
 import models.registration.RatepayerType.Individual
@@ -102,12 +102,12 @@ trait TestData {
   )
   
   val testPerson = Person(
-    id = 100,
+    id = Some(100),
     idx = "P1",
     name = "John Doe",
     label = "Label",
     description = "A person",
-    origination = "2020",
+    origination = Some("2020"),
     termination = None,
     category = codeMeaning,
     `type` = codeMeaning,
@@ -223,5 +223,133 @@ trait TestData {
     """
       |{"nino":"AA123456A"}
       |""".stripMargin)
+
+  val personMax = Person(
+    id = Some(1),
+    idx = "1",
+    name = "John",
+    label = "Active",
+    description = "User account for HR system",
+    origination = Some("2026-02-16T14:40:09Z"),
+    termination = Some("2026-02-16T14:40:09Z"),
+    category = CodeMeaning(Some("LTX-DOM-JOB"), Some("Local taxation domain job")),
+    `type` = CodeMeaning(Some("INF"), Some("")),
+    `class` = CodeMeaning(Some("LTX-DOM-JOB"), Some("Local taxation domain job")),
+    data = PersonItemData(
+      foreign_ids = List(ForeignId(system = "Government_Gateway", location = "UK", value = "123456789234")),
+      foreign_names = List(ForeignId(system = "SystemX", location = "UK", value = "123456789234")),
+      foreign_labels = List(ForeignId(system = "SystemX", location = "UJ", value = "123456789234")),
+      names = NameData(Some("Mr"), None, Some("Clive"), Some("Brown"), None, None, None, None),
+      communications = Communications(Some("Address"), None, Some("c.brown@email.com"))
+    ),
+    protodata = List.empty,
+    metadata = Metadata(
+      sending = SendingMetadata(
+        MetadataStage(
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map()),
+        MetadataStage(
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map()),
+        MetadataStage(
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map()
+        )
+      ),
+      receiving = ReceivingMetadata(
+        MetadataStage(
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map()),
+        MetadataStage(
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map()),
+        MetadataStage(
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map(),
+          Map()
+        )
+      )
+    ),
+    compartments = Map.empty,
+    items = List.empty)
+
+  val personsDataMax: Persons = Persons(List(personMax))
 
 }
