@@ -23,7 +23,6 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ExploreRatepayerView
 import play.api.Logging
-import play.api.libs.json.Json
 import models.viewModels.property.PropertySummaryList
 
 import javax.inject.{Inject, Singleton}

@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.BridgeIntegrationConnector
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.actions.IdentifierAction
 import models.Status.Approved
 import models.dashboard.RatepayerStatusResponse
 import play.api.Logging
