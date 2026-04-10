@@ -23,7 +23,6 @@ import models.viewModels.property.PropertySummaryList
 import navigation.Navigator
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -34,12 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ViewLinkedPropertiesController @Inject()(
                                                 override val messagesApi: MessagesApi,
-                                                sessionRepository: SessionRepository,
-                                                navigator: Navigator,
                                                 identify: IdentifierAction,
-                                                getData: DataRetrievalAction,
-                                                requireData: DataRequiredAction,
-                                                formProvider: ContactNumberFormProvider,
                                                 val controllerComponents: MessagesControllerComponents,
                                                 bridgeIntegrationConnector: BridgeIntegrationConnector,
                                                 view: ViewLinkedPropertiesView

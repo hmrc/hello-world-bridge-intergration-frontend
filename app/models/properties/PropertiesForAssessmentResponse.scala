@@ -32,11 +32,9 @@
 
 package models.properties
 
-import models.bridge.common.*
 import models.bridge.person.*
 import models.bridge.property.*
 import models.bridge.relationhship.*
-import models.properties.*
 import play.api.libs.json.{JsValue, Json, OFormat}
 
 case class PropertiesForAssessmentResponse(

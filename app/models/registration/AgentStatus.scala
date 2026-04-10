@@ -16,8 +16,6 @@
 
 package models.registration
 
-import play.api.libs.json.Format
-
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 
 sealed trait AgentStatus extends EnumEntry

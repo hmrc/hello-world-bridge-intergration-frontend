@@ -33,8 +33,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DashboardController  @Inject()(override val messagesApi: MessagesApi,
                                      identify: IdentifierAction,
-                                     getData: DataRetrievalAction,
-                                     requireData: DataRequiredAction,
                                      bridgeIntegrationConnector: BridgeIntegrationConnector,
                                      val controllerComponents: MessagesControllerComponents,
                                      view: DashboardView)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging{

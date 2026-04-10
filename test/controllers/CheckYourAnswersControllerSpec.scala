@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+package controllers
+
 import base.SpecBase
 import connectors.BridgeIntegrationConnector
-import controllers.routes
+//import controllers.routes.*
 import models.UserAnswers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
@@ -43,7 +45,6 @@ class CheckYourAnswersControllerSpec
 
   private val mockSessionRepository = mock[SessionRepository]
   private val mockBridgeConnector   = mock[BridgeIntegrationConnector]
-  private val mockRatepayerService   = mock[RegisterRatepayer]
 
   private def withCapturedLogs[A](loggerName: String)(block: ListAppender[ILoggingEvent] => A): A = {
     val logger = LoggerFactory.getLogger(loggerName).asInstanceOf[Logger]

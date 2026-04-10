@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.BridgeIntegrationConnector
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.actions.IdentifierAction
 import play.api.i18n.Lang.logger
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -25,11 +25,10 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.PropertiesForAssessmentView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class PropertiesForAssessmentJobController @Inject()(
                                                    override val messagesApi: MessagesApi,
-                                                   identify: IdentifierAction,
                                                    connector: BridgeIntegrationConnector,
                                                    val controllerComponents: MessagesControllerComponents,
                                                    view: PropertiesForAssessmentView,
