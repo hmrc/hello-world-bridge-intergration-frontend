@@ -28,7 +28,13 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
 import views.html.CheckYourAnswersView
+import ch.qos.logback.classic.{Level, Logger}
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
+import models.registration.RegisterRatepayer
+import org.slf4j.LoggerFactory
 
+import scala.jdk.CollectionConverters.*
 import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec
@@ -37,6 +43,21 @@ class CheckYourAnswersControllerSpec
 
   private val mockSessionRepository = mock[SessionRepository]
   private val mockBridgeConnector   = mock[BridgeIntegrationConnector]
+  private val mockRatepayerService   = mock[RegisterRatepayer]
+
+  private def withCapturedLogs[A](loggerName: String)(block: ListAppender[ILoggingEvent] => A): A = {
+    val logger = LoggerFactory.getLogger(loggerName).asInstanceOf[Logger]
+    val listAppender = new ListAppender[ILoggingEvent]
+    listAppender.start()
+    logger.addAppender(listAppender)
+
+    try {
+      block(listAppender)
+    } finally {
+      logger.detachAppender(listAppender)
+      listAppender.stop()
+    }
+  }
 
   private def applicationWithAnswers(answers: Option[UserAnswers]) =
     applicationBuilder(answers)
@@ -139,6 +160,84 @@ class CheckYourAnswersControllerSpec
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
 
+        app.stop()
+      }
+
+      "must log info when user is successfully registered with bridge" in {
+        when(mockBridgeConnector.registerRatePayer(any())(any()))
+          .thenReturn(Future.successful(true))
+
+        val answers = emptyUserAnswers
+          .set(UserNamePage, "John Doe").success.value
+          .set(ContactNumberPage, "07943039406").success.value
+
+        when(mockSessionRepository.get(any()))
+          .thenReturn(Future.successful(Some(answers)))
+
+        val app = applicationWithAnswers(Some(answers))
+
+        val rootLogger =
+          LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)
+            .asInstanceOf[Logger]
+        rootLogger.setLevel(Level.INFO)
+
+        val appender = new ListAppender[ILoggingEvent]()
+        appender.start()
+        rootLogger.addAppender(appender)
+
+        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+          .withCSRFToken
+
+        val result = route(app, request).value
+        await(result)
+        status(result) mustEqual SEE_OTHER
+
+        val infoMessages =
+          appender.list.asScala
+            .filter(_.getLevel == Level.INFO)
+            .map(_.getFormattedMessage)
+
+        infoMessages.exists(_.startsWith("Registered user:")) mustBe true
+        rootLogger.detachAppender(appender)
+        appender.stop()
+        app.stop()
+      }
+
+      "must log error when bridge returns false" in {
+        when(mockBridgeConnector.registerRatePayer(any())(any()))
+          .thenReturn(Future.successful(false))
+
+        val answers = emptyUserAnswers
+          .set(UserNamePage, "John Doe").success.value
+          .set(ContactNumberPage, "07943039406").success.value
+
+        when(mockSessionRepository.get(any()))
+          .thenReturn(Future.successful(Some(answers)))
+
+        val app = applicationWithAnswers(Some(answers))
+        val rootLogger =
+          LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)
+            .asInstanceOf[Logger]
+        rootLogger.setLevel(Level.ERROR)
+
+        val appender = new ListAppender[ILoggingEvent]()
+        appender.start()
+        rootLogger.addAppender(appender)
+
+        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+          .withCSRFToken
+
+        val result = route(app, request).value
+        await(result)
+        status(result) mustEqual SEE_OTHER
+
+        val errorMessages =
+          appender.list.asScala
+            .filter(_.getLevel == Level.ERROR)
+            .map(_.getFormattedMessage)
+        errorMessages.exists(_.startsWith("Failed to send to the bridge for credId:")) mustBe true
+        rootLogger.detachAppender(appender)
+        appender.stop()
         app.stop()
       }
     }

@@ -102,6 +102,40 @@ class PropertyResultsViewSpec extends ViewBaseSpec {
 
   "PropertyResultsView" must {
 
+    "show both Previous pagination links when on the middle page" in {
+      val middlePage = 2
+      val pageSize = 1
+
+      val html =
+        view(vmv, vmv.properties, middlePage, vmv.total, pageSize, sortBy)
+
+      val doc = Jsoup.parse(html.body)
+
+      val previousLink =
+        doc.select(".govuk-pagination__prev a").attr("href")
+
+      previousLink mustBe
+        controllers.routes.PropertyResultsController.onPageLoad(middlePage - 1, sortBy).url
+    }
+
+    "not shown Previous link but show Next link when on the first page" in {
+      val firstPage = 1
+      val pageSize = 1
+
+      val html =
+        view(vmv, vmv.properties, firstPage, vmv.total, pageSize, sortBy)
+
+      val doc = Jsoup.parse(html.body)
+
+      doc.select(".govuk-pagination__prev").size mustBe 0
+
+      val nextLink =
+        doc.select(".govuk-pagination__next a").attr("href")
+
+      nextLink mustBe
+        controllers.routes.PropertyResultsController.onPageLoad(firstPage + 1, sortBy).url
+    }
+
     "produce identical output for apply() and render()" in {
       val htmlApply = view.apply(vmv, vmv.properties, currentPage, vmv.total, pageSize, sortBy).body
       val htmlRender = view.render(vmv, vmv.properties, currentPage, vmv.total, pageSize, sortBy, request, messages).body

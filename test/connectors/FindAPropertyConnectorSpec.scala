@@ -31,6 +31,7 @@ import org.mockito.ArgumentMatchers.any
 import org.scalatest.matchers.should.Matchers
 import mocks.MockAppConfig
 import org.scalatest.EitherValues
+import org.scalatest.concurrent.ScalaFutures
 
 
 

@@ -31,12 +31,14 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
 import views.html.UserNameView
+import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.Future
 
 class UserNameControllerSpec
   extends SpecBase
-    with MockitoSugar {
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
   private val formProvider = new UserNameFormProvider()
   private val form = formProvider()
@@ -45,7 +47,8 @@ class UserNameControllerSpec
 
   private val mockSessionRepository = mock[SessionRepository]
 
-  def beforeEach(): Unit = {
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
     reset(mockSessionRepository)
     when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
   }
@@ -126,6 +129,29 @@ class UserNameControllerSpec
         contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
 
         application.stop()
+      }
+
+      "must persist updated UserAnswers with the submitted value before redirecting" in {
+        val application = applicationWithAnswers(Some(emptyUserAnswers))
+
+        val request =
+          FakeRequest(POST, routes.UserNameController.onSubmit(NormalMode).url)
+            .withFormUrlEncodedBody("value" -> "John")
+            .withCSRFToken
+
+        val result = route(application, request).value
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual onwardRoute.url
+
+        val captor =
+          org.mockito.ArgumentCaptor.forClass(classOf[UserAnswers])
+        verify(mockSessionRepository, times(1)).set(captor.capture())
+
+        val savedAnswers = captor.getValue
+        savedAnswers.get(UserNamePage).value mustEqual "John"
+
+        application.stop()
+
       }
     }
   }
