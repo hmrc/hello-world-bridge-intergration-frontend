@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import connectors.BridgeIntegrationConnector
-//import controllers.routes.*
+import routes.*
 import models.UserAnswers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
