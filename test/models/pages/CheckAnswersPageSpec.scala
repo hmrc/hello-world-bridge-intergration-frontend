@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-package models.registration
+package models.pages
 
-import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import pages.CheckAnswersPage
+import play.api.libs.json.JsPath
 
-sealed trait AgentStatus extends EnumEntry
+class CheckAnswersPageSpec extends AnyWordSpec with Matchers {
 
-object AgentStatus extends Enum[AgentStatus] with PlayJsonEnum[AgentStatus] {
+  "CheckAnswersPage" should {
 
-  val values = findValues
+    "have the correct string representation" in {
+      CheckAnswersPage.toString shouldBe "checkYourAnswers"
+    }
 
-  case object Agent extends AgentStatus
-
-  case object Autonomous extends AgentStatus
-
+    "have the correct json path" in {
+      CheckAnswersPage.path shouldBe (JsPath \ "checkYourAnswers")
+    }
+  }
 }

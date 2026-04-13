@@ -20,7 +20,6 @@ import config.FrontendAppConfig
 import models.bridge.person.Persons
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
-import models.ratepayer.ExploreRatePayerResponse
 import models.registration.RegisterRatepayer
 import play.api.http.Status.*
 import play.api.i18n.Lang.logger

@@ -32,6 +32,21 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.http.client.HttpClientV2
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.core.read.ListAppender
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.slf4j.LoggerFactory
+
+import org.scalatest.Assertion
+
+import scala.jdk.CollectionConverters._
+import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
+
+import scala.concurrent.Future
 
 
 class BridgeIntegrationConnectorSpec extends MockHttpV2
@@ -44,9 +59,132 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
     .configure("bridgeIntegration" -> "http://localhost:1300")
     .build()
 
+  private def withLogCapture[T](test: ListAppender[ILoggingEvent] => Future[Assertion]): Future[Assertion] = {
+
+    import ch.qos.logback.classic.Level
+    val root =
+      LoggerFactory
+        .getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)
+        .asInstanceOf[ch.qos.logback.classic.Logger]
+
+    val originalLevel = root.getLevel
+    root.setLevel(Level.TRACE)
+
+    val appender = new ListAppender[ILoggingEvent]()
+    appender.start()
+    root.addAppender(appender)
+    try test(appender).andThen {
+      case _ =>root.detachAppender(appender)
+    }
+  }
+
   val connector: BridgeIntegrationConnector = app.injector.instanceOf[BridgeIntegrationConnector]
 
+  "Calling the private beta access endpoint" when {
+
+    "a valid and 'allowed'=true credId" should {
+      "return true" in {
+        val successResponse = HttpResponse(status = OK, json = Json.obj("allowed" -> true), headers = Map.empty)
+        setupMockHttpV2Get("http://localhost:1300/bridge-integration/allowed-in-private-beta/123456789567")(successResponse)
+
+        val result: Future[Boolean] = connector.isAllowedInPrivateBeta("123456789567")
+        result.futureValue mustBe true
+      }
+    }
+
+    "a valid and 'allowed'=false credId " should {
+      "return false" in {
+        val successResponse = HttpResponse(status = OK, json = Json.obj("allowed" -> false), headers = Map.empty)
+        setupMockHttpV2Get("http://localhost:1300/bridge-integration/allowed-in-private-beta/123456789567")(successResponse)
+
+        val result: Future[Boolean] = connector.isAllowedInPrivateBeta("123456789567")
+        result.futureValue mustBe false
+      }
+    }
+
+    "json missing 'allowed' filed" should {
+      "return false" in {
+        val successResponse = HttpResponse(status = OK, json = Json.obj(), headers = Map.empty)
+        setupMockHttpV2Get("http://localhost:1300/bridge-integration/allowed-in-private-beta/123456789567")(successResponse)
+
+        val result: Future[Boolean] = connector.isAllowedInPrivateBeta("123456789567")
+        result.futureValue mustBe false
+      }
+    }
+
+    "a 400-499 response is returned" should {
+      "return false" in {
+        val errorResponse = HttpResponse(status = NOT_FOUND, """CredId not found""", headers = Map.empty)
+        setupMockHttpV2Get("http://localhost:1300/bridge-integration/allowed-in-private-beta/123456789567")(errorResponse)
+
+        val result: Future[Boolean] = connector.isAllowedInPrivateBeta("123456789567")
+        result.futureValue mustBe false
+      }
+    }
+
+    "a 500-599 response is returned" should {
+      "return false" in {
+        val errorResponse = HttpResponse(status = INTERNAL_SERVER_ERROR, body = "Server error", headers = Map.empty)
+        setupMockHttpV2Get("http://localhost:1300/bridge-integration/allowed-in-private-beta/123456789567")(errorResponse)
+
+        val result: Future[Boolean] = connector.isAllowedInPrivateBeta("123456789567")
+        result.futureValue mustBe false
+      }
+    }
+  }
+
   "BridgeIntegrationConnector.registerRatePayer" should {
+
+    "Log warn when NOT_FOUND" in {
+      withLogCapture { logs =>
+        setupMockHttpV2Post(
+          "http://localhost:1300/bridge-integration/register-ratepayer/123456789567"
+        )(
+          HttpResponse(NOT_FOUND, Json.obj(), Map.empty)
+        )
+        connector.registerRatePayer(testRegistrationModel).map { result =>
+          result mustBe false
+
+          logs.list.asScala.exists { log =>
+            log.getLevel == Level.WARN
+          } mustBe true
+        }
+      }.futureValue
+    }
+
+    "Log when BAD_REQUEST" in {
+      withLogCapture { logs =>
+        setupMockHttpV2Post(
+          "http://localhost:1300/bridge-integration/register-ratepayer/123456789567"
+        )(
+          HttpResponse(BAD_REQUEST, Json.obj(), Map.empty)
+        )
+        connector.registerRatePayer(testRegistrationModel).map { result =>
+          result mustBe false
+
+          logs.list.asScala.exists { log =>
+            log.getLevel == Level.WARN
+          } mustBe true
+        }
+      }.futureValue
+    }
+
+    "Log when BAD_GATEWAY" in {
+      withLogCapture { logs =>
+        setupMockHttpV2Post(
+          "http://localhost:1300/bridge-integration/register-ratepayer/123456789567"
+        )(
+          HttpResponse(BAD_GATEWAY, Json.obj(), Map.empty)
+        )
+        connector.registerRatePayer(testRegistrationModel).map { result =>
+          result mustBe false
+
+          logs.list.asScala.exists { log =>
+            log.getLevel == Level.ERROR
+          } mustBe true
+        }
+      }.futureValue
+    }
 
     "return true when OK is returned" in {
       setupMockHttpV2Post(
@@ -1572,6 +1710,43 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
       val result = connector.exploreRatePayer()(hc).futureValue
       result mustBe None
+    }
+  }
+
+
+  "BridgeIntegrationConnector.getPropertiesForAssessmentJob" should {
+
+    "return None when NOT_FOUND (404) is returned" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/properties/123456789567/assessment/27399677001"
+      )(
+        None
+      )
+      connector.getPropertiesForAssessmentJob("123456789567", "27399677001").futureValue mustEqual None
+    }
+  }
+
+  "BridgeIntegrationConnector.getPropertiesForAssessment" should {
+
+    "return None when NOT_FOUND (404) is returned" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/ratepayer-properties/123456789567/assessment/27399677001"
+      )(
+        None
+      )
+      connector.getPropertiesForAssessment("123456789567", "27399677001").futureValue mustEqual None
+    }
+  }
+
+  "BridgeIntegrationConnector.getRatepayerPropertyLinks" should {
+
+    "return None when NOT_FOUND (404) is returned" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/property-link-job/123456789567/assessment/27399677001"
+      )(
+        None
+      )
+      connector.getRatepayerPropertyLinks("123456789567", "27399677001").futureValue mustEqual None
     }
   }
 }

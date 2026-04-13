@@ -18,7 +18,6 @@ package models.properties
 
 import models.bridge.property._
 import models.bridge.person._
-import models.bridge.common._
 import models.bridge.relationhship._
 import models.properties.RatepayerPropertyLinksResponse.*
 import play.api.libs.json.{JsValue, Json, OFormat}

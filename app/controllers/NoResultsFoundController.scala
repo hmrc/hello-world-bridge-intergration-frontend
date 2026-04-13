@@ -16,7 +16,6 @@
 
 package controllers
 
-import config.AppConfig
 import controllers.actions.IdentifierAction
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -29,7 +28,7 @@ import scala.concurrent.Future
 @Singleton
 class NoResultsFoundController @Inject()(noResultsFoundView: NoResultsFoundView,
                                          identify: IdentifierAction,
-                                         mcc: MessagesControllerComponents)(implicit appConfig: AppConfig)
+                                         mcc: MessagesControllerComponents)
   extends FrontendController(mcc) with I18nSupport {
   def onPageLoad: Action[AnyContent] =
     identify.async { implicit request =>

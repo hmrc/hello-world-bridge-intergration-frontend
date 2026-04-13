@@ -22,7 +22,6 @@ import controllers.routes
 import models.requests.IdentifierRequest
 import play.api.mvc.*
 import play.api.mvc.Results.*
-import repositories.SessionRepository
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}

@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.BridgeIntegrationConnector
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.actions.IdentifierAction
 import models.Status.Approved
 import models.dashboard.RatepayerStatusResponse
 import play.api.Logging
@@ -33,8 +33,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DashboardController  @Inject()(override val messagesApi: MessagesApi,
                                      identify: IdentifierAction,
-                                     getData: DataRetrievalAction,
-                                     requireData: DataRequiredAction,
                                      bridgeIntegrationConnector: BridgeIntegrationConnector,
                                      val controllerComponents: MessagesControllerComponents,
                                      view: DashboardView)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging{

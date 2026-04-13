@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-package models.registration
+package models.pages
 
-import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import pages.Page
+import play.api.libs.json.JsPath
 
-sealed trait AgentStatus extends EnumEntry
+class PageSpec extends AnyWordSpec with Matchers {
 
-object AgentStatus extends Enum[AgentStatus] with PlayJsonEnum[AgentStatus] {
+  "Page implicit toString conversion" should {
 
-  val values = findValues
+    "convert a Page to its string representation implicitly" in {
 
-  case object Agent extends AgentStatus
+      object TestPage extends Page {
+        override def toString: String = "testPage"
+      }
 
-  case object Autonomous extends AgentStatus
+      val pageAsString: String = TestPage
 
+      pageAsString shouldBe "testPage"
+    }
+  }
 }
