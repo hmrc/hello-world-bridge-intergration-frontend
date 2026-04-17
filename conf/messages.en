@@ -138,16 +138,6 @@ propertyResults.searchAgain = Search again
 
 propertyResults.sortBy.apply = Apply
 
-propertyResults.sortBy.label = Sort results by
-propertyResults.sortBy.addressAsc = Address (A to Z)
-propertyResults.sortBy.addressDesc = Address (Z to A)
-propertyResults.sortBy.referenceAsc = Reference (ascending)
-propertyResults.sortBy.referenceDesc = Reference (descending)
-propertyResults.sortBy.descriptionAsc = Description (A to Z)
-propertyResults.sortBy.descriptionDesc = Description (Z to A)
-propertyResults.sortBy.rateableAsc = Rateable value (low to high)
-propertyResults.sortBy.rateableDesc = Rateable value (high to low)
-
 propertyResults.details.summary = Help if you cannot find your property
 propertyResults.details.content.1 = Check the details you entered are correct.
 propertyResults.details.content.2 = You can try searching again using a different postcode or property name.
@@ -169,7 +159,26 @@ noResultsFound.search.link=Search again
 noResultsFound.returnHome.link=Return to account home
 
 #PropertiesForAssessment
-assessmentForProperties.title = Properties for Assessment
+assessmentProperties.title = Assessment properties
+assessmentProperties.heading = Assessment properties
+
+assessmentProperties.table.address = Address
+assessmentProperties.table.foreignId = Foreign ID
+assessmentProperties.table.laCode = Local authority code
+assessmentProperties.table.description = Description
+assessmentProperties.table.rateableValue = Rateable value
+
+#Sorting component
+results.sortBy.label = Sort results by
+results.sortBy.apply = Apply
+results.sortBy.addressAsc = Address (A to Z)
+results.sortBy.addressDesc = Address (Z to A)
+results.sortBy.referenceAsc = Reference (ascending)
+results.sortBy.referenceDesc = Reference (descending)
+results.sortBy.descriptionAsc = Description (A to Z)
+results.sortBy.descriptionDesc = Description (Z to A)
+results.sortBy.rateableAsc = Rateable value (low to high)
+results.sortBy.rateableDesc = Rateable value (high to low)
 
 
 #RatepayerPropertyLinks

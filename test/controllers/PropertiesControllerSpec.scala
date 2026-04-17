@@ -22,12 +22,12 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.Helpers.*
-import play.api.libs.json.Json
 import play.api.inject.bind
 import play.api.inject
 import play.api.test.CSRFTokenHelper.CSRFRequest
 import play.api.test.FakeRequest
 import views.html.PropertiesForAssessment
+import models.assessment.*
 
 import scala.concurrent.Future
 
@@ -47,25 +47,45 @@ class PropertiesControllerSpec
   private val credId = "123"
   private val assessmentId = "456"
 
-  "PropertiesController.getPropertiesForAssessment" - {
+  "PropertiesController.onPageLoad" - {
 
-    "must return OK and render the view when connector returns JSON" in {
+    "must return OK and render the view when connector returns data" in {
       val app = application
 
-      val json = Json.obj("foo" -> "bar")
+      val responseModel = AssessmentPropertiesResponse(
+        List(
+          AssessmentProperty(
+            address = "10 Test Street",
+            foreignId = "ABC123",
+            laCode = "E123",
+            description = "Shop",
+            rateableValue = 1000
+          )
+        )
+      )
 
       when(mockConnector.getPropertiesForAssessment(any(), any())(any()))
-        .thenReturn(Future.successful(json))
+        .thenReturn(Future.successful(responseModel))
 
       val request =
-        FakeRequest(GET, routes.PropertiesController.getPropertiesForAssessment(credId, assessmentId).url)
+        FakeRequest(GET, routes.PropertiesController.onPageLoad(credId, assessmentId).url)
           .withCSRFToken
 
       val result = route(app, request).value
       val view = app.injector.instanceOf[PropertiesForAssessment]
 
+      val expectedHtml = view(
+        AssessmentProperties(responseModel.properties),
+        currentPage = 1,
+        totalProperties = responseModel.properties.size,
+        pageSize = 100,
+        sortBy = "AddressASC",
+        credId = credId,
+        assessmentId = assessmentId
+      )(request, messages(app)).toString
+
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view(json)(request, messages(app)).toString
+      contentAsString(result) mustEqual expectedHtml
 
       app.stop()
     }
@@ -77,7 +97,7 @@ class PropertiesControllerSpec
         .thenReturn(Future.failed(new RuntimeException("test crash")))
 
       val request =
-        FakeRequest(GET, routes.PropertiesController.getPropertiesForAssessment(credId, assessmentId).url)
+        FakeRequest(GET, routes.PropertiesController.onPageLoad(credId, assessmentId).url)
           .withCSRFToken
 
       val result = route(app, request).value
@@ -88,4 +108,5 @@ class PropertiesControllerSpec
     }
   }
 }
+
 

@@ -15,13 +15,17 @@
  */
 
 package controllers
+
 import connectors.BridgeIntegrationConnector
 import controllers.actions.IdentifierAction
-import play.api.i18n.Lang.logger
+import models.assessment.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import service.AssessmentPropertiesSortingService
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import views.html.PropertiesForAssessment
+import play.api.libs.json.Json
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -31,23 +35,58 @@ class PropertiesController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       identify: IdentifierAction,
                                       connector: BridgeIntegrationConnector,
-                                      val controllerComponents: MessagesControllerComponents,
+                                      sorting: AssessmentPropertiesSortingService,
                                       view: PropertiesForAssessment,
+                                      mcc: MessagesControllerComponents
                                     )(implicit ec: ExecutionContext)
-  extends FrontendBaseController
+  extends FrontendController(mcc)
     with I18nSupport {
 
-  def getPropertiesForAssessment(credId: String, assessmentId: String): Action[AnyContent] =
+  val pageSize = 100
+
+  def onPageLoad(credId: String, assessmentId: String): Action[AnyContent] =
     identify.async { implicit request =>
-      connector.getPropertiesForAssessment(credId, assessmentId)
-        .map(json => Ok(view(json)))
-        .recover {
-          case ex =>
-            logger.error(s"Failed to fetch properties: ${ex.getMessage}", ex)
-            InternalServerError("Internal server error")
-        }
+      val page = request.getQueryString("page").map(_.toInt).getOrElse(1)
+      val sortBy = request.getQueryString("sortBy").getOrElse("AddressASC")
+
+      connector.getPropertiesForAssessment(credId, assessmentId).map { response =>
+
+        val sorted = sorting.sort(response.properties, sortBy)
+        val total = sorted.size
+        val from = (page - 1) * pageSize
+        val until = from + pageSize
+        val pageItems = sorted.slice(from, until)
+        
+        Ok(view(
+          AssessmentProperties(pageItems),
+          page,
+          total,
+          pageSize,
+          sortBy,
+          credId,
+          assessmentId
+        ))
+      }.recover {
+        case ex =>
+          InternalServerError(s"Failed to load assessment properties: ${ex.getMessage}")
+      }
     }
 
+
+
+  def sort(credId: String, assessmentId: String): Action[AnyContent] =
+    identify { implicit request =>
+      val sortBy =
+        request.body.asFormUrlEncoded
+          .flatMap(_.get("sortBy").flatMap(_.headOption))
+          .getOrElse("AddressASC")
+
+      Redirect(
+        routes.PropertiesController
+          .onPageLoad(credId, assessmentId)
+          .url + s"?page=1&sortBy=$sortBy"
+      )
+    }
 }
 
 

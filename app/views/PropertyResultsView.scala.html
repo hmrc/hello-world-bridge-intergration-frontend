@@ -15,12 +15,13 @@
  *@
 
 @import uk.gov.hmrc.govukfrontend.views.html.components._
-@import views.html.components._
+@import views.html.components.Link
 @import models.properties.{VMVProperties, VMVProperty}
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.FormGroup
 
 @this(
         layout: templates.Layout,
+        sortingComponent: views.html.components.Sorting,
         govukTable: GovukTable,
         govukSelect: GovukSelect,
         govukPagination: GovukPagination,
@@ -91,31 +92,7 @@
                     action = controllers.routes.PropertyResultsController.onPageLoad(currentPage, sortBy),
                     Symbol("autoComplete") -> "off"
                 ) {
-
-                @govukSelect(
-                    Select(
-                        id = "sortBy",
-                        name = "sortBy",
-                        label = Label(content = Text(messages("propertyResults.sortBy.label"))),
-                        items = Seq(
-                            SelectItem(Some("AddressASC"), messages("propertyResults.sortBy.addressAsc"), selected = sortBy == "AddressASC"),
-                            SelectItem(Some("AddressDESC"), messages("propertyResults.sortBy.addressDesc"), selected = sortBy == "AddressDESC"),
-                            SelectItem(Some("ReferenceASC"), messages("propertyResults.sortBy.referenceAsc"), selected = sortBy == "ReferenceASC"),
-                            SelectItem(Some("ReferenceDESC"), messages("propertyResults.sortBy.referenceDesc"), selected = sortBy == "ReferenceDESC"),
-                            SelectItem(Some("DescriptionASC"), messages("propertyResults.sortBy.descriptionAsc"), selected = sortBy == "DescriptionASC"),
-                            SelectItem(Some("DescriptionDESC"), messages("propertyResults.sortBy.descriptionDesc"), selected = sortBy == "DescriptionDESC"),
-                            SelectItem(Some("RateableValueASC"), messages("propertyResults.sortBy.rateableAsc"), selected = sortBy == "RateableValueASC"),
-                            SelectItem(Some("RateableValueDESC"), messages("propertyResults.sortBy.rateableDesc"), selected = sortBy == "RateableValueDESC")
-                        ),
-                        formGroup = FormGroup(classes = Some("govuk-!-margin-bottom-6"))
-                    )
-                )
-                    @govukButton(
-                        Button(
-                            content = Text(messages("propertyResults.sortBy.apply")),
-                            inputType = Some("submit")
-                        )
-                    )
+        @sortingComponent(sortBy, controllers.routes.PropertyResultsController.onPageLoad(currentPage, sortBy))
                 }
 
                 @defining(
@@ -158,7 +135,6 @@
                         )
                     )
                 }
-
                 @govukPagination(
                     Pagination(
                         items = Some(
