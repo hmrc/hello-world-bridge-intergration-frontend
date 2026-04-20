@@ -62,7 +62,7 @@ class CheckYourAnswersControllerSpec
           .set(ContactNumberPage, "07943009607").success.value
 
         val application = applicationWithAnswers(Some(answers))
-        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.CheckYourAnswersRegisterUserController.onPageLoad().url)
           .withCSRFToken
 
         val result = route(application, request).value
@@ -70,7 +70,7 @@ class CheckYourAnswersControllerSpec
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          service.CheckAnswers.createSummaryRows(answers)(messages(application))
+          service.CheckAnswers.createRegistrationSummaryRows(answers)(messages(application))
         )(request, messages(application)).toString
 
         application.stop()
@@ -92,7 +92,7 @@ class CheckYourAnswersControllerSpec
           .thenReturn(Future.successful(Some(answers)))
 
         val app = applicationWithAnswers(Some(answers))
-        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+        val request = FakeRequest(POST, routes.CheckYourAnswersRegisterUserController.onSubmit().url)
           .withCSRFToken
 
         val result = route(app, request).value
@@ -110,7 +110,7 @@ class CheckYourAnswersControllerSpec
 
         val app = applicationWithAnswers(Some(emptyUserAnswers))
 
-        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+        val request = FakeRequest(POST, routes.CheckYourAnswersRegisterUserController.onSubmit().url)
           .withCSRFToken
 
         val result = route(app, request).value
@@ -131,7 +131,7 @@ class CheckYourAnswersControllerSpec
           .thenReturn(Future.successful(Some(answers)))
 
         val app = applicationWithAnswers(Some(answers))
-        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+        val request = FakeRequest(POST, routes.CheckYourAnswersRegisterUserController.onSubmit().url)
           .withCSRFToken
 
         val result = route(app, request).value

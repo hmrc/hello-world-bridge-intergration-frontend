@@ -174,3 +174,31 @@ assessmentForProperties.title = Properties for Assessment
 
 #RatepayerPropertyLinks
 ratepayerPropertyLinks.title = Ratepayer Property Links
+
+checkAnswers.property.id = Property Id
+checkAnswers.property.idx = Property IDX
+checkAnswers.property.label = Property label
+checkAnswers.property.origination = property origination
+checkAnswers.property.category.code = property category code
+checkAnswers.property.category.meaning = property category meaning
+checkAnswers.property.type.code = property type code
+checkAnswers.property.type.meaning = property type meaning
+checkAnswers.property.class.code = property class code
+checkAnswers.property.class.meaning = property class meaning
+
+checkAnswers.relationship.id = Relationship id
+checkAnswers.relationship.idx = Relationship idx
+
+
+
+checkAnswers.manifestation.artifactReference = Artifact reference
+checkAnswers.manifestation.artifactCode = Artifact code
+checkAnswers.manifestation.artifactDescription = Description
+checkAnswers.manifestation.issuedDate = Issued date
+checkAnswers.manifestation.withdrawnDate = Withdrawn date
+checkAnswers.manifestation.effectiveFrom = Effective from
+checkAnswers.manifestation.effectiveTo = Effective to
+checkAnswers.manifestation.observedDate = Observed date
+checkAnswers.manifestation.operativeArea = Operative area
+checkAnswers.manifestation.protodataPtr = Protodata pointer
+checkAnswers.manifestation.notes = Notes

@@ -145,12 +145,12 @@ class RelationshipModelsSpec extends AnyWordSpec with Matchers {
       )
 
       val relationship = Relationship(
-        id = 999,
+        id = Some(999),
         idx = "REL1",
         name = "Relationship Name",
         label = "Label",
         description = "A relationship",
-        origination = "2020",
+        origination = Some("2020"),
         termination = Some("2030"),
         category = CodeMeaning(Some("CAT"), Some("Category")),
         `type` = CodeMeaning(Some("TYPE"), Some("Type")),

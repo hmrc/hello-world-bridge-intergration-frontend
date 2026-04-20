@@ -19,6 +19,8 @@ package controllers
 import connectors.BridgeIntegrationConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import forms.ContactNumberFormProvider
+import models.viewModels.Relationship.RelationshipSummaryList
+import models.viewModels.person.PersonSummaryList
 import models.viewModels.property.PropertySummaryList
 import navigation.Navigator
 import play.api.Logging
@@ -43,7 +45,12 @@ class ViewLinkedPropertiesController @Inject()(
                                                 val controllerComponents: MessagesControllerComponents,
                                                 bridgeIntegrationConnector: BridgeIntegrationConnector,
                                                 view: ViewLinkedPropertiesView
-                                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging with PropertySummaryList {
+                                              )(implicit ec: ExecutionContext) extends FrontendBaseController
+  with I18nSupport
+  with Logging
+  with PropertySummaryList
+  with PersonSummaryList
+  with RelationshipSummaryList {
 
   def onPageLoad(): Action[AnyContent] = identify.async {
     implicit request =>
