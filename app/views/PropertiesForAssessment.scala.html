@@ -14,17 +14,80 @@
  * limitations under the License.
  *@
 
-@import play.api.libs.json.JsValue
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import models.assessment.AssessmentProperties
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.FormGroup
+@import views.html.components._
 
-@this(layout: templates.Layout)
-@(json: JsValue)(implicit request: Request[_], messages: Messages)
+@this(
+        layout: templates.Layout,
+        sortingComponent: views.html.components.Sorting,
+        paginationComponent: views.html.components.Pagination,
+        govukTable: GovukTable,
+        govukSelect: GovukSelect,
+        linkComponent: Link,
+        govukButton: GovukButton,
+        govukDetails: GovukDetails
+)
 
-@layout(
-    pageTitle = messages("assessmentForProperties.title")) {
+@(model: AssessmentProperties,
+        currentPage: Int,
+        totalProperties: Int,
+        pageSize: Int,
+        sortBy: String,
+        credId:String,
+        assessmentId: String
+)(implicit request: Request[_], messages: Messages)
 
-    <h1 class="govuk-heading-l">@messages("assessmentForProperties.title")</h1>
+@defining(Math.ceil(totalProperties.toDouble / pageSize).toInt) { totalPages =>
 
-    <p class="govuk-body">@json
-    </p>
+    @layout(
+        pageTitle = messages("assessmentProperties.title"),
+        fullWidth = true
+    ) {
 
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+
+                <h1 class="govuk-heading-l">
+                @messages("assessmentProperties.heading", totalProperties)
+                </h1>
+
+                @helper.form(
+                    action = controllers.routes.PropertiesController.onPageLoad(
+                        request.path.split("/").last,
+                        sortBy
+                    ),
+                    Symbol("autoComplete") -> "off"
+                ) {
+                    @sortingComponent(sortBy, controllers.routes.PropertiesController.onPageLoad(credId, assessmentId))
+                }
+
+                @govukTable(
+                    Table(
+                        head = Some(Seq(
+                            HeadCell(Text(messages("assessmentProperties.table.address"))),
+                            HeadCell(Text(messages("assessmentProperties.table.foreignId"))),
+                            HeadCell(Text(messages("assessmentProperties.table.laCode"))),
+                            HeadCell(Text(messages("assessmentProperties.table.description"))),
+                            HeadCell(Text(messages("assessmentProperties.table.rateableValue")))
+                        )),
+                        rows = model.properties.map { p =>
+                            Seq(
+                                TableRow(Text(p.address)),
+                                TableRow(Text(p.foreignId)),
+                                TableRow(Text(p.laCode)),
+                                TableRow(Text(p.description)),
+                                TableRow(Text(p.rateableValue.toString))
+                            )
+                        }
+                    )
+                )
+
+                @paginationComponent(currentPage, totalPages, controllers.routes.PropertiesController.onPageLoad(credId, assessmentId).url, sortBy)
+
+            </div>
+        </div>
+
+    }
 }

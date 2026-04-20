@@ -44,7 +44,8 @@ GET         /property-results/select/:index                                     
 
 GET         /no-results                                                             controllers.NoResultsFoundController.onPageLoad
 
-GET         /ratepayer-properties/:credId/assessment/:assessmentId                  controllers.PropertiesController.getPropertiesForAssessment(credId: String, assessmentId: String)
+GET         /ratepayer-properties/:credId/assessment/:assessmentId                  controllers.PropertiesController.onPageLoad(credId: String, assessmentId: String)
+POST        /ratepayer-properties/:credId/assessment/:assessmentId                  controllers.PropertiesController.sort(credId, assessmentId)
 
 GET         /ratepayer-property-links/:credId/assessment/:assessmentId              controllers.RatepayerPropertyLinksController.getRatepayerPropertyLinks(credId: String, assessmentId: String)
 
