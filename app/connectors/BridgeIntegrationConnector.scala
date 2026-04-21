@@ -20,13 +20,14 @@ import config.FrontendAppConfig
 import models.bridge.person.Persons
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
+import models.assessment.AssessmentPropertiesResponse
 import models.registration.RegisterRatepayer
 import play.api.http.Status.*
 import play.api.i18n.Lang.logger
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 import play.api.libs.ws.writeableOf_JsValue
 
 import java.net.URI
@@ -101,7 +102,7 @@ class BridgeIntegrationConnector @Inject()(
   }
 
   def exploreRatePayer(credId: String = "123456789567")
-                  (implicit hc: HeaderCarrier): Future[Option[Persons]] = {
+                      (implicit hc: HeaderCarrier): Future[Option[Persons]] = {
     val url = uri(s"explore-ratepayer/$credId").toURL
     http.get(url)
       .execute[Option[Persons]]
@@ -111,7 +112,6 @@ class BridgeIntegrationConnector @Inject()(
           None
       }
   }
-
 
 
   def getProperties(implicit hc: HeaderCarrier): Future[Option[RatepayerPropertyLinksResponse]] = {
@@ -154,18 +154,18 @@ class BridgeIntegrationConnector @Inject()(
   def getPropertiesForAssessment(
                                   credId: String,
                                   assessmentId: String
-                                )(implicit hc: HeaderCarrier): Future[JsValue] = {
+                                )(implicit hc: HeaderCarrier): Future[AssessmentPropertiesResponse] = {
 
     val url = uri(s"ratepayer-properties/$credId/assessment/$assessmentId").toURL
 
     http.get(url)
-      .execute[JsValue]
+      .execute[AssessmentPropertiesResponse]
       .recover {
         case ex =>
           logger.warn(
             s"Failed to retrieve properties for credId=$credId assessment=$assessmentId: ${ex.getMessage}"
           )
-          Json.obj("error" -> "Unable to fetch properties")
+          throw ex
       }
   }
 
