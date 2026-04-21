@@ -58,16 +58,16 @@ object Transportation {
 
 case class Persistence(
                         place: String,
-                        identifier: String
+                        identifier: Option[String]
                       )
 
 object Persistence {
 
   implicit val reads: Reads[Persistence] = (
     (JsPath \ "place").read[String] and
-      (JsPath \ "identifier").read[String].orElse(
-        (JsPath \ "identifier").read[Int].map(_.toString)
-      )
+      (JsPath \ "identifier")
+        .readNullable[String]
+        .orElse((JsPath \ "identifier").readNullable[String])
     )(Persistence.apply _)
 
   implicit val writes: OWrites[Persistence] = OWrites { data =>

@@ -16,8 +16,7 @@
 
 package service
 
-
-import models.UserAnswers
+import models.{RichJsObject, UserAnswers}
 import models.bridge.relationhship.Relationship
 import pages.QuestionPage
 import pages.relationship.*
@@ -27,7 +26,7 @@ import play.api.libs.json.*
 class PropertyLinksUserAnswersService extends Logging {
 
   // ====================================================
-  // Populate UserAnswers from Relationship (unchanged)
+  // Populate UserAnswers from Relationship
   // ====================================================
 
   private def setIfEmpty[A](
@@ -53,118 +52,107 @@ class PropertyLinksUserAnswersService extends Logging {
                               ): UserAnswers = {
 
     val updates: List[UserAnswers => UserAnswers] = List(
-      ua => setIfEmpty(ua, RelationshipIdPage,               relationship.id),
-      ua => setIfEmpty(ua, RelationshipIdxPage,              Some(relationship.idx)),
-      ua => setIfEmpty(ua, RelationshipNamePage,             Some(relationship.name)),
-      ua => setIfEmpty(ua, RelationshipLabelPage,            Some(relationship.label)),
-      ua => setIfEmpty(ua, RelationshipDescriptionPage,      Some(relationship.description)),
-      ua => setIfEmpty(ua, RelationshipOriginationPage,      relationship.origination),
-      ua => setIfEmpty(ua, RelationshipTerminationPage,      relationship.termination),
-      ua => setIfEmpty(ua, RelationshipCategoryCodePage,     relationship.category.code),
-      ua => setIfEmpty(ua, RelationshipCategoryMeaningPage,  relationship.category.meaning),
-      ua => setIfEmpty(ua, RelationshipTypeCodePage,         relationship.`type`.code),
-      ua => setIfEmpty(ua, RelationshipTypeMeaningPage,      relationship.`type`.meaning),
-      ua => setIfEmpty(ua, RelationshipClassCodePage,        relationship.`class`.code),
-      ua => setIfEmpty(ua, RelationshipClassMeaningPage,     relationship.`class`.meaning)
+      ua => setIfEmpty(ua, RelationshipIdPage,              relationship.id),
+      ua => setIfEmpty(ua, RelationshipIdxPage,             Some(relationship.idx)),
+      ua => setIfEmpty(ua, RelationshipNamePage,            Some(relationship.name)),
+      ua => setIfEmpty(ua, RelationshipLabelPage,           Some(relationship.label)),
+      ua => setIfEmpty(ua, RelationshipDescriptionPage,     Some(relationship.description)),
+      ua => setIfEmpty(ua, RelationshipOriginationPage,     relationship.origination),
+      ua => setIfEmpty(ua, RelationshipTerminationPage,     relationship.termination),
+      ua => setIfEmpty(ua, RelationshipCategoryCodePage,    relationship.category.code),
+      ua => setIfEmpty(ua, RelationshipCategoryMeaningPage, relationship.category.meaning),
+      ua => setIfEmpty(ua, RelationshipTypeCodePage,        relationship.`type`.code),
+      ua => setIfEmpty(ua, RelationshipTypeMeaningPage,     relationship.`type`.meaning),
+      ua => setIfEmpty(ua, RelationshipClassCodePage,       relationship.`class`.code),
+      ua => setIfEmpty(ua, RelationshipClassMeaningPage,    relationship.`class`.meaning)
     )
 
     updates.foldLeft(existingAnswers)((ua, f) => f(ua))
   }
 
   // ====================================================
-  // Build PATCH JSON from UserAnswers
+  // Safe JSON Overrides (DATA ONLY)
   // ====================================================
 
-  private def answersToPatch(ua: UserAnswers): JsObject = {
+  private def overrideString(
+                              json: JsObject,
+                              page: QuestionPage[String],
+                              path: JsPath,
+                              answers: UserAnswers
+                            ): JsObject =
+    answers.get(page) match {
+      case Some(value) =>
+        json.setObject(path, JsString(value)).getOrElse(json)
+      case None =>
+        json
+    }
 
-    val flatFields =
-      Seq(
-        "label"       -> ua.get(RelationshipLabelPage),
-        "description" -> ua.get(RelationshipDescriptionPage),
-        "name"        -> ua.get(RelationshipNamePage),
-        "idx"         -> ua.get(RelationshipIdxPage)
-      ).collect {
-        case (k, Some(v)) => k -> JsString(v)
-      }
+  private def mergeRelationshipData(
+                                     data: JsObject,
+                                     answers: UserAnswers
+                                   ): JsObject = {
 
-    val categoryPatch =
-      for {
-        code    <- ua.get(RelationshipCategoryCodePage)
-        meaning <- ua.get(RelationshipCategoryMeaningPage)
-      } yield Json.obj(
-        "category" -> Json.obj(
-          "code"    -> code,
-          "meaning" -> meaning
-        )
-      )
+    var updated = data
 
-    val typePatch =
-      for {
-        code    <- ua.get(RelationshipTypeCodePage)
-        meaning <- ua.get(RelationshipTypeMeaningPage)
-      } yield Json.obj(
-        "type" -> Json.obj(
-          "code"    -> code,
-          "meaning" -> meaning
-        )
-      )
+    updated = overrideString(updated, RelationshipLabelPage,       __ \ "label", answers)
+    updated = overrideString(updated, RelationshipDescriptionPage, __ \ "description", answers)
+    updated = overrideString(updated, RelationshipNamePage,        __ \ "name", answers)
 
-    val classPatch =
-      for {
-        code    <- ua.get(RelationshipClassCodePage)
-        meaning <- ua.get(RelationshipClassMeaningPage)
-      } yield Json.obj(
-        "class" -> Json.obj(
-          "code"    -> code,
-          "meaning" -> meaning
-        )
-      )
+    updated = overrideString(updated, RelationshipCategoryCodePage,    __ \ "category" \ "code", answers)
+    updated = overrideString(updated, RelationshipCategoryMeaningPage, __ \ "category" \ "meaning", answers)
 
-    Seq(
-      JsObject(flatFields),
-      categoryPatch.getOrElse(Json.obj()),
-      typePatch.getOrElse(Json.obj()),
-      classPatch.getOrElse(Json.obj())
-    ).foldLeft(Json.obj())(_ deepMerge _)
+    updated
   }
 
   // ====================================================
-  // ✅ MERGE USER ANSWERS INTO RELATIONSHIP JSON (FIXED)
+  // Item Update (data only)
   // ====================================================
 
-  /**
-   * Merges UserAnswers into the ORIGINAL Relationship JSON.
-   *
-   * IMPORTANT:
-   *  - originalJson MUST be a valid Relationship
-   *  - This method guarantees mandatory fields stay intact
-   *  - Property JSON will be rejected early
-   */
+  private def updateItems(
+                           compartment: JsObject,
+                           answers: UserAnswers
+                         ): JsArray =
+    JsArray(
+      (compartment \ "items").as[JsArray].value.map {
+        case item: JsObject =>
+          val data = (item \ "data").asOpt[JsObject].getOrElse(Json.obj())
+          item + ("data" -> mergeRelationshipData(data, answers))
+        case other => other
+      }
+    )
+
+  // ====================================================
+  // Merge UserAnswers into ORIGINAL Bridge JSON
+  // ====================================================
+
   def mergeIntoOriginalJson(
                              originalJson: JsValue,
-                             ua: UserAnswers
-                           ): JsObject =
+                             answers: UserAnswers
+                           ): JsValue = originalJson match {
 
-    originalJson match {
+    case root: JsObject =>
 
-      // ✅ Valid Relationship JSON
-      case relationship: JsObject
-        if (relationship \ "data" \ "manifestations").isDefined =>
+      val updatedRelationships =
+        (root \ "job" \ "compartments" \ "relationships").asOpt[JsArray]
+          .map { compartments =>
+            JsArray(
+              compartments.value.map {
+                case compartment: JsObject =>
+                  compartment + ("items" -> updateItems(compartment, answers))
+                case other => other
+              }
+            )
+          }
 
-        relationship.deepMerge(answersToPatch(ua))
+      updatedRelationships
+        .map { rels =>
+          root.setObject(
+            __ \ "job" \ "compartments" \ "relationships",
+            rels
+          ).getOrElse(root)
+        }
+        .getOrElse(root)
 
-      // ❌ Property JSON mistakenly passed in
-      case obj: JsObject
-        if (obj \ "data" \ "assessments").isDefined =>
-
-        throw new IllegalStateException(
-          "Property JSON supplied where Relationship JSON was required"
-        )
-
-      // ❌ Anything else
-      case other =>
-        throw new IllegalStateException(
-          s"Invalid JSON supplied to mergeIntoOriginalJson: ${Json.prettyPrint(other)}"
-        )
-    }
+    case _ => originalJson
+  }
 }
