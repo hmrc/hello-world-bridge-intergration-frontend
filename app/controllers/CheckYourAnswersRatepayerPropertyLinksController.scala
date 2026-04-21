@@ -119,7 +119,7 @@ class CheckYourAnswersRatepayerPropertyLinksController @Inject()(
         ),
         persistence = Persistence(
           place = "LTX-DOM-AST",
-          identifier = "13"
+          identifier = Some("13")
         )
       ),
       RelationshipItem(
@@ -128,7 +128,7 @@ class CheckYourAnswersRatepayerPropertyLinksController @Inject()(
         ),
         persistence = Persistence(
           place = "LTX-DOM-PSA",
-          identifier = "13"
+          identifier = Some("13")
         )
       )
     )
@@ -179,7 +179,7 @@ class CheckYourAnswersRatepayerPropertyLinksController @Inject()(
     val outboundJson = {
       propertyLinksUserAnswersService.mergeIntoOriginalJson(
         originalJson = originalJson,
-        ua = answers
+        answers =  answers
       )
     }
 
