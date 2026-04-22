@@ -49,10 +49,6 @@ class CheckYourAnswersPropertyAssessmentController @Inject()(
   extends FrontendBaseController
     with I18nSupport with Logging{
 
-  // =========================================================
-  // GET – Check Your Answers
-  // =========================================================
-
   def onPageLoad(): Action[AnyContent] =
     (identify andThen getData).async { implicit request =>
       val baseAnswers: UserAnswers =
@@ -112,11 +108,14 @@ class CheckYourAnswersPropertyAssessmentController @Inject()(
                           answers: UserAnswers
                         )(implicit request: Request[AnyContent]): Future[Result] = {
 
-    val outboundJson =
+    val outboundJson: JsValue = {
       propertyAssessmentUserAnswersService.mergeIntoOriginalJson(
         originalJson = originalJson,
         answers = answers
       )
+    }
+
+    println(Console.CYAN_B + s"Sending Assesment: $outboundJson" + Console.RESET)
 
     connector.changePropertyAssessment(outboundJson).map {
       case true =>
@@ -151,7 +150,8 @@ class CheckYourAnswersPropertyAssessmentController @Inject()(
                 "Original property assessment JSON missing from UserAnswers"
               )
             }
-
+            
+          
         submitData(
           userId = request.userId,
           originalJson = originalJson,

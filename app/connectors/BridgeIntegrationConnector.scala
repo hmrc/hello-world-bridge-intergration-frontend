@@ -17,7 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.bridge.property.{PropertyAssessment, PropertyAssessmentContext}
+import models.bridge.property.*
 import models.bridge.relationhship.Relationship
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
@@ -94,7 +94,7 @@ class BridgeIntegrationConnector @Inject()(
 
     http
       .post(uri(s"property-assessment/123456789567/assessment/27399677000").toURL)
-      .withBody(payload) // ✅ already JSON in correct shape
+      .withBody(payload)
       .execute[HttpResponse]
       .map { response =>
         response.status match {

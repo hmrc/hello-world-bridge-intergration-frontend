@@ -55,17 +55,19 @@ object LocationData {
   }
 }
 
-
-// =======================================================
-// Facility / Artifact Value Structures
-// =======================================================
-
 case class SourceValue(
                         source: Option[String],
                         value: Option[String]
                       )
 object SourceValue {
-  implicit val format: OFormat[SourceValue] = Json.format[SourceValue]
+  implicit val reads: Reads[SourceValue] = Json.reads[SourceValue]
+
+  implicit val writes: OWrites[SourceValue] = OWrites { data =>
+    Json.obj(
+      "source" -> data.source.map(JsString.apply).getOrElse(JsNull),
+      "value" -> data.value.map(JsString.apply).getOrElse(JsNull)
+    )
+  }
 }
 
 case class QuantitySourceValue(
@@ -73,7 +75,25 @@ case class QuantitySourceValue(
                                 value: Long
                               )
 object QuantitySourceValue {
-  implicit val format: OFormat[QuantitySourceValue] = Json.format[QuantitySourceValue]
+  implicit val reads: Reads[QuantitySourceValue] = Json.reads[QuantitySourceValue]
+
+  implicit val writes: OWrites[QuantitySourceValue] = OWrites { data =>
+    Json.obj(
+      "source" -> data.source.map(JsString.apply).getOrElse(JsNull),
+      "value" -> data.value
+    )
+  }
+}
+
+case class ArtifactRecord(
+                           activity: SourceValue,
+                           code: SourceValue,
+                           description: SourceValue,
+                           quantity: QuantitySourceValue,
+                           units: SourceValue
+                         )
+object ArtifactRecord {
+  implicit val format: OFormat[ArtifactRecord] = Json.format[ArtifactRecord]
 }
 
 case class FacilityRecord(
@@ -87,46 +107,20 @@ object FacilityRecord {
   implicit val format: OFormat[FacilityRecord] = Json.format[FacilityRecord]
 }
 
-
-// =======================================================
-// ArtifactRecord (same shape as FacilityRecord)
-// =======================================================
-
-case class ArtifactRecord(
-                           activity: SourceValue,
-                           code: SourceValue,
-                           description: SourceValue,
-                           quantity: QuantitySourceValue,
-                           units: SourceValue
-                         )
-object ArtifactRecord {
-  implicit val format: OFormat[ArtifactRecord] = Json.format[ArtifactRecord]
+case class SurveyData(
+                       artifacts: List[ArtifactRecord],
+                       attributions: List[JsObject],
+                       constructions: List[JsObject],
+                       facilities: List[FacilityRecord],
+                       foreign_ids: List[ForeignId],
+                       foreign_labels: List[ForeignId],
+                       foreign_names: List[ForeignId],
+                       uninheritances: List[JsObject],
+                       uses: List[JsObject]
+                     )
+object SurveyData {
+  implicit val format: OFormat[SurveyData] = Json.format[SurveyData]
 }
-
-
-// =======================================================
-// SurveyLevelItemData (STRICT A1 representation of data:{...})
-// =======================================================
-
-case class SurveyLevelItemData(
-                                foreign_ids: List[ForeignId],
-                                foreign_names: List[ForeignId],
-                                foreign_labels: List[ForeignId],
-                                uses: List[JsObject],            // empty lists in your JSON
-                                constructions: List[JsObject],   // empty lists in your JSON
-                                facilities: List[FacilityRecord],
-                                artifacts: List[ArtifactRecord],
-                                uninheritances: List[JsObject],
-                                attributions: List[JsObject]
-                              )
-object SurveyLevelItemData {
-  implicit val format: OFormat[SurveyLevelItemData] = Json.format[SurveyLevelItemData]
-}
-
-
-// =======================================================
-// SurveyLevelItem (recursive items[] structure)
-// =======================================================
 
 case class SurveyLevelItem(
                             id: Long,
@@ -134,26 +128,98 @@ case class SurveyLevelItem(
                             name: Option[String],
                             label: String,
                             description: Option[String],
-                            origination: String,
+                            origination: Option[String],
                             termination: Option[String],
                             category: CodeMeaning,
                             `type`: CodeMeaning,
                             `class`: CodeMeaning,
-                            data: SurveyLevelItemData,
+                            data: SurveyData,
                             protodata: List[ProtoData],
                             metadata: Metadata,
                             compartments: Map[String, String],
-                            items: List[SurveyLevelItem]     // recursive
+                            items: List[SurveyLevelItem]
                           )
 object SurveyLevelItem {
   implicit val reads: Reads[SurveyLevelItem] = Json.reads[SurveyLevelItem]
-  implicit val writes: OWrites[SurveyLevelItem] = Json.writes[SurveyLevelItem]
-  implicit val format: OFormat[SurveyLevelItem] = OFormat(reads, writes)
+
+  implicit val writes: OWrites[SurveyLevelItem] = OWrites { data =>
+    Json.obj(
+      "id" -> data.id,
+      "idx" -> data.idx,
+      "name" -> data.name.map(JsString.apply).getOrElse(JsNull),
+      "label" -> data.label,
+      "description" -> data.description.map(JsString.apply).getOrElse(JsNull),
+      "origination" -> data.origination.map(JsString.apply).getOrElse(JsNull),
+      "termination" -> data.termination.map(JsString.apply).getOrElse(JsNull),
+      "category" -> data.category,
+      "type" -> data.`type` ,
+      "class" -> data.`class`,
+      "data" -> data.data,
+      "protodata" -> data.protodata,
+      "metadata" -> data.metadata,
+      "compartments" -> data.compartments,
+      "items" -> data.items,
+    )
+  }
 }
 
+// =======================================================
+// Valuation Survey (KEY FIX)
+// =======================================================
+
+case class ValuationSurveyData(
+                                foreign_ids: List[ForeignId],
+                                foreign_labels: List[ForeignId],
+                                foreign_names: List[ForeignId],
+                                survey: SurveyLevelItem
+                              )
+object ValuationSurveyData {
+  implicit val format: OFormat[ValuationSurveyData] = Json.format[ValuationSurveyData]
+}
+
+case class ValuationSurvey(
+                            id: Long,
+                            idx: String,
+                            name: Option[String],
+                            label: String,
+                            description: Option[String],
+                            origination: Option[String],
+                            termination: Option[String],
+                            category: CodeMeaning,
+                            `type`: CodeMeaning,
+                            `class`: CodeMeaning,
+                            data: ValuationSurveyData,
+                            protodata: List[ProtoData],
+                            metadata: Metadata,
+                            compartments: Map[String, String],
+                            items: List[SurveyLevelItem]
+                          )
+object ValuationSurvey {
+  implicit val reads: Reads[ValuationSurvey] = Json.reads[ValuationSurvey]
+
+  implicit val writes: OWrites[ValuationSurvey] = OWrites { data =>
+    Json.obj(
+      "id" -> data.id,
+      "idx" -> data.idx,
+      "name" -> data.name.map(JsString.apply).getOrElse(JsNull),
+      "label" -> data.label,
+      "description" -> data.description.map(JsString.apply).getOrElse(JsNull),
+      "origination" -> data.origination.map(JsString.apply).getOrElse(JsNull),
+      "termination" -> data.termination.map(JsString.apply).getOrElse(JsNull),
+      "category" -> data.category,
+      "type" -> data.`type` ,
+      "class" -> data.`class`,
+      "data" -> data.data,
+      "protodata" -> data.protodata,
+      "metadata" -> data.metadata,
+      "compartments" -> data.compartments,
+      "items" -> data.items,
+    )
+  }
+}
 
 // =======================================================
-// PropertyAssessment Models
+// Property Assessment
 // =======================================================
 
 case class PropertyReference(
@@ -170,7 +236,15 @@ case class PropertyUse(
                         use_description: Option[String]
                       )
 object PropertyUse {
-  implicit val format: OFormat[PropertyUse] = Json.format[PropertyUse]
+  implicit val reads: Reads[PropertyUse] = Json.reads[PropertyUse]
+
+  implicit val writes: OWrites[PropertyUse] = OWrites { data =>
+    Json.obj(
+      "is_composite" -> data.is_composite.map(JsString.apply).getOrElse(JsNull),
+      "is_part_exempt" -> data.is_part_exempt.map(JsString.apply).getOrElse(JsNull),
+      "use_description" -> data.use_description.map(JsString.apply).getOrElse(JsNull)
+    )
+  }
 }
 
 case class ValuationData(
@@ -179,7 +253,15 @@ case class ValuationData(
                           valuation_effective_date: Option[String]
                         )
 object ValuationData {
-  implicit val format: OFormat[ValuationData] = Json.format[ValuationData]
+  implicit val reads: Reads[ValuationData] = Json.reads[ValuationData]
+
+  implicit val writes: OWrites[ValuationData] = OWrites { data =>
+    Json.obj(
+      "valuation_method_code" -> data.valuation_method_code.map(JsString.apply).getOrElse(JsNull),
+      "valuation_rateable" -> data.valuation_rateable.map(JsNumber(_)).getOrElse(JsNull),
+      "valuation_effective_date" -> data.valuation_effective_date.map(JsString.apply).getOrElse(JsNull)
+    )
+  }
 }
 
 case class ListData(
@@ -189,14 +271,29 @@ case class ListData(
                      list_authority_code: Option[String]
                    )
 object ListData {
-  implicit val format: OFormat[ListData] = Json.format[ListData]
+  implicit val reads: Reads[ListData] = Json.reads[ListData]
+
+  implicit val writes: OWrites[ListData] = OWrites { data =>
+    Json.obj(
+      "list_category" -> data.list_category.map(JsString.apply).getOrElse(JsNull),
+      "list_function" -> data.list_function.map(JsString.apply).getOrElse(JsNull),
+      "list_year" -> data.list_year.map(JsString.apply).getOrElse(JsNull),
+      "list_authority_code" -> data.list_authority_code.map(JsString.apply).getOrElse(JsNull)
+    )
+  }
 }
 
 case class WorkflowData(
                          cdb_job_id: Option[Long]
                        )
 object WorkflowData {
-  implicit val format: OFormat[WorkflowData] = Json.format[WorkflowData]
+  implicit val reads: Reads[WorkflowData] = Json.reads[WorkflowData]
+
+  implicit val writes: OWrites[WorkflowData] = OWrites { data =>
+    Json.obj(
+      "cdb_job_id" -> data.cdb_job_id.map(JsNumber(_)).getOrElse(JsNull),
+    )
+  }
 }
 
 case class PropertyAssessmentData(
@@ -205,7 +302,7 @@ case class PropertyAssessmentData(
                                    foreign_labels: List[ForeignId],
                                    property: PropertyReference,
                                    use: PropertyUse,
-                                   valuation_surveys: List[JsObject],   // full valuation survey model not requested here
+                                   valuation_surveys: List[ValuationSurvey],
                                    valuations: List[JsObject],
                                    valuation: ValuationData,
                                    list: ListData,
@@ -219,6 +316,10 @@ final case class PropertyAssessmentContext(
                                             originalJson: JsValue,
                                             assessment: PropertyAssessment
                                           )
+
+object PropertyAssessmentContext {
+  implicit val format: OFormat[PropertyAssessmentContext] = Json.format[PropertyAssessmentContext]
+}
 
 case class PropertyAssessment(
                                id: Long,
@@ -262,7 +363,7 @@ object PropertyAssessment {
 
 
 // =======================================================
-// PropertyData
+// Property Data
 // =======================================================
 
 case class PropertyData(
@@ -277,9 +378,8 @@ object PropertyData {
   implicit val format: OFormat[PropertyData] = Json.format[PropertyData]
 }
 
-
 // =======================================================
-// ROOT: Property
+// Root Property
 // =======================================================
 
 case class Property(

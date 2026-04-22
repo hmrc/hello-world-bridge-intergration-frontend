@@ -23,7 +23,7 @@ import models.bridge.common.*
 import models.bridge.relationhship.*
 import models.requests.DataRequest
 import pages.relationship.PropertyLinkOriginalJsonPage
-import play.api.i18n.Lang.logger
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.*
@@ -31,198 +31,209 @@ import repositories.SessionRepository
 import service.CheckAnswers.createRatePayersPropertyLinksSummaryRows
 import service.PropertyLinksUserAnswersService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{CheckYourAnswersRatepayerPropertyLinksView, CheckYourAnswersView, RatepayerPropertyLinksView}
+import views.html.CheckYourAnswersRatepayerPropertyLinksView
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CheckYourAnswersRatepayerPropertyLinksController @Inject()(
-                                                  override val messagesApi: MessagesApi,
-                                                  identify: IdentifierAction,
-                                                  getData: DataRetrievalAction,
-                                                  requireData: DataRequiredAction,
-                                                  sessionRepository: SessionRepository,
-                                                  propertyLinksUserAnswersService: PropertyLinksUserAnswersService,
-                                                  connector: BridgeIntegrationConnector,
-                                                  val controllerComponents: MessagesControllerComponents,
-                                                  view: CheckYourAnswersRatepayerPropertyLinksView
-                                                )(implicit ec: ExecutionContext)
+                                                                  override val messagesApi: MessagesApi,
+                                                                  identify: IdentifierAction,
+                                                                  getData: DataRetrievalAction,
+                                                                  requireData: DataRequiredAction,
+                                                                  sessionRepository: SessionRepository,
+                                                                  propertyLinksUserAnswersService: PropertyLinksUserAnswersService,
+                                                                  connector: BridgeIntegrationConnector,
+                                                                  val controllerComponents: MessagesControllerComponents,
+                                                                  view: CheckYourAnswersRatepayerPropertyLinksView
+                                                                )(implicit ec: ExecutionContext)
   extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
-  val relationshipRequest = Relationship(
-    id = Some(13),
-    idx = "1.13.1",
-    name = "Property Link",
-    label = "Ratepayer-ListEntry-Property",
-    description = "A relationships between LGFA88shd9para4J person-personas and LGFA88 hereditaments for which such personas are obliged to provide LGFA88shd9para4I(1) notofiable information.",
-    origination = None,
-    termination = None,
-    category = CodeMeaning(
-      code = Some("LTX-DOM-REL"),
-      meaning = Some("Local taxation domain relationship")
-    ),
-    `type` = CodeMeaning(
-      code = Some("LIB"),
-      meaning = Some("Liability | One entity is liable for other entity(s) and the other entity(s) are the basis for the liabilities extent")
-    ),
-    `class` = CodeMeaning(
-      code = Some("LOC"),
-      meaning = Some("Local Non Domestic Rating Occupied Hereditament Charge")
-    ),
-    data = RelationshipData(
-      foreign_ids = List.empty,
-      foreign_names = List.empty,
-      foreign_labels = List.empty,
-      manifestations = List(
-        Manifestation(
-          artifact_reference = None,
-          artifact_code = Some("NRB"),
-          artifact_description = None,
-          issued_date = None,
-          withdrawn_date = None,
-          effective_from_date = None,
-          effective_to_date = None,
-          observed_date = None,
-          operative_area_code = None,
-          operative_area_name = None,
-          protodata_ptr = Some("https://hmrc/sdes/yry64849ree"),
-          notes = None
-        )
-      )
-    ),
-    protodata = List.empty,
-    metadata = Metadata(
-      sending = SendingMetadata(
-        extracting = MetadataStage(
-          selecting = Map.empty
-        ),
-        transforming = MetadataStage(
-          filtering = Map.empty,
-          supplementing = Map.empty,
-          recontextualising = Map.empty
-        ),
-        loading = MetadataStage()
+  // ==================================================================
+  // SERVER‑SIDE AUTHORITATIVE RELATIONSHIP MODEL
+  // ==================================================================
+
+  private val relationshipRequest: Relationship =
+    Relationship(
+      id = Some(13),
+      idx = "1.13.1",
+      name = "Property Link",
+      label = "Ratepayer-ListEntry-Property",
+      description =
+        "A relationships between LGFA88shd9para4J person-personas and LGFA88 hereditaments for which such personas are obliged to provide LGFA88shd9para4I(1) notofiable information.",
+      origination = None,
+      termination = None,
+      category = CodeMeaning(
+        code = Some("LTX-DOM-REL"),
+        meaning = Some("Local taxation domain relationship")
       ),
-      receiving = ReceivingMetadata(
-        unloading = MetadataStage(),
-        transforming = MetadataStage(),
-        storing = MetadataStage()
-      )
-    ),
-    compartments = Map.empty,
-    items = List(
-      RelationshipItem(
-        transportation = Transportation(
-          path = "/job/compartments/properties/@id=13/data/assessments/@id=13"
-        ),
-        persistence = Persistence(
-          place = "LTX-DOM-AST",
-          identifier = Some("13")
+      `type` = CodeMeaning(
+        code = Some("LIB"),
+        meaning = Some(
+          "Liability | One entity is liable for other entity(s)"
         )
       ),
-      RelationshipItem(
-        transportation = Transportation(
-          path = "/job/compartments/persons/@id=16/items/@id=13"
+      `class` = CodeMeaning(
+        code = Some("LOC"),
+        meaning = Some("Local Non Domestic Rating Occupied Hereditament Charge")
+      ),
+      data = RelationshipData(
+        foreign_ids = List.empty,
+        foreign_names = List.empty,
+        foreign_labels = List.empty,
+        manifestations = List(
+          RelationshipManifestation(
+            artifact_reference = None,
+            artifact_code = Some("NRB"),
+            artifact_description = None,
+            issued_date = None,
+            withdrawn_date = None,
+            effective_from_date = None,
+            effective_to_date = None,
+            observed_date = None,
+            operative_area_code = None,
+            operative_area_name = None,
+            protodata_ptr = Some("https://hmrc/sdes/yry64849ree"),
+            notes = None
+          )
+        )
+      ),
+      protodata = List.empty,
+      metadata = Metadata(
+        sending = SendingMetadata(
+          extracting = MetadataStage(selecting = Map.empty),
+          transforming = MetadataStage(
+            filtering = Map.empty,
+            supplementing = Map.empty,
+            recontextualising = Map.empty
+          ),
+          loading = MetadataStage()
         ),
-        persistence = Persistence(
-          place = "LTX-DOM-PSA",
-          identifier = Some("13")
+        receiving = ReceivingMetadata(
+          unloading = MetadataStage(),
+          transforming = MetadataStage(),
+          storing = MetadataStage()
+        )
+      ),
+      compartments = Map.empty,
+      items = List(
+        RelationshipItem(
+          transportation =
+            RelationshipItemTransportation(
+              path = "/job/compartments/properties/@id=13/data/assessments/@id=13"
+            ),
+          persistence =
+            RelationshipItemPersistence(
+              place = "LTX-DOM-AST",
+              identifier = Some("13")
+            )
+        ),
+        RelationshipItem(
+          transportation =
+            RelationshipItemTransportation(
+              path = "/job/compartments/persons/@id=16/items/@id=13"
+            ),
+          persistence =
+            RelationshipItemPersistence(
+              place = "LTX-DOM-PSA",
+              identifier = Some("13")
+            )
         )
       )
     )
-  )
+
+  // ==================================================================
+  // PAGE LOAD
+  // ==================================================================
 
   def onPageLoad(): Action[AnyContent] =
     (identify andThen getData).async { implicit request =>
-      val baseAnswers: UserAnswers =
+      val baseAnswers =
         request.userAnswers.getOrElse(UserAnswers(request.userId))
-
-      //      connector.getRatepayerPropertyLinks(request.userId).map {
-      //        case Some(propertyAssessmentContext) =>
-      //        case None =>
-      //          val summary =
-      //            createPropertySummaryRows(baseAnswers)
-      //          Ok(view(summary))
-      //      }
+      
       val answersWithOriginalJson =
         baseAnswers
           .get(PropertyLinkOriginalJsonPage)
-          .fold {
-            baseAnswers
-              .set(PropertyLinkOriginalJsonPage, Json.toJson(relationshipRequest))
-              .getOrElse(baseAnswers)
-          }(_ => baseAnswers)
+          .filter(js => (js \ "items").isDefined)
+          .getOrElse(Json.toJson(relationshipRequest))
 
       val hydratedAnswers =
         propertyLinksUserAnswersService
           .populateFromRelationship(
-            answersWithOriginalJson,
+            baseAnswers
+              .set(PropertyLinkOriginalJsonPage, answersWithOriginalJson)
+              .getOrElse(baseAnswers),
             relationshipRequest
           )
 
       sessionRepository.set(hydratedAnswers)
 
-      val summary = createRatePayersPropertyLinksSummaryRows(hydratedAnswers)
+      val summary =
+        createRatePayersPropertyLinksSummaryRows(hydratedAnswers)
 
       Future.successful(Ok(view(summary)))
     }
-
-
+  
   private def submitData(
                           userId: String,
                           originalJson: JsValue,
                           answers: UserAnswers
                         )(implicit request: Request[AnyContent]): Future[Result] = {
 
-    val outboundJson = {
+    // ✅ MERGE INTO RELATIONSHIP JSON ONLY
+    val outboundJson =
       propertyLinksUserAnswersService.mergeIntoOriginalJson(
         originalJson = originalJson,
-        answers =  answers
+        answers = answers
       )
-    }
 
-    connector.changePropertyLink(outboundJson).flatMap { notifySuccess =>
-      if (notifySuccess) {
-        logger.info(s"Registered user: $userId")
+    // ✅ CRITICAL SAFETY LOG
+    logger.info(
+      s"""Outbound Relationship JSON:
+         |${Json.prettyPrint(outboundJson)}
+         |""".stripMargin
+    )
+
+    connector.changePropertyLink(outboundJson).flatMap {
+      case true =>
         Future.successful(
           Redirect(routes.DashboardController.onPageLoad())
         )
-      } else {
-        logger.error(s"Failed to send to the bridge for credId: $userId")
-        Future.failed(new Exception(s"Failed to send to the bridge for credId: $userId"))
-      }
+      case false =>
+        Future.failed(
+          new Exception(s"Bridge rejected relationship for $userId")
+        )
     }
   }
+
+  // ==================================================================
+  // POST
+  // ==================================================================
 
   def postRatepayerPropertyLinks: Action[AnyContent] =
     (identify andThen getData andThen requireData).async {
       implicit request: DataRequest[AnyContent] =>
 
-        val answers: UserAnswers =
-            request.userAnswers
-
-        val originalJson: JsValue =
-            answers
-              .get(PropertyLinkOriginalJsonPage)
-              .getOrElse {
-                throw new IllegalStateException(
-                  "Original property linking JSON missing from UserAnswers"
-                )
-              }
+        val originalJson =
+          request.userAnswers
+            .get(PropertyLinkOriginalJsonPage)
+            .filter(js => (js \ "items").isDefined) // ✅ GUARANTEE SHAPE
+            .getOrElse(Json.toJson(relationshipRequest))
 
         submitData(
-            userId = request.userId,
-            originalJson = originalJson,
-            answers = answers
+          userId = request.userId,
+          originalJson = originalJson,
+          answers = request.userAnswers
         ).recover {
           case ex =>
             logger.error(
-                s"Failed to submit property linking for user ${request.userId}",
-                ex
+              s"Failed to submit property link for user ${request.userId}",
+              ex
             )
             Redirect(routes.IndexController.onPageLoad())
-          }
-      }
+        }
+    }
 }

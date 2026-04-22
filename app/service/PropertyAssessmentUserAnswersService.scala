@@ -75,6 +75,19 @@ class PropertyAssessmentUserAnswersService extends Logging {
     updates.foldLeft(existingAnswers)((ua, f) => f(ua))
   }
 
+  private def overrideString(
+                              json: JsObject,
+                              page: QuestionPage[String],
+                              path: JsPath,
+                              answers: UserAnswers
+                            ): JsObject =
+    answers.get(page) match {
+      case Some(value) =>
+        json.setObject(path, JsString(value)).getOrElse(json)
+      case None =>
+        json
+    }
+
   // ====================================================
   // Merge UserAnswers back into ORIGINAL JSON
   // ====================================================
@@ -146,13 +159,7 @@ class PropertyAssessmentUserAnswersService extends Logging {
 
     updated =
       overrideString(updated, PropertyTerminationPage, __ \ "termination", answers)
-
-    updated =
-      overrideString(updated, PropertyCategoryCodePage, __ \ "category" \ "code", answers)
-
-    updated =
-      overrideString(updated, PropertyCategoryMeaningPage, __ \ "category" \ "meaning", answers)
-
+    
     updated =
       overrideString(updated, PropertyTypeCodePage, __ \ "type" \ "code", answers)
 
@@ -167,17 +174,4 @@ class PropertyAssessmentUserAnswersService extends Logging {
 
     updated
   }
-
-  private def overrideString(
-                              json: JsObject,
-                              page: QuestionPage[String],
-                              path: JsPath,
-                              answers: UserAnswers
-                            ): JsObject =
-    answers.get(page) match {
-      case Some(value) =>
-        json.setObject(path, JsString(value)).getOrElse(json)
-      case None =>
-        json
-    }
 }

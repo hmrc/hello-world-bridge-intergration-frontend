@@ -88,7 +88,7 @@ object CheckAnswers {
   // -----------------------------------------------------
 
   private def manifestationRows(
-                                 manifestation: Manifestation,
+                                 manifestation: RelationshipManifestation,
                                  index: Int
                                )(implicit messages: Messages): Seq[CheckAnswersSummaryListRow] = {
 
@@ -125,7 +125,7 @@ object CheckAnswers {
   }
 
   private def manifestationsSummaryRows(
-                                         manifestations: List[Manifestation]
+                                         manifestations: List[RelationshipManifestation]
                                        )(implicit messages: Messages): Seq[CheckAnswersSummaryListRow] =
     manifestations.zipWithIndex.flatMap {
       case (m, idx) => manifestationRows(m, idx + 1)
