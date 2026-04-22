@@ -35,13 +35,11 @@ class PropertyLinksUserAnswersService extends Logging {
                              value: Option[A]
                            )(implicit reads: Reads[A], writes: Writes[A]): UserAnswers =
     (answers.get(page), value) match {
-
       case (None, Some(v)) =>
         answers.set(page, v).getOrElse {
           logger.warn(s"Failed to auto-populate $page")
           answers
         }
-
       case _ =>
         answers
     }
@@ -121,38 +119,41 @@ class PropertyLinksUserAnswersService extends Logging {
       }
     )
 
-  // ====================================================
-  // Merge UserAnswers into ORIGINAL Bridge JSON
-  // ====================================================
+  private def mergeRelationshipRoot(
+                                     relationship: JsObject,
+                                     answers: UserAnswers
+                                   ): JsObject = {
+    var updated = relationship
+
+    updated = overrideString(updated, RelationshipLabelPage, __ \ "label", answers)
+    updated = overrideString(updated, RelationshipNamePage, __ \ "name", answers)
+    updated = overrideString(updated, RelationshipDescriptionPage, __ \ "description", answers)
+    updated = overrideString(updated, RelationshipCategoryCodePage, __ \ "category" \ "code", answers)
+    updated = overrideString(updated, RelationshipCategoryMeaningPage, __ \ "category" \ "meaning", answers)
+    updated = overrideString(updated, RelationshipTypeCodePage, __ \ "type" \ "code", answers)
+    updated = overrideString(updated, RelationshipTypeMeaningPage, __ \ "type" \ "meaning", answers)
+    updated = overrideString(updated, RelationshipClassCodePage, __ \ "class" \ "code", answers)
+    updated = overrideString(updated, RelationshipClassMeaningPage, __ \ "class" \ "meaning", answers)
+
+    updated
+  }
 
   def mergeIntoOriginalJson(
                              originalJson: JsValue,
                              answers: UserAnswers
                            ): JsValue = originalJson match {
 
-    case root: JsObject =>
+    case relationship: JsObject =>
 
-      val updatedRelationships =
-        (root \ "job" \ "compartments" \ "relationships").asOpt[JsArray]
-          .map { compartments =>
-            JsArray(
-              compartments.value.map {
-                case compartment: JsObject =>
-                  compartment + ("items" -> updateItems(compartment, answers))
-                case other => other
-              }
-            )
-          }
+      val updatedRoot =
+        mergeRelationshipRoot(relationship, answers)
 
-      updatedRelationships
-        .map { rels =>
-          root.setObject(
-            __ \ "job" \ "compartments" \ "relationships",
-            rels
-          ).getOrElse(root)
-        }
-        .getOrElse(root)
+      val updatedItems =
+        updateItems(updatedRoot, answers)
 
-    case _ => originalJson
+      updatedRoot + ("items" -> updatedItems)
+
+    case other =>
+      other
   }
 }

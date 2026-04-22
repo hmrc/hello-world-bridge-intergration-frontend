@@ -91,11 +91,11 @@ class CheckYourAnswersRegisterUserController @Inject()(
           Future.successful(Redirect(routes.IndexController.onPageLoad()))
 
         case Some(existingAnswers) =>
-          val nameOpt: Option[Name] =
-            existingAnswers.get(UserNamePage).map(Name(_))
+          val nameOpt: Option[String] =
+            existingAnswers.get(UserNamePage)
 
-          val contactNumberOpt: Option[PhoneNumber] =
-            existingAnswers.get(ContactNumberPage).map(number => PhoneNumber(number.toString))
+          val contactNumberOpt: Option[String] =
+            existingAnswers.get(ContactNumberPage)
 
           //Making the model you can send to the bridge.
           val ratepayerRequest = RegisterRatepayer(

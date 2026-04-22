@@ -175,6 +175,15 @@ assessmentForProperties.title = Properties for Assessment
 #RatepayerPropertyLinks
 ratepayerPropertyLinks.title = Ratepayer Property Links
 
+checkAnswers.relationship.name = relationship name
+checkAnswers.relationship.label = relationship label
+checkAnswers.relationship.description = relationship description
+checkAnswers.relationship.categoryCode= relationship category code
+checkAnswers.relationship.categoryMeaning = relationship category meaning
+checkAnswers.relationship.typeCode = relationship type code
+checkAnswers.relationship.typeMeaning = relationship type meaning
+checkAnswers.relationship.classCode = relationship class code
+checkAnswers.relationship.classMeaning = relationship class meaning
 checkAnswers.property.id = Property Id
 checkAnswers.property.idx = Property IDX
 checkAnswers.property.label = Property label

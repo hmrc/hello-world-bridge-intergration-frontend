@@ -17,79 +17,91 @@
 package models.bridge.relationhship
 
 import models.bridge.common.*
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{JsPath, Json, OFormat, OWrites, Reads}
+import play.api.libs.json.{JsNull, JsNumber, JsString, Json, OFormat, OWrites, Reads}
 
-case class Manifestation(
-                          artifact_reference: Option[String],
-                          artifact_code: Option[String],
-                          artifact_description: Option[String],
-                          issued_date: Option[String],
-                          withdrawn_date: Option[String],
-                          effective_from_date: Option[String],
-                          effective_to_date: Option[String],
-                          observed_date: Option[String],
-                          operative_area_code: Option[String],
-                          operative_area_name: Option[String],
-                          protodata_ptr: Option[String],
-                          notes: Option[String]
-                        )
+case class RelationshipManifestation(
+                                      artifact_reference: Option[String],
+                                      artifact_code: Option[String],
+                                      artifact_description: Option[String],
+                                      issued_date: Option[String],
+                                      withdrawn_date: Option[String],
+                                      effective_from_date: Option[String],
+                                      effective_to_date: Option[String],
+                                      observed_date: Option[String],
+                                      operative_area_code: Option[String],
+                                      operative_area_name: Option[String],
+                                      protodata_ptr: Option[String],
+                                      notes: Option[String]
+                                    )
 
-object Manifestation {
-  implicit val format: OFormat[Manifestation] = Json.format[Manifestation]
-}
+object RelationshipManifestation {
+  implicit val reads: Reads[RelationshipManifestation] = Json.reads[RelationshipManifestation]
 
-case class RelationshipItem(
-                             transportation: Transportation,
-                             persistence: Persistence
-                           )
-
-object RelationshipItem {
-  implicit val format: OFormat[RelationshipItem] = Json.format[RelationshipItem]
-}
-
-case class Transportation(
-                           path: String
-                         )
-
-object Transportation {
-  implicit val format: OFormat[Transportation] = Json.format[Transportation]
-}
-
-case class Persistence(
-                        place: String,
-                        identifier: Option[String]
-                      )
-
-object Persistence {
-
-  implicit val reads: Reads[Persistence] = (
-    (JsPath \ "place").read[String] and
-      (JsPath \ "identifier")
-        .readNullable[String]
-        .orElse((JsPath \ "identifier").readNullable[String])
-    )(Persistence.apply _)
-
-  implicit val writes: OWrites[Persistence] = OWrites { data =>
+  implicit val writes: OWrites[RelationshipManifestation] = OWrites { data =>
     Json.obj(
-      "place"       -> data.place,
-      "identifier"  -> data.identifier
+      "artifact_reference"    -> data.artifact_reference.map(JsString.apply).getOrElse(JsNull),
+      "artifact_code"         -> data.artifact_code.map(JsString.apply).getOrElse(JsNull),
+      "artifact_description"  -> data.artifact_description.map(JsString.apply).getOrElse(JsNull),
+      "issued_date"           -> data.issued_date.map(JsString.apply).getOrElse(JsNull),
+      "withdrawn_date"        -> data.withdrawn_date.map(JsString.apply).getOrElse(JsNull),
+      "effective_from_date"   -> data.effective_from_date.map(JsString.apply).getOrElse(JsNull),
+      "effective_to_date"     -> data.effective_to_date.map(JsString.apply).getOrElse(JsNull),
+      "observed_date"         -> data.observed_date.map(JsString.apply).getOrElse(JsNull),
+      "operative_area_code"   -> data.operative_area_code.map(JsString.apply).getOrElse(JsNull),
+      "operative_area_name"   -> data.operative_area_name.map(JsString.apply).getOrElse(JsNull),
+      "protodata_ptr"         -> data.protodata_ptr.map(JsString.apply).getOrElse(JsNull),
+      "notes"                 -> data.notes.map(JsString.apply).getOrElse(JsNull)
     )
   }
 }
-
 
 case class RelationshipData(
                              foreign_ids: List[ForeignId],
                              foreign_names: List[ForeignId],
                              foreign_labels: List[ForeignId],
-                             manifestations: List[Manifestation]
+                             manifestations: List[RelationshipManifestation]
                            )
 
 object RelationshipData {
-  implicit val format: OFormat[RelationshipData] = Json.format[RelationshipData]
+  implicit val format: OFormat[RelationshipData] =
+    Json.format[RelationshipData]
 }
 
+case class RelationshipItemTransportation(
+                                           path: String
+                                         )
+
+object RelationshipItemTransportation {
+  implicit val format: OFormat[RelationshipItemTransportation] =
+    Json.format[RelationshipItemTransportation]
+}
+
+case class RelationshipItemPersistence(
+                                        place: String,
+                                        identifier: Option[String]
+                                      )
+
+object RelationshipItemPersistence {
+
+  implicit val reads: Reads[RelationshipItemPersistence] = Json.reads[RelationshipItemPersistence]
+
+  implicit val writes: OWrites[RelationshipItemPersistence] = OWrites { data =>
+    Json.obj(
+      "place" -> data.place,
+      "identifier" -> data.identifier.map(JsString.apply).getOrElse(JsNull)
+    )
+  }
+}
+
+case class RelationshipItem(
+                             transportation: RelationshipItemTransportation,
+                             persistence: RelationshipItemPersistence
+                           )
+
+object RelationshipItem {
+  implicit val format: OFormat[RelationshipItem] =
+    Json.format[RelationshipItem]
+}
 
 case class Relationship(
                          id: Option[Long],
@@ -110,5 +122,24 @@ case class Relationship(
                        )
 
 object Relationship {
-  implicit val format: OFormat[Relationship] = Json.format[Relationship]
+  implicit val reads: Reads[Relationship] = Json.reads[Relationship]
+  implicit val writes: OWrites[Relationship] = OWrites { data =>
+    Json.obj(
+      "id" -> data.id.map(JsNumber(_)).getOrElse(JsNull),
+      "idx" -> data.idx,
+      "name" -> data.name,
+      "label" -> data.label,
+      "description" -> data.description,
+      "origination" -> data.origination.map(JsString.apply).getOrElse(JsNull),
+      "termination" -> data.termination.map(JsString.apply).getOrElse(JsNull),
+      "category" -> data.category,
+      "type" -> data.`type`,
+      "class" -> data.`class`,
+      "data" -> data.data,
+      "protodata" -> data.protodata,
+      "metadata" -> data.metadata,
+      "compartments" -> data.compartments,
+      "items" -> data.items,
+    )
+  }
 }
