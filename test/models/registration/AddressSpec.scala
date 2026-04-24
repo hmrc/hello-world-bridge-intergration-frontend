@@ -16,9 +16,9 @@
 
 package models.registration
 
-import play.api.libs.json.{JsValue, Json}
 import helpers.TestSupport
 import models.registration.Address
+import play.api.libs.json.{JsValue, Json}
 
 class AddressSpec extends TestSupport {
 
