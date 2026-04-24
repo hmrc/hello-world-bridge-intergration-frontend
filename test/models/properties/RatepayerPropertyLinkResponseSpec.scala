@@ -97,7 +97,7 @@ class RatepayerPropertyLinkResponseSpec extends AnyWordSpec with Matchers {
       )
 
       // Relationship sample
-      val manifestation = Manifestation(
+      val manifestation = RelationshipManifestation(
         artifact_reference = Some("REF"),
         artifact_code = Some("CODE"),
         artifact_description = None,
@@ -120,8 +120,8 @@ class RatepayerPropertyLinkResponseSpec extends AnyWordSpec with Matchers {
       )
 
       val relationshipItem = RelationshipItem(
-        transportation = Transportation("/org/rel"),
-        persistence = Persistence("STORE", "ID123")
+        transportation = RelationshipItemTransportation("/org/rel"),
+        persistence = RelationshipItemPersistence("STORE", Some("ID123"))
       )
 
       val relationship = Relationship(

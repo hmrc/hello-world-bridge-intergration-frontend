@@ -26,7 +26,7 @@ class RelationshipModelsSpec extends AnyWordSpec with Matchers {
 
   "Manifestation" should {
     "serialise and deserialise correctly" in {
-      val m = Manifestation(
+      val m = RelationshipManifestation(
         artifact_reference = Some("REF123"),
         artifact_code = Some("CODEX"),
         artifact_description = Some("A test artifact"),
@@ -41,12 +41,12 @@ class RelationshipModelsSpec extends AnyWordSpec with Matchers {
         notes = Some("Some notes")
       )
 
-      Json.toJson(m).as[Manifestation] shouldBe m
+      Json.toJson(m).as[RelationshipManifestation] shouldBe m
     }
 
     "support missing optional fields" in {
       val json = Json.parse("""{ "artifact_code": "A1" }""")
-      val m = json.as[Manifestation]
+      val m = json.as[RelationshipManifestation]
 
       m.artifact_code shouldBe Some("A1")
       m.artifact_reference shouldBe None
@@ -57,23 +57,23 @@ class RelationshipModelsSpec extends AnyWordSpec with Matchers {
 
   "Transportation" should {
     "serialise and deserialise correctly" in {
-      val t = Transportation(path = "/root/child")
-      Json.toJson(t).as[Transportation] shouldBe t
+      val t = RelationshipItemTransportation(path = "/root/child")
+      Json.toJson(t).as[RelationshipItemTransportation] shouldBe t
     }
   }
 
   "Persistence" should {
     "serialise and deserialise correctly" in {
-      val p = Persistence(place = "DB", identifier = "XYZ123")
-      Json.toJson(p).as[Persistence] shouldBe p
+      val p = RelationshipItemPersistence(place = "DB", identifier = Some("XYZ123"))
+      Json.toJson(p).as[RelationshipItemPersistence] shouldBe p
     }
   }
 
   "RelationshipItem" should {
     "serialise and deserialise correctly" in {
       val item = RelationshipItem(
-        transportation = Transportation("/path/123"),
-        persistence = Persistence("STORE", "ID987")
+        transportation = RelationshipItemTransportation("/path/123"),
+        persistence = RelationshipItemPersistence("STORE", Some("ID987"))
       )
 
       Json.toJson(item).as[RelationshipItem] shouldBe item
@@ -87,7 +87,7 @@ class RelationshipModelsSpec extends AnyWordSpec with Matchers {
         foreign_names = List(ForeignId("SYS2", "LOC2", "2")),
         foreign_labels = Nil,
         manifestations = List(
-          Manifestation(
+          RelationshipManifestation(
             artifact_reference = Some("A"),
             artifact_code = Some("B"),
             artifact_description = Some("Desc"),
@@ -117,7 +117,7 @@ class RelationshipModelsSpec extends AnyWordSpec with Matchers {
         ReceivingMetadata(stage, stage, stage)
       )
 
-      val manifestation = Manifestation(
+      val manifestation = RelationshipManifestation(
         artifact_reference = Some("R1"),
         artifact_code = Some("C1"),
         artifact_description = None,
@@ -140,8 +140,8 @@ class RelationshipModelsSpec extends AnyWordSpec with Matchers {
       )
 
       val ritem = RelationshipItem(
-        transportation = Transportation("/a/b/c"),
-        persistence = Persistence("STORE1", "ID1")
+        transportation = RelationshipItemTransportation("/a/b/c"),
+        persistence = RelationshipItemPersistence("STORE1", Some("ID1"))
       )
 
       val relationship = Relationship(

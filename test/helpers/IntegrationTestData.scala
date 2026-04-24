@@ -25,13 +25,13 @@ trait IntegrationTestData {
   val sampleRatepayerRegistration: RegisterRatepayer = RegisterRatepayer(
     userType = Some(RatepayerType.Individual),
     agentStatus = Some(AgentStatus.Agent),
-    name = Some(Name("Jane Doe")),
+    name = Some("Jane Doe"),
     tradingName = Some(TradingName("Jane's Bakery")),
-    email = Some(Email("jane.doe@example.com")),
+    email = Some("jane.doe@example.com"),
     nino = Some(Nino("AB123456C")),
-    contactNumber = Some(PhoneNumber("07123456789")),
-    secondaryNumber = Some(PhoneNumber("07987654321")),
-    address = Some(Address("1 High Street", None, "London", None, Postcode("SW1A 1AA"))),
+    contactNumber = Some("07123456789"),
+    secondaryNumber = Some("07987654321"),
+    address = Some("1 High Street, London, SW1A 1AA"),
     trnReferenceNumber = Some(TRNReferenceNumber(ReferenceType.Nino, "TRN123456")),
     isRegistered = Some(true)
   )

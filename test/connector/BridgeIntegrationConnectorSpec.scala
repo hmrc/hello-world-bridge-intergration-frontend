@@ -22,7 +22,8 @@ import mocks.MockHttpV2
 import models.bridge.common.{CodeMeaning, ForeignId, Metadata, MetadataStage, ProtoData, ReceivingMetadata, SendingMetadata}
 import models.bridge.person.{Communications, NameData, Person, PersonItem, PersonItemData, Persons}
 import models.bridge.property.*
-import models.bridge.relationhship.{Manifestation, Persistence, Relationship, RelationshipData, RelationshipItem, Transportation}
+import models.bridge.relationhship.*
+import models.bridge.person.*
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -48,6 +49,7 @@ import scala.jdk.CollectionConverters._
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import scala.concurrent.Future
+import models.bridge.common.*
 
 
 
@@ -83,6 +85,16 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
   val connector: BridgeIntegrationConnector = app.injector.instanceOf[BridgeIntegrationConnector]
 
   "BridgeIntegrationConnector.isAllowedInPrivateBeta" should {
+
+    "return false when allowed is false" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/allowed-in-private-beta/cred123"
+      )(
+        HttpResponse(OK, Json.obj("allowed" -> false), Map.empty)
+      )
+
+      connector.isAllowedInPrivateBeta("cred123").futureValue mustBe false
+    }
 
     "return true when OK and allowed is true" in {
       setupMockHttpV2Get(
@@ -146,9 +158,74 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
       connector.changePropertyAssessment(payload).futureValue mustBe false
     }
+
+    "return false when NOT_FOUND (404)" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-assessment/123456789567/assessment/27399677000"
+      )(
+        HttpResponse(NOT_FOUND, Json.obj(), Map.empty)
+      )
+
+      connector.changePropertyAssessment(payload).futureValue mustBe false
+    }
+
+    "return false when BAD_GATEWAY (502)" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-assessment/123456789567/assessment/27399677000"
+      )(
+        HttpResponse(BAD_GATEWAY, Json.obj(), Map.empty)
+      )
+
+      connector.changePropertyAssessment(payload).futureValue mustBe false
+    }
+
+    "return false when INTERNAL_SERVER_ERROR (500)" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-assessment/123456789567/assessment/27399677000"
+      )(
+        HttpResponse(INTERNAL_SERVER_ERROR, Json.obj(), Map.empty)
+      )
+
+      connector.changePropertyAssessment(payload).futureValue mustBe false
+    }
+
+    "return false when unexpected status is returned" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-assessment/123456789567/assessment/27399677000"
+      )(
+        HttpResponse(IM_A_TEAPOT, Json.obj(), Map.empty)
+      )
+
+      connector.changePropertyAssessment(payload).futureValue mustBe false
+    }
   }
 
   "BridgeIntegrationConnector.changePropertyLink" should {
+
+    val relationship = Relationship(
+      id = None,
+      idx = "1",
+      name = "rel",
+      label = "label",
+      description = "desc",
+      origination = None,
+      termination = None,
+      category = CodeMeaning(Some("A"), Some("B")),
+      `type` = CodeMeaning(Some("T"), Some("T")),
+      `class` = CodeMeaning(Some("C"), Some("C")),
+      data = RelationshipData(
+        foreign_ids = Nil,
+        foreign_names = Nil,
+        foreign_labels = Nil,
+        manifestations = Nil
+      ),
+      protodata = Nil,
+      metadata = metadata,
+      compartments = Map.empty,
+      items = Nil
+    )
+
+    val validRelationshipJson = Json.toJson(relationship)
 
     "return false when payload is invalid Relationship JSON" in {
       val invalidJson = Json.obj("totally" -> "wrong")
@@ -156,31 +233,6 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
       connector.changePropertyLink(invalidJson).futureValue mustBe false
     }
     "return true when payload is valid and backend returns OK" in {
-
-      val relationship = Relationship(
-        id = None,
-        idx = "1",
-        name = "rel",
-        label = "label",
-        description = "desc",
-        origination = None,
-        termination = None,
-        category = CodeMeaning(Some("A"), Some("B")),
-        `type` = CodeMeaning(Some("T"), Some("T")),
-        `class` = CodeMeaning(Some("C"), Some("C")),
-        data = RelationshipData(
-          foreign_ids = Nil,
-          foreign_names = Nil,
-          foreign_labels = Nil,
-          manifestations = Nil
-        ),
-        protodata = Nil,
-        metadata = metadata,
-        compartments = Map.empty,
-        items = Nil
-      )
-
-      val validRelationshipJson = Json.toJson(relationship)
 
       setupMockHttpV2Post(
         "http://localhost:1300/bridge-integration/property-linking/123456789567/relationship-change/27399677000"
@@ -200,6 +252,46 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
       )
 
       connector.changePropertyLink(validJson).futureValue mustBe false
+    }
+
+    "return false when backend returns NOT_FOUND" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-linking/123456789567/relationship-change/27399677000"
+      )(
+        HttpResponse(NOT_FOUND, Json.obj(), Map.empty)
+      )
+
+      connector.changePropertyLink(validRelationshipJson).futureValue mustBe false
+    }
+
+    "return false when backend returns BAD_REQUEST" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-linking/123456789567/relationship-change/27399677000"
+      )(
+        HttpResponse(BAD_REQUEST, Json.obj("error" -> "bad"), Map.empty)
+      )
+
+      connector.changePropertyLink(validRelationshipJson).futureValue mustBe false
+    }
+
+    "return false when backend returns BAD_GATEWAY" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-linking/123456789567/relationship-change/27399677000"
+      )(
+        HttpResponse(BAD_GATEWAY, Json.obj(), Map.empty)
+      )
+
+      connector.changePropertyLink(validRelationshipJson).futureValue mustBe false
+    }
+
+    "return false when backend returns INTERNAL_SERVER_ERROR" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-linking/123456789567/relationship-change/27399677000"
+      )(
+        HttpResponse(INTERNAL_SERVER_ERROR, Json.obj(), Map.empty)
+      )
+
+      connector.changePropertyLink(validRelationshipJson).futureValue mustBe false
     }
   }
 
@@ -261,6 +353,30 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
       setupMockFailedHttpV2Get(
         "http://localhost:1300/bridge-integration/property-assessment/cred/assessment/aid"
       )
+
+      connector.getPropertiesForAssessment("cred", "aid").futureValue mustBe None
+    }
+
+    "return None when properties array is empty" in {
+      val json = Json.obj("properties" -> Json.arr())
+
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/property-assessment/cred/assessment/aid"
+      )(json)
+
+      connector.getPropertiesForAssessment("cred", "aid").futureValue mustBe None
+    }
+
+    "return None when assessments are missing" in {
+      val json = Json.obj(
+        "properties" -> Json.arr(
+          Json.obj("data" -> Json.obj())
+        )
+      )
+
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/property-assessment/cred/assessment/aid"
+      )(json)
 
       connector.getPropertiesForAssessment("cred", "aid").futureValue mustBe None
     }
@@ -378,6 +494,36 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
       connector.registerRatePayer(testRegistrationModel).futureValue mustBe false
     }
+
+    "return false when NOT_FOUND (404) is returned" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789567"
+      )(
+        HttpResponse(NOT_FOUND, Json.obj(), Map.empty)
+      )
+
+      connector.registerRatePayer(testRegistrationModel).futureValue mustBe false
+    }
+
+    "return false when BAD_REQUEST (400) is returned" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789567"
+      )(
+        HttpResponse(BAD_REQUEST, Json.obj(), Map.empty)
+      )
+
+      connector.registerRatePayer(testRegistrationModel).futureValue mustBe false
+    }
+
+    "return false when BAD_GATEWAY (502) is returned" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/register-ratepayer/123456789567"
+      )(
+        HttpResponse(BAD_GATEWAY, Json.obj(), Map.empty)
+      )
+
+      connector.registerRatePayer(testRegistrationModel).futureValue mustBe false
+    }
   }
 
   "BridgeIntegrationConnector.getDashboard" should {
@@ -423,6 +569,16 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
       val result = connector.getDashboard().futureValue
       result mustBe None
+    }
+
+    "use default credId when none is supplied" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/dashboard/123456789567"
+      )(
+        Some(RatepayerStatusResponse(true, true, 1))
+      )
+
+      connector.getDashboard().futureValue.value.activePropertyLinkCount mustBe 1
     }
   }
 
@@ -1705,6 +1861,15 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
       result mustBe None
     }
 
+    "use default credId when none is supplied" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/ratepayer-properties/123456789567"
+      )(
+        None
+      )
+
+      connector.getRatepayerProperties().futureValue mustBe None
+    }
   }
 
   "BridgeIntegrationConnector.exploreRatePayer" should {
