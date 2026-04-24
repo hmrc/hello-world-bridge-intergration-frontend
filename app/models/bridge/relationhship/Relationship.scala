@@ -16,8 +16,9 @@
 
 package models.bridge.relationhship
 
-import models.bridge.common._
-import play.api.libs.json.{Json, OFormat}
+import models.bridge.common.*
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{JsPath, Json, OFormat, OWrites, Reads}
 
 case class Manifestation(
                           artifact_reference: Option[String],
@@ -61,8 +62,22 @@ case class Persistence(
                       )
 
 object Persistence {
-  implicit val format: OFormat[Persistence] = Json.format[Persistence]
+
+  implicit val reads: Reads[Persistence] = (
+    (JsPath \ "place").read[String] and
+      (JsPath \ "identifier").read[String].orElse(
+        (JsPath \ "identifier").read[Int].map(_.toString)
+      )
+    )(Persistence.apply _)
+
+  implicit val writes: OWrites[Persistence] = OWrites { data =>
+    Json.obj(
+      "place"       -> data.place,
+      "identifier"  -> data.identifier
+    )
+  }
 }
+
 
 case class RelationshipData(
                              foreign_ids: List[ForeignId],
@@ -77,12 +92,12 @@ object RelationshipData {
 
 
 case class Relationship(
-                         id: Long,
+                         id: Option[Long],
                          idx: String,
                          name: String,
                          label: String,
                          description: String,
-                         origination: String,
+                         origination: Option[String],
                          termination: Option[String],
                          category: CodeMeaning,
                          `type`: CodeMeaning,

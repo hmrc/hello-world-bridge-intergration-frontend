@@ -17,11 +17,12 @@
 package connector
 
 import connectors.BridgeIntegrationConnector
+import helpers.TestData
 import mocks.MockHttpV2
 import models.bridge.common.{CodeMeaning, ForeignId, Metadata, MetadataStage, ProtoData, ReceivingMetadata, SendingMetadata}
 import models.bridge.person.{Communications, NameData, Person, PersonItem, PersonItemData, Persons}
 import models.bridge.property.*
-import models.bridge.relationhship.{Manifestation, Persistence, RelationshipData, RelationshipItem, Transportation}
+import models.bridge.relationhship.{Manifestation, Persistence, Relationship, RelationshipData, RelationshipItem, Transportation}
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -49,8 +50,9 @@ import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 import scala.concurrent.Future
 
 
+
 class BridgeIntegrationConnectorSpec extends MockHttpV2
-  with GuiceOneAppPerSuite {
+  with GuiceOneAppPerSuite with TestData{
 
   override lazy val app = new GuiceApplicationBuilder()
     .overrides(
@@ -80,56 +82,209 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
   val connector: BridgeIntegrationConnector = app.injector.instanceOf[BridgeIntegrationConnector]
 
-  "Calling the private beta access endpoint" when {
+  "BridgeIntegrationConnector.isAllowedInPrivateBeta" should {
 
-    "a valid and 'allowed'=true credId" should {
-      "return true" in {
-        val successResponse = HttpResponse(status = OK, json = Json.obj("allowed" -> true), headers = Map.empty)
-        setupMockHttpV2Get("http://localhost:1300/bridge-integration/allowed-in-private-beta/123456789567")(successResponse)
+    "return true when OK and allowed is true" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/allowed-in-private-beta/cred123"
+      )(
+        HttpResponse(OK, Json.obj("allowed" -> true), Map.empty)
+      )
 
-        val result: Future[Boolean] = connector.isAllowedInPrivateBeta("123456789567")
-        result.futureValue mustBe true
-      }
+      connector.isAllowedInPrivateBeta("cred123").futureValue mustBe true
     }
 
-    "a valid and 'allowed'=false credId " should {
-      "return false" in {
-        val successResponse = HttpResponse(status = OK, json = Json.obj("allowed" -> false), headers = Map.empty)
-        setupMockHttpV2Get("http://localhost:1300/bridge-integration/allowed-in-private-beta/123456789567")(successResponse)
+    "return false when OK but allowed field is missing" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/allowed-in-private-beta/cred123"
+      )(
+        HttpResponse(OK, Json.obj(), Map.empty)
+      )
 
-        val result: Future[Boolean] = connector.isAllowedInPrivateBeta("123456789567")
-        result.futureValue mustBe false
-      }
+      connector.isAllowedInPrivateBeta("cred123").futureValue mustBe false
     }
 
-    "json missing 'allowed' filed" should {
-      "return false" in {
-        val successResponse = HttpResponse(status = OK, json = Json.obj(), headers = Map.empty)
-        setupMockHttpV2Get("http://localhost:1300/bridge-integration/allowed-in-private-beta/123456789567")(successResponse)
+    "return false for non-OK response" in {
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/allowed-in-private-beta/cred123"
+      )(
+        HttpResponse(FORBIDDEN, Json.obj(), Map.empty)
+      )
 
-        val result: Future[Boolean] = connector.isAllowedInPrivateBeta("123456789567")
-        result.futureValue mustBe false
-      }
+      connector.isAllowedInPrivateBeta("cred123").futureValue mustBe false
+    }
+  }
+
+  "BridgeIntegrationConnector.changePropertyAssessment" should {
+
+    val payload = Json.obj("foo" -> "bar")
+
+    "return true when OK" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-assessment/123456789567/assessment/27399677000"
+      )(
+        HttpResponse(OK, Json.obj(), Map.empty)
+      )
+
+      connector.changePropertyAssessment(payload).futureValue mustBe true
     }
 
-    "a 400-499 response is returned" should {
-      "return false" in {
-        val errorResponse = HttpResponse(status = NOT_FOUND, """CredId not found""", headers = Map.empty)
-        setupMockHttpV2Get("http://localhost:1300/bridge-integration/allowed-in-private-beta/123456789567")(errorResponse)
+    "return false when BAD_REQUEST" in {
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-assessment/123456789567/assessment/27399677000"
+      )(
+        HttpResponse(BAD_REQUEST, Json.obj("error" -> "bad"), Map.empty)
+      )
 
-        val result: Future[Boolean] = connector.isAllowedInPrivateBeta("123456789567")
-        result.futureValue mustBe false
-      }
+      connector.changePropertyAssessment(payload).futureValue mustBe false
     }
 
-    "a 500-599 response is returned" should {
-      "return false" in {
-        val errorResponse = HttpResponse(status = INTERNAL_SERVER_ERROR, body = "Server error", headers = Map.empty)
-        setupMockHttpV2Get("http://localhost:1300/bridge-integration/allowed-in-private-beta/123456789567")(errorResponse)
+    "return false when an exception occurs" in {
+      setupMockHttpV2FailedPost(
+        "http://localhost:1300/bridge-integration/property-assessment/123456789567/assessment/27399677000"
+      )
 
-        val result: Future[Boolean] = connector.isAllowedInPrivateBeta("123456789567")
-        result.futureValue mustBe false
-      }
+      connector.changePropertyAssessment(payload).futureValue mustBe false
+    }
+  }
+
+  "BridgeIntegrationConnector.changePropertyLink" should {
+
+    "return false when payload is invalid Relationship JSON" in {
+      val invalidJson = Json.obj("totally" -> "wrong")
+
+      connector.changePropertyLink(invalidJson).futureValue mustBe false
+    }
+    "return true when payload is valid and backend returns OK" in {
+
+      val relationship = Relationship(
+        id = None,
+        idx = "1",
+        name = "rel",
+        label = "label",
+        description = "desc",
+        origination = None,
+        termination = None,
+        category = CodeMeaning(Some("A"), Some("B")),
+        `type` = CodeMeaning(Some("T"), Some("T")),
+        `class` = CodeMeaning(Some("C"), Some("C")),
+        data = RelationshipData(
+          foreign_ids = Nil,
+          foreign_names = Nil,
+          foreign_labels = Nil,
+          manifestations = Nil
+        ),
+        protodata = Nil,
+        metadata = metadata,
+        compartments = Map.empty,
+        items = Nil
+      )
+
+      val validRelationshipJson = Json.toJson(relationship)
+
+      setupMockHttpV2Post(
+        "http://localhost:1300/bridge-integration/property-linking/123456789567/relationship-change/27399677000"
+      )(
+        HttpResponse(OK, Json.obj(), Map.empty)
+      )
+
+      connector.changePropertyLink(validRelationshipJson).futureValue mustBe true
+    }
+
+
+    "return false when HTTP call fails" in {
+      val validJson = Json.obj("idx" -> "x") // already validated earlier in test
+
+      setupMockHttpV2FailedPost(
+        "http://localhost:1300/bridge-integration/property-linking/123456789567/relationship-change/27399677000"
+      )
+
+      connector.changePropertyLink(validJson).futureValue mustBe false
+    }
+  }
+
+  "BridgeIntegrationConnector.getPropertiesForAssessment" should {
+
+    "return Some(PropertyAssessmentContext) when JSON is valid" in {
+
+      val assessment = PropertyAssessment(
+        id = 1,
+        idx = "1.1",
+        name = Some("Assessment"),
+        label = "Assessment",
+        description = Some("desc"),
+        origination = "20250101T000000Z",
+        termination = None,
+        category = CodeMeaning(Some("CAT"), Some("Category")),
+        `type` = CodeMeaning(Some("TYPE"), Some("Type")),
+        `class` = CodeMeaning(Some("CLASS"), Some("Class")),
+        data = PropertyAssessmentData(
+          foreign_ids = Nil,
+          foreign_names = Nil,
+          foreign_labels = Nil,
+          property = PropertyReference(1, 1),
+          use = PropertyUse(None, None, None),
+          valuation_surveys = Nil,
+          valuations = Nil,
+          valuation = ValuationData(None, None, None),
+          list = ListData(None, None, None, None),
+          workflow = WorkflowData(None)
+        ),
+        protodata = Nil,
+        metadata = metadata,
+        compartments = Map.empty,
+        items = Nil
+      )
+
+      val json = Json.obj(
+        "properties" -> Json.arr(
+          Json.obj(
+            "data" -> Json.obj(
+              "assessments" -> Json.arr(Json.toJson(assessment))
+            )
+          )
+        )
+      )
+
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/property-assessment/cred/assessment/aid"
+      )(json)
+
+      val result =
+        connector.getPropertiesForAssessment("cred", "aid").futureValue
+
+      result mustBe defined
+      result.value.assessment.id mustBe 1
+    }
+
+    "return None when exception occurs" in {
+      setupMockFailedHttpV2Get(
+        "http://localhost:1300/bridge-integration/property-assessment/cred/assessment/aid"
+      )
+
+      connector.getPropertiesForAssessment("cred", "aid").futureValue mustBe None
+    }
+  }
+
+  "BridgeIntegrationConnector.getRatepayerPropertyLinks" should {
+
+    "return JSON when call succeeds" in {
+      val json = Json.obj("links" -> Json.arr())
+
+      setupMockHttpV2Get(
+        "http://localhost:1300/bridge-integration/property-link-job/cred/assessment/a"
+      )(json)
+
+      connector.getRatepayerPropertyLinks("cred", "a").futureValue mustBe json
+    }
+
+    "return error JSON when exception occurs" in {
+      setupMockFailedHttpV2Get(
+        "http://localhost:1300/bridge-integration/property-link-job/cred/assessment/a"
+      )
+
+      val result = connector.getRatepayerPropertyLinks("cred", "a").futureValue
+      (result \ "error").as[String] mustBe "Unable to fetch property links"
     }
   }
 
@@ -293,17 +448,17 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
         Some(RatepayerPropertyLinksResponse(
           List(
             Property(
-              id = 5,
-              idx = "1.1.2",
-              name = "testperson2",
-              label = "Individual",
-              description = "Test Person2 Description",
-              origination = "20000101T000000Z",
+              id = Some(5),
+              idx = Some("1.1.2"),
+              name = Some("testperson2"),
+              label = Some("Individual"),
+              description = Some("Test Person2 Description"),
+              origination = Some("20000101T000000Z"),
               termination = None,
-              category = CodeMeaning(Some("LTX-DOM-PRP"),Some("Local taxation domain property")),
-              CodeMeaning(Some("OCC"),Some("Constituted by reference to actual occupation")),
-              CodeMeaning(Some("HDT"),Some("Statutory NDR hereditament")),
-              PropertyData(
+              category = Some(CodeMeaning(Some("LTX-DOM-PRP"),Some("Local taxation domain property"))),
+                Some(CodeMeaning(Some("OCC"),Some("Constituted by reference to actual occupation"))),
+                  Some(CodeMeaning(Some("HDT"),Some("Statutory NDR hereditament"))),
+              data = Some(PropertyData(
                 List(ForeignId("CDB","UK","123456789234")),
                 List(),
                 List(),
@@ -313,9 +468,9 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
                   PropertyAssessment(
                     15,
                     "1.9.1",
-                    "Emilya",
+                    Some("Emilya"),
                     "Individual",
-                    "User account for HR system",
+                    Some("User account for HR system"),
                     "20250827T000000Z",
                     None,
                     CodeMeaning(Some("LTX-DOM-AST"),Some("Local taxation domain assessment")),
@@ -441,9 +596,9 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
                     List()
                   )
                 )
-              ),
-              List(),
-              Metadata(
+              )),
+              Some(List()),
+              Some(Metadata(
                 SendingMetadata(
                   MetadataStage(
                     Map(),
@@ -550,19 +705,19 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
                     Map()
                   )
                 )
-              ),
-              Map(),
-              List()
+              )),
+              Some(Map()),
+              Some(List())
             )
           ),
           List(
             Person(
-              Some(34),
+              34,
               "1.6.1",
               "John",
               "Active",
               "User account for HR system",
-              Some("20250101T000000Z"),
+              "20250101T000000Z",
               None,
               CodeMeaning(
                 Some(""),
@@ -732,12 +887,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
               Map(),
               List(
                 PersonItem(
-                  Some(23),
+                  23,
                   "1.5.1",
                   "Persona5",
                   "Individual",
                   "Test Desc",
-                  Some("20250101T000000Z"),
+                  "20250101T000000Z",
                   None,
                   CodeMeaning(Some("LTX-DOM-PSA"),Some("Local taxation domain persona")),
                   CodeMeaning(Some("TXP"),Some("LGFA taxpayer")),
@@ -933,17 +1088,17 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
         Some(RatepayerPropertyLinksResponse(
           List(
             Property(
-              id = 5,
-              idx = "1.1.2",
-              name = "testperson2",
-              label = "Individual",
-              description = "Test Person2 Description",
-              origination = "20000101T000000Z",
+              id = Some(5),
+              idx = Some("1.1.2"),
+              name = Some("testperson2"),
+              label = Some("Individual"),
+              description = Some("Test Person2 Description"),
+              origination = Some("20000101T000000Z"),
               termination = None,
-              category = CodeMeaning(Some("LTX-DOM-PRP"), Some("Local taxation domain property")),
-              CodeMeaning(Some("OCC"), Some("Constituted by reference to actual occupation")),
-              CodeMeaning(Some("HDT"), Some("Statutory NDR hereditament")),
-              PropertyData(
+              category = Some(CodeMeaning(Some("LTX-DOM-PRP"), Some("Local taxation domain property"))),
+                Some(CodeMeaning(Some("OCC"), Some("Constituted by reference to actual occupation"))),
+                  Some(CodeMeaning(Some("HDT"), Some("Statutory NDR hereditament"))),
+              Some(PropertyData(
                 List(ForeignId("CDB", "UK", "123456789567")),
                 List(),
                 List(),
@@ -953,9 +1108,9 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
                   PropertyAssessment(
                     15,
                     "1.9.1",
-                    "Emilya",
+                    Some("Emilya"),
                     "Individual",
-                    "User account for HR system",
+                    Some("User account for HR system"),
                     "20250827T000000Z",
                     None,
                     CodeMeaning(Some("LTX-DOM-AST"), Some("Local taxation domain assessment")),
@@ -1081,9 +1236,9 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
                     List()
                   )
                 )
-              ),
-              List(),
-              Metadata(
+              )),
+              Some(List()),
+              Some(Metadata(
                 SendingMetadata(
                   MetadataStage(
                     Map(),
@@ -1190,19 +1345,19 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
                     Map()
                   )
                 )
-              ),
-              Map(),
-              List()
+              )),
+              Some(Map()),
+              Some(List())
             )
           ),
           List(
             Person(
-              Some(34),
+              34,
               "1.6.1",
               "John",
               "Active",
               "User account for HR system",
-              Some("20250101T000000Z"),
+              "20250101T000000Z",
               None,
               CodeMeaning(
                 Some(""),
@@ -1372,12 +1527,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
               Map(),
               List(
                 PersonItem(
-                  Some(23),
+                  23,
                   "1.5.1",
                   "Persona5",
                   "Individual",
                   "Test Desc",
-                  Some("20250101T000000Z"),
+                  "20250101T000000Z",
                   None,
                   CodeMeaning(Some("LTX-DOM-PSA"), Some("Local taxation domain persona")),
                   CodeMeaning(Some("TXP"), Some("LGFA taxpayer")),

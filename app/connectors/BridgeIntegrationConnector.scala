@@ -17,18 +17,18 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.bridge.person.Persons
+import models.bridge.property.{PropertyAssessment, PropertyAssessmentContext}
+import models.bridge.relationhship.Relationship
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
-import models.assessment.AssessmentPropertiesResponse
 import models.registration.RegisterRatepayer
 import play.api.http.Status.*
 import play.api.i18n.Lang.logger
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsError, JsObject, JsValue, Json}
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
-import play.api.libs.ws.writeableOf_JsValue
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import java.net.URI
 import javax.inject.Inject
@@ -88,7 +88,117 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-  //123456789123
+  def changePropertyAssessment(
+                                payload: JsValue
+                              )(implicit hc: HeaderCarrier): Future[Boolean] = {
+
+    http
+      .post(uri(s"property-assessment/123456789567/assessment/27399677000").toURL)
+      .withBody(payload) // ✅ already JSON in correct shape
+      .execute[HttpResponse]
+      .map { response =>
+        response.status match {
+          case OK =>
+            true
+
+          case NOT_FOUND =>
+            logger.warn("Property assessment not found")
+            false
+
+          case BAD_REQUEST =>
+            logger.warn(s"Invalid property assessment payload: ${response.body}")
+            false
+
+          case BAD_GATEWAY =>
+            logger.error("Upstream bridge unavailable")
+            false
+
+          case INTERNAL_SERVER_ERROR =>
+            logger.error(s"Server error from bridge: ${response.body}")
+            false
+
+          case other =>
+            logger.error(s"Unexpected response status from bridge: $other")
+            false
+        }
+      }
+      .recover {
+        case ex =>
+          logger.error(
+            s"Call to property assessment update failed: ${ex.getMessage}",
+            ex
+          )
+          false
+      }
+  }
+
+  def changePropertyLink(
+                          payload: JsValue
+                        )(implicit hc: HeaderCarrier): Future[Boolean] = {
+
+    payload.validate[Relationship].fold(
+      errors => {
+        logger.warn(
+          s"""
+             |Invalid Relationship payload.
+             |Validation errors: ${Json.prettyPrint(JsError.toJson(errors))}
+             |Payload received:
+             |${Json.prettyPrint(payload)}
+             |""".stripMargin
+        )
+        Future.successful(false)
+      },
+      _ => {
+        http
+          .post(uri("property-linking/123456789567/relationship-change/27399677000").toURL)
+          .setHeader("Content-Type" -> "application/json")
+          .withBody(payload)
+          .execute[HttpResponse]
+          .map { response =>
+            response.status match {
+              case OK =>
+                true
+
+              case NOT_FOUND =>
+                logger.warn("Relationship not found")
+                false
+
+              case BAD_REQUEST =>
+                logger.warn(
+                  s"Backend rejected relationship payload: ${response.body}"
+                )
+                false
+
+              case BAD_GATEWAY =>
+                logger.error("Upstream bridge unavailable")
+                false
+
+              case INTERNAL_SERVER_ERROR =>
+                logger.error(
+                  s"Server error from bridge: ${response.body}"
+                )
+                false
+
+              case other =>
+                logger.error(
+                  s"Unexpected response status from bridge: $other, body: ${response.body}"
+                )
+                false
+            }
+          }
+          .recover {
+            case ex =>
+              logger.error(
+                s"Call to property linking failed: ${ex.getMessage}",
+                ex
+              )
+              false
+          }
+      }
+    )
+  }
+
+
   def getDashboard(credId: String = "123456789567")
                   (implicit hc: HeaderCarrier): Future[Option[RatepayerStatusResponse]] = {
     val url = uri(s"dashboard/${credId}").toURL
@@ -113,7 +223,6 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-
   def getProperties(implicit hc: HeaderCarrier): Future[Option[RatepayerPropertyLinksResponse]] = {
     http.get(uri(s"properties").toURL)
       .execute[Option[RatepayerPropertyLinksResponse]]
@@ -135,40 +244,39 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-  def getPropertiesForAssessmentJob(
-                                     credId: String,
-                                     assessmentId: String
-                                   )(implicit hc: HeaderCarrier): Future[JsValue] = {
-
-    val url = uri(s"properties/$credId/assessment/$assessmentId").toURL
-
-    http.get(url)
-      .execute[JsValue]
-      .recover {
-        case ex =>
-          logger.warn(s"Failed to retrieve properties for credId=$credId assessment=$assessmentId: ${ex.getMessage}")
-          Json.obj("error" -> "Unable to fetch properties")
-      }
-  }
 
   def getPropertiesForAssessment(
                                   credId: String,
                                   assessmentId: String
-                                )(implicit hc: HeaderCarrier): Future[AssessmentPropertiesResponse] = {
+                                )(implicit hc: HeaderCarrier): Future[Option[PropertyAssessmentContext]] = {
 
-    val url = uri(s"ratepayer-properties/$credId/assessment/$assessmentId").toURL
+    val url = uri(s"property-assessment/$credId/assessment/$assessmentId").toURL
 
-    http.get(url)
-      .execute[AssessmentPropertiesResponse]
-      .recover {
-        case ex =>
-          logger.warn(
-            s"Failed to retrieve properties for credId=$credId assessment=$assessmentId: ${ex.getMessage}"
+    http.get(url).execute[JsValue].map { json =>
+     val assessment =
+        (json \ "properties")
+          .asOpt[List[JsObject]]
+          .flatMap(_.headOption)
+          .flatMap(prop =>
+            (prop \ "data" \ "assessments").asOpt[List[PropertyAssessment]]
           )
-          throw ex
-      }
-  }
+          .flatMap(_.headOption)
 
+      assessment.map { a =>
+        PropertyAssessmentContext(
+          originalJson = json,
+          assessment = a
+        )
+      }
+    }.recover {
+      case ex =>
+        logger.warn(
+          s"Failed to retrieve property assessment for credId=$credId",
+          ex
+        )
+        None
+    }
+  }
 
   def getRatepayerPropertyLinks(
                                  credId: String,

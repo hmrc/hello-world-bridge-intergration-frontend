@@ -2,51 +2,58 @@
 
 ->          /hmrc-frontend                               hmrcfrontend.Routes
 
-GET         /                                                                       controllers.IndexController.onPageLoad()
+GET         /                                                                   controllers.IndexController.onPageLoad()
 
-GET         /assets/*file                                                           controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file                                                       controllers.Assets.versioned(path="/public", file: Asset)
 
-GET         /language/:lang                                                         controllers.LanguageSwitchController.switchToLanguage(lang: String)
+GET         /language/:lang                                                     controllers.LanguageSwitchController.switchToLanguage(lang: String)
 
-GET         /refresh-session                                                        controllers.KeepAliveController.keepAlive()
+GET         /refresh-session                                                    controllers.KeepAliveController.keepAlive()
 
-GET         /there-is-a-problem                                                     controllers.JourneyRecoveryController.onPageLoad(continueUrl: Option[RedirectUrl] ?= None)
+GET         /there-is-a-problem                                                 controllers.JourneyRecoveryController.onPageLoad(continueUrl: Option[RedirectUrl] ?= None)
 
-GET         /contact-number                                                         controllers.ContactNumberController.onPageLoad(mode: Mode = NormalMode)
-GET         /contact-number                                                         controllers.ContactNumberController.onPageLoad(mode: Mode = CheckMode)
-POST        /contact-number                                                         controllers.ContactNumberController.onSubmit(mode: Mode = NormalMode)
-POST        /contact-number                                                         controllers.ContactNumberController.onSubmit(mode: Mode = CheckMode)
+GET         /contact-number                                                     controllers.ContactNumberController.onPageLoad(mode: Mode = NormalMode)
+GET         /contact-number                                                     controllers.ContactNumberController.onPageLoad(mode: Mode = CheckMode)
+POST        /contact-number                                                     controllers.ContactNumberController.onSubmit(mode: Mode = NormalMode)
+POST        /contact-number                                                     controllers.ContactNumberController.onSubmit(mode: Mode = CheckMode)
 
-GET         /user-name                                                              controllers.UserNameController.onPageLoad(mode: Mode = NormalMode)
-GET         /user-name                                                              controllers.UserNameController.onPageLoad(mode: Mode = CheckMode)
-POST        /user-name                                                              controllers.UserNameController.onSubmit(mode: Mode = NormalMode)
-POST        /user-name                                                              controllers.UserNameController.onSubmit(mode: Mode = CheckMode)
+GET         /user-name                                                          controllers.UserNameController.onPageLoad(mode: Mode = NormalMode)
+GET         /user-name                                                          controllers.UserNameController.onPageLoad(mode: Mode = CheckMode)
+POST        /user-name                                                          controllers.UserNameController.onSubmit(mode: Mode = NormalMode)
+POST        /user-name                                                          controllers.UserNameController.onSubmit(mode: Mode = CheckMode)
 
-GET         /check-your-answers                                                     controllers.CheckYourAnswersController.onPageLoad()
-POST        /check-your-answers                                                     controllers.CheckYourAnswersController.onSubmit()
+GET         /check-your-answers                                                 controllers.CheckYourAnswersRegisterUserController.onPageLoad()
+POST        /check-your-answers                                                 controllers.CheckYourAnswersRegisterUserController.onSubmit()
 
-GET         /account/sign-out-survey                                                controllers.auth.AuthController.signOut()
-GET         /account/sign-out                                                       controllers.auth.AuthController.signOutNoSurvey()
-GET         /account/signed-out                                                     controllers.auth.SignedOutController.onPageLoad()
+GET         /account/sign-out-survey                                            controllers.auth.AuthController.signOut()
+GET         /account/sign-out                                                   controllers.auth.AuthController.signOutNoSurvey()
+GET         /account/signed-out                                                 controllers.auth.SignedOutController.onPageLoad()
 
-GET         /dashboard                                                              controllers.DashboardController.onPageLoad()
-GET         /view-linked-properties                                                 controllers.ViewLinkedPropertiesController.onPageLoad()
-GET         /properties-for-assessment/:credId/assessment/:assessmentId             controllers.PropertiesForAssessmentJobController.onPageLoad(credId: String, assessmentId: String)
+GET         /dashboard                                                          controllers.DashboardController.onPageLoad()
+GET         /view-linked-properties                                             controllers.ViewLinkedPropertiesController.onPageLoad()
 
-GET         /unauthorised                                                           controllers.UnauthorisedController.onPageLoad()
+GET         /unauthorised                                                       controllers.UnauthorisedController.onPageLoad()
 
-GET         /property-search                                                        controllers.FindAPropertyController.onPageLoad()
-POST        /property-search                                                        controllers.FindAPropertyController.onSubmit()
+GET        /property-search                                                     controllers.FindAPropertyController.onPageLoad()
+POST       /property-search                                                     controllers.FindAPropertyController.onSubmit()
 
-GET         /property-results                                                       controllers.PropertyResultsController.onPageLoad(page: Int ?= 1 ,sortBy: String ?= "AddressASC")
-POST        /property-results                                                       controllers.PropertyResultsController.sort
-GET         /property-results/select/:index                                         controllers.PropertyResultsController.selectProperty(index: Int, sortBy: String ?= "AddressASC")
 
-GET         /no-results                                                             controllers.NoResultsFoundController.onPageLoad
+GET     /property-results                                                       controllers.PropertyResultsController.onPageLoad(page: Int ?= 1 ,sortBy: String ?= "AddressASC")
+POST    /property-results                                                       controllers.PropertyResultsController.sort
+GET     /property-results/select/:index                                         controllers.PropertyResultsController.selectProperty(index: Int, sortBy: String ?= "AddressASC")
 
-GET         /ratepayer-properties/:credId/assessment/:assessmentId                  controllers.PropertiesController.onPageLoad(credId: String, assessmentId: String)
-POST        /ratepayer-properties/:credId/assessment/:assessmentId                  controllers.PropertiesController.sort(credId, assessmentId)
 
-GET         /ratepayer-property-links/:credId/assessment/:assessmentId              controllers.RatepayerPropertyLinksController.getRatepayerPropertyLinks(credId: String, assessmentId: String)
+GET     /no-results                                                             controllers.NoResultsFoundController.onPageLoad
 
-GET         /explore-ratepayer                                                      controllers.ExploreRatePayerController.exploreRatePayer()
+GET     /view-linked-properties                                                 controllers.ViewLinkedPropertiesController.onPageLoad()
+GET     /ratepayer-property-links/relationship-label                            controllers.RelationshipLabelController.onPageLoad()
+POST    /ratepayer-property-links/relationship-label                            controllers.RelationshipLabelController.onSubmit()
+GET     /ratepayer-property-links/check-your-answers                            controllers.CheckYourAnswersRatepayerPropertyLinksController.onPageLoad()
+POST    /ratepayer-property-links/check-your-answers                            controllers.CheckYourAnswersRatepayerPropertyLinksController.postRatepayerPropertyLinks
+
+GET     /ratepayer-property-assessment/check-your-answers                       controllers.CheckYourAnswersPropertyAssessmentController.onPageLoad()
+POST    /ratepayer-property-assessment/check-your-answers                       controllers.CheckYourAnswersPropertyAssessmentController.postRatepayerPropertyAssessment
+GET     /ratepayer-property-assessment/property-label                           controllers.PropertyLabelController.onPageLoad()
+POST    /ratepayer-property-assessment/property-label                           controllers.PropertyLabelController.onSubmit()
+
+GET     /explore-ratepayer                                                      controllers.ExploreRatePayerController.exploreRatePayer()
