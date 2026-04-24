@@ -72,14 +72,14 @@ trait PersonSummaryList {
             )
           ),
 
-          Some(
+          person.origination.map { origination =>
             BridgeSummaryListRow(
               messages("person origination:"),
               None,
-              Seq(person.origination),
+              Seq(origination),
               changeLink = None
             )
-          ),
+          },
 
           person.termination.map { termination =>
             BridgeSummaryListRow(

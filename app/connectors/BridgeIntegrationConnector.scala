@@ -17,6 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
+import models.bridge.person.Persons
 import models.bridge.property.*
 import models.bridge.relationhship.Relationship
 import models.dashboard.RatepayerStatusResponse
