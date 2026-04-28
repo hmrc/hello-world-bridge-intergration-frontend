@@ -16,42 +16,30 @@
 
 package service
 
-import models.assessment.AssessmentProperty
+import models.bridge.property.Property
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
 class AssessmentPropertiesSortingService @Inject()() {
 
-  def sort(list: List[AssessmentProperty], sortBy: String): List[AssessmentProperty] =
+  def sort(list: List[Property], sortBy: String): List[Property] =
     sortBy match {
 
       case "AddressASC" =>
-        list.sortBy(_.address)
+        list.sortBy(_.label)
 
       case "AddressDESC" =>
-        list.sortBy(_.address)(Ordering[String].reverse)
-
-      case "ForeignIdASC" =>
-        list.sortBy(_.foreignId)
-
-      case "ForeignIdDESC" =>
-        list.sortBy(_.foreignId)(Ordering[String].reverse)
+        list.sortBy(_.label)(Ordering[Option[String]].reverse)
 
       case "DescriptionASC" =>
         list.sortBy(_.description)
 
       case "DescriptionDESC" =>
-        list.sortBy(_.description)(Ordering[String].reverse)
-
-      case "RateableValueASC" =>
-        list.sortBy(_.rateableValue)
-
-      case "RateableValueDESC" =>
-        list.sortBy(_.rateableValue)(Ordering[Int].reverse)
+        list.sortBy(_.description)(Ordering[Option[String]].reverse)
 
       case _ =>
-        list.sortBy(_.address)
+        list.sortBy(_.label)
     }
 }
 

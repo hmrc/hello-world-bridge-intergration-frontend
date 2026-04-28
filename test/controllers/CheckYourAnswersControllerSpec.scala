@@ -186,7 +186,7 @@ class CheckYourAnswersControllerSpec
         appender.start()
         rootLogger.addAppender(appender)
 
-        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+        val request = FakeRequest(POST, routes.CheckYourAnswersRegisterUserController.onSubmit().url)
           .withCSRFToken
 
         val result = route(app, request).value
@@ -225,7 +225,7 @@ class CheckYourAnswersControllerSpec
         appender.start()
         rootLogger.addAppender(appender)
 
-        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+        val request = FakeRequest(POST, routes.CheckYourAnswersRegisterUserController.onSubmit().url)
           .withCSRFToken
 
         val result = route(app, request).value

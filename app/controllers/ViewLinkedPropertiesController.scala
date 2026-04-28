@@ -45,39 +45,58 @@ class ViewLinkedPropertiesController @Inject()(
                                                 val controllerComponents: MessagesControllerComponents,
                                                 bridgeIntegrationConnector: BridgeIntegrationConnector,
                                                 view: ViewLinkedPropertiesView
-                                              )(implicit ec: ExecutionContext) extends FrontendBaseController
-  with I18nSupport
-  with Logging
-  with PropertySummaryList
-  with PersonSummaryList
-  with RelationshipSummaryList {
+                                              )(implicit ec: ExecutionContext)
+  extends FrontendBaseController
+    with I18nSupport
+    with Logging
+    with PropertySummaryList
+    with PersonSummaryList
+    with RelationshipSummaryList {
 
-  def onPageLoad(): Action[AnyContent] = identify.async {
-    implicit request =>
-      bridgeIntegrationConnector.getRatepayerProperties().flatMap{
-        case Some(ratepayerPropertyLinksResponse) =>
-          Future.successful(Ok(view(
-            linkedProperties = true,
-            createPropertySummaryList(ratepayerPropertyLinksResponse.properties),
-            createPersonSummaryList(ratepayerPropertyLinksResponse.persons),
-            createRelationshipSummaryList(ratepayerPropertyLinksResponse.relationships)
-          )))
-        case None =>
-          Future.successful(Ok(view(
+  // ✅ Explicitly resolve the conflict
+  override def createPersonSummaryList(
+                                        persons: List[models.bridge.person.Person]
+                                      )(implicit messages: play.api.i18n.Messages) =
+    super[PersonSummaryList].createPersonSummaryList(persons)
+
+  def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
+    bridgeIntegrationConnector.getRatepayerProperties().flatMap {
+      case Some(ratepayerPropertyLinksResponse) =>
+        Future.successful(
+          Ok(
+            view(
+              linkedProperties = true,
+              createPropertySummaryList(ratepayerPropertyLinksResponse.properties),
+              createPersonSummaryList(ratepayerPropertyLinksResponse.persons),
+              createRelationshipSummaryList(ratepayerPropertyLinksResponse.relationships)
+            )
+          )
+        )
+
+      case None =>
+        Future.successful(
+          Ok(
+            view(
+              linkedProperties = false,
+              createPropertySummaryList(List.empty),
+              createPersonSummaryList(List.empty),
+              createRelationshipSummaryList(List.empty)
+            )
+          )
+        )
+    }.recover {
+      case e =>
+        logger.error(
+          s"[bridgeIntegrationConnector][getDashboard] Failed for ${request.userId}: ${e.getMessage}"
+        )
+        Ok(
+          view(
             linkedProperties = false,
             createPropertySummaryList(List.empty),
             createPersonSummaryList(List.empty),
             createRelationshipSummaryList(List.empty)
-          )))
-      }.recover{
-        case e =>
-          logger.error(s"[bridgeIntegrationConnector][getDashboard] Failed for ${request.userId}: ${e.getMessage}")
-          Ok(view(
-            linkedProperties = false,
-            createPropertySummaryList(List.empty),
-            createPersonSummaryList(List.empty),
-            createRelationshipSummaryList(List.empty)
-          ))
-      }
+          )
+        )
+    }
   }
 }

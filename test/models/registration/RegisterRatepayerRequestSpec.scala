@@ -16,10 +16,6 @@
 
 package models.registration
 
-import helpers.TestSupport
-import models.registration.Address
-import models.registration.ReferenceType.Trn
-import play.api.libs.json.{JsValue, Json}
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsSuccess, Json}
 

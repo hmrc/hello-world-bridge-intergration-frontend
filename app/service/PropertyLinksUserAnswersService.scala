@@ -110,14 +110,20 @@ class PropertyLinksUserAnswersService extends Logging {
                            compartment: JsObject,
                            answers: UserAnswers
                          ): JsArray =
-    JsArray(
-      (compartment \ "items").as[JsArray].value.map {
-        case item: JsObject =>
-          val data = (item \ "data").asOpt[JsObject].getOrElse(Json.obj())
-          item + ("data" -> mergeRelationshipData(data, answers))
-        case other => other
-      }
-    )
+    (compartment \ "items").asOpt[JsArray] match {
+      case Some(items) =>
+        JsArray(
+          items.value.map {
+            case item: JsObject =>
+              val data = (item \ "data").asOpt[JsObject].getOrElse(Json.obj())
+              item + ("data" -> mergeRelationshipData(data, answers))
+            case other => other
+          }
+        )
+
+      case None =>
+        JsArray.empty
+    }
 
   private def mergeRelationshipRoot(
                                      relationship: JsObject,

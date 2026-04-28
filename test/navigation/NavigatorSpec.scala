@@ -46,7 +46,7 @@ class NavigatorSpec extends SpecBase {
         val emptyUA = emptyUserAnswers
         val result = navigator.nextPage(UserNamePage, NormalMode, emptyUA)
 
-        result mustBe routes.CheckYourAnswersController.onPageLoad()
+        result mustBe routes.CheckYourAnswersRegisterUserController.onPageLoad()
       }
     }
 

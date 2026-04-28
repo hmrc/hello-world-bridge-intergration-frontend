@@ -178,57 +178,7 @@ object CheckAnswers {
         .map(classCode => requiredRow("checkAnswers.relationship.classCode", classCode)),
 
       answers.get(RelationshipClassMeaningPage)
-        .map(classMeaning => requiredRow("checkAnswers.relationship.classMeaning", classMeaning)),
-
-
-
-
-//      Some(requiredRow("checkAnswers.idx", relationship.idx)),
-//      Some(requiredRow("checkAnswers.name", relationship.name)),
-//      Some(requiredRow("checkAnswers.label", relationship.label)),
-//      Some(requiredRow("checkAnswers.description", relationship.description)),
-//
-//      optionalRow("checkAnswers.id", relationship.id.map(_.toString)),
-//      optionalRow("checkAnswers.origination", relationship.origination),
-//      optionalRow("checkAnswers.termination", relationship.termination),
-//
-//      optionalRow("checkAnswers.category.code", relationship.category.code),
-//      optionalRow("checkAnswers.category.meaning", relationship.category.meaning),
-//
-//      optionalRow("checkAnswers.type.code", relationship.`type`.code),
-//      optionalRow("checkAnswers.type.meaning", relationship.`type`.meaning),
-//
-//      optionalRow("checkAnswers.class.code", relationship.`class`.code),
-//      optionalRow("checkAnswers.class.meaning", relationship.`class`.meaning),
-//
-//      listRow(
-//        "checkAnswers.data.foreignIds",
-//        relationship.data.foreign_ids.map(_.system)
-//      ),
-//      listRow(
-//        "checkAnswers.data.foreignNames",
-//        relationship.data.foreign_names.map(_.system)
-//      ),
-//      listRow(
-//        "checkAnswers.data.foreignLabels",
-//        relationship.data.foreign_labels.map(_.system)
-//      ),
-//
-//      listRow(
-//        "checkAnswers.compartments",
-//        relationship.compartments.map { case (k, v) => s"$k: $v" }.toList
-//      ),
-//
-//      listRow(
-//        "checkAnswers.items",
-//        relationship.items.map { item =>
-//          s"${item.transportation.path} (${item.persistence.place}/${item.persistence.identifier})"
-//        }
-//      )
-//    )
-//
-//    val rows =
-//      baseRows.flatten ++ manifestationsSummaryRows(relationship.data.manifestations)
+        .map(classMeaning => requiredRow("checkAnswers.relationship.classMeaning", classMeaning))
     )
     SummaryList(
       rows.flatten.map(summarise),
@@ -317,43 +267,6 @@ object CheckAnswers {
         "checkAnswers.property.class.meaning",
         answers.get(PropertyClassMeaningPage)
       ),
-
-      // ------------------------------------------------
-      // Foreign IDs (stored as List[String] in answers)
-      // ------------------------------------------------
-//      listRow(
-//        "checkAnswers.property.foreignIds",
-//        answers.get(PropertyForeignIdsPage).getOrElse(Nil)
-//      ),
-//
-//      listRow(
-//        "checkAnswers.property.foreignNames",
-//        answers.get(PropertyForeignNamesPage).getOrElse(Nil)
-//      ),
-//
-//      listRow(
-//        "checkAnswers.property.foreignLabels",
-//        answers.get(PropertyForeignLabelsPage).getOrElse(Nil)
-//      ),
-//
-      // ------------------------------------------------
-      // Compartments
-      // ------------------------------------------------
-//      listRow(
-//        "checkAnswers.property.compartments",
-//        answers.get(PropertyCompartmentsPage)
-//          .getOrElse(Map.empty)
-//          .map { case (k, v) => s"$k: $v" }
-//          .toList
-//      ),
-//
-//      // ------------------------------------------------
-//      // Use description
-//      // ------------------------------------------------
-//      optionalRow(
-//        "checkAnswers.property.use.description",
-//        answers.get(PropertyUseDescriptionPage)
-//      ),
 
       // ------------------------------------------------
       // Items count

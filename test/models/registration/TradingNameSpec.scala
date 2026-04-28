@@ -16,14 +16,10 @@
 
 package models.registration
 
-import helpers.TestSupport
-import models.registration.PhoneNumber
-import org.scalatest.matchers.should.Matchers.*
-import play.api.data.Form
-import play.api.libs.json.{Json, JsSuccess}
-
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.{JsSuccess, Json}
 
 
 class TradingNameSpec extends AnyWordSpec with Matchers {

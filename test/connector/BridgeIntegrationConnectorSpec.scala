@@ -868,12 +868,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
           ),
           List(
             Person(
-              34,
+              Some(34),
               "1.6.1",
               "John",
               "Active",
               "User account for HR system",
-              "20250101T000000Z",
+              Some("20250101T000000Z"),
               None,
               CodeMeaning(
                 Some(""),
@@ -1043,12 +1043,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
               Map(),
               List(
                 PersonItem(
-                  23,
+                  Some(23),
                   "1.5.1",
                   "Persona5",
                   "Individual",
                   "Test Desc",
-                  "20250101T000000Z",
+                  Some("20250101T000000Z"),
                   None,
                   CodeMeaning(Some("LTX-DOM-PSA"),Some("Local taxation domain persona")),
                   CodeMeaning(Some("TXP"),Some("LGFA taxpayer")),
@@ -1508,12 +1508,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
           ),
           List(
             Person(
-              34,
+              Some(34),
               "1.6.1",
               "John",
               "Active",
               "User account for HR system",
-              "20250101T000000Z",
+              Some("20250101T000000Z"),
               None,
               CodeMeaning(
                 Some(""),
@@ -1683,12 +1683,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
               Map(),
               List(
                 PersonItem(
-                  23,
+                  Some(23),
                   "1.5.1",
                   "Persona5",
                   "Individual",
                   "Test Desc",
-                  "20250101T000000Z",
+                  Some("20250101T000000Z"),
                   None,
                   CodeMeaning(Some("LTX-DOM-PSA"), Some("Local taxation domain persona")),
                   CodeMeaning(Some("TXP"), Some("LGFA taxpayer")),
@@ -2030,31 +2030,6 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
       val result = connector.exploreRatePayer()(hc).futureValue
       result mustBe None
-    }
-  }
-
-
-  "BridgeIntegrationConnector.getPropertiesForAssessmentJob" should {
-
-    "return None when NOT_FOUND (404) is returned" in {
-      setupMockHttpV2Get(
-        "http://localhost:1300/bridge-integration/properties/123456789567/assessment/27399677001"
-      )(
-        None
-      )
-      connector.getPropertiesForAssessmentJob("123456789567", "27399677001").futureValue mustEqual None
-    }
-  }
-
-  "BridgeIntegrationConnector.getPropertiesForAssessment" should {
-
-    "return None when NOT_FOUND (404) is returned" in {
-      setupMockHttpV2Get(
-        "http://localhost:1300/bridge-integration/ratepayer-properties/123456789567/assessment/27399677001"
-      )(
-        None
-      )
-      connector.getPropertiesForAssessment("123456789567", "27399677001").futureValue mustEqual None
     }
   }
 

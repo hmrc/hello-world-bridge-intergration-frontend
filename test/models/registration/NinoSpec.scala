@@ -17,9 +17,7 @@
 package models.registration
 
 import helpers.TestSupport
-import models.registration.PhoneNumber
 import org.scalatest.matchers.should.Matchers.*
-import play.api.data.Form
 import play.api.libs.json.Json
 
 class NinoSpec extends TestSupport{

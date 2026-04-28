@@ -60,10 +60,6 @@ class CheckYourAnswersPropertyAssessmentController @Inject()(
         )
         .map {
           case Some(propertyAssessmentContext) =>
-            // -------------------------------------------------
-            // 1. Store ORIGINAL inbound JSON in UserAnswers
-            //    (only once)
-            // -------------------------------------------------
             val answersWithOriginalJson =
               baseAnswers
                 .get(PropertyAssessmentOriginalJsonPage)
@@ -72,22 +68,13 @@ class CheckYourAnswersPropertyAssessmentController @Inject()(
                     .set(PropertyAssessmentOriginalJsonPage, propertyAssessmentContext.originalJson)
                     .getOrElse(baseAnswers)
                 }(_ => baseAnswers)
-            // -------------------------------------------------
-            // 2. Auto‑populate missing answers from assessment
-            // -------------------------------------------------
             val hydratedAnswers =
               propertyAssessmentUserAnswersService
                 .populateFromAssessment(
                   answersWithOriginalJson,
                   propertyAssessmentContext.assessment
                 )
-            // -------------------------------------------------
-            // 3. Persist UserAnswers in Mongo
-            // -------------------------------------------------
             sessionRepository.set(hydratedAnswers)
-            // -------------------------------------------------
-            // 4. Build summary FROM UserAnswers
-            // -------------------------------------------------
             val summary =
               createPropertySummaryRows(hydratedAnswers)
             Ok(view(summary))
@@ -114,9 +101,6 @@ class CheckYourAnswersPropertyAssessmentController @Inject()(
         answers = answers
       )
     }
-
-    println(Console.CYAN_B + s"Sending Assesment: $outboundJson" + Console.RESET)
-
     connector.changePropertyAssessment(outboundJson).map {
       case true =>
         logger.info(s"Successfully submitted property assessment for user: $userId")

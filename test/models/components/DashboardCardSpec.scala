@@ -16,15 +16,10 @@
 
 package models.components
 
-import base.SpecBase
-import helpers.{TestSupport, ViewBaseSpec}
+import helpers.ViewBaseSpec
 import play.api.mvc.Call
 import uk.gov.hmrc.govukfrontend.views.Aliases.{CardTitle, Tag, Text}
-import models.components.{Card, CardCaption, DashboardCard, Link}
-import play.api.i18n.{Messages, MessagesApi}
 import views.html.components.{CardComponent, LinkComponent}
-
-import javax.inject.Inject
 
 class DashboardCardSpec extends ViewBaseSpec {
 

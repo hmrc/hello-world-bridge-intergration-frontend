@@ -34,9 +34,7 @@
         currentPage: Int,
         totalProperties: Int,
         pageSize: Int,
-        sortBy: String,
-        credId:String,
-        assessmentId: String
+        sortBy: String
 )(implicit request: Request[_], messages: Messages)
 
 @defining(Math.ceil(totalProperties.toDouble / pageSize).toInt) { totalPages =>
@@ -54,37 +52,26 @@
                 </h1>
 
                 @helper.form(
-                    action = controllers.routes.PropertiesController.onPageLoad(
-                        request.path.split("/").last,
-                        sortBy
-                    ),
+                    action = controllers.routes.PropertiesController.onPageLoad(),
                     Symbol("autoComplete") -> "off"
                 ) {
-                    @sortingComponent(sortBy, controllers.routes.PropertiesController.onPageLoad(credId, assessmentId))
+                    @sortingComponent(sortBy, controllers.routes.PropertiesController.onPageLoad())
                 }
 
                 @govukTable(
                     Table(
                         head = Some(Seq(
                             HeadCell(Text(messages("assessmentProperties.table.address"))),
-                            HeadCell(Text(messages("assessmentProperties.table.foreignId"))),
-                            HeadCell(Text(messages("assessmentProperties.table.laCode"))),
-                            HeadCell(Text(messages("assessmentProperties.table.description"))),
-                            HeadCell(Text(messages("assessmentProperties.table.rateableValue")))
                         )),
                         rows = model.properties.map { p =>
                             Seq(
-                                TableRow(Text(p.address)),
-                                TableRow(Text(p.foreignId)),
-                                TableRow(Text(p.laCode)),
-                                TableRow(Text(p.description)),
-                                TableRow(Text(p.rateableValue.toString))
+                                TableRow(Text(p.label.get)),
                             )
                         }
                     )
                 )
 
-                @paginationComponent(currentPage, totalPages, controllers.routes.PropertiesController.onPageLoad(credId, assessmentId).url, sortBy)
+                @paginationComponent(currentPage, totalPages, controllers.routes.PropertiesController.onPageLoad().url, sortBy)
 
             </div>
         </div>

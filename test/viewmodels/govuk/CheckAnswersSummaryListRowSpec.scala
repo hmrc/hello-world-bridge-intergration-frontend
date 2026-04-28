@@ -16,8 +16,6 @@
 
 package models.checkAnswers
 
-import models.checkAnswers.Link
-import models.checkAnswers.CheckAnswersSummaryListRow
 import org.scalatest.OptionValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
