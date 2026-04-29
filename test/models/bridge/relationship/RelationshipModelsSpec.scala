@@ -64,7 +64,7 @@ class RelationshipModelsSpec extends AnyWordSpec with Matchers {
 
   "Persistence" should {
     "serialise and deserialise correctly" in {
-      val p = RelationshipItemPersistence(place = "DB", identifier = Some("XYZ123"))
+      val p = RelationshipItemPersistence(place = "DB", identifier = Some(123))
       Json.toJson(p).as[RelationshipItemPersistence] shouldBe p
     }
   }
@@ -73,7 +73,7 @@ class RelationshipModelsSpec extends AnyWordSpec with Matchers {
     "serialise and deserialise correctly" in {
       val item = RelationshipItem(
         transportation = RelationshipItemTransportation("/path/123"),
-        persistence = RelationshipItemPersistence("STORE", Some("ID987"))
+        persistence = RelationshipItemPersistence("STORE", Some(987))
       )
 
       Json.toJson(item).as[RelationshipItem] shouldBe item
@@ -141,7 +141,7 @@ class RelationshipModelsSpec extends AnyWordSpec with Matchers {
 
       val ritem = RelationshipItem(
         transportation = RelationshipItemTransportation("/a/b/c"),
-        persistence = RelationshipItemPersistence("STORE1", Some("ID1"))
+        persistence = RelationshipItemPersistence("STORE1", Some(1))
       )
 
       val relationship = Relationship(

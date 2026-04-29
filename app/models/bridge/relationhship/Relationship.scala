@@ -78,7 +78,7 @@ object RelationshipItemTransportation {
 
 case class RelationshipItemPersistence(
                                         place: String,
-                                        identifier: Option[String]
+                                        identifier: Option[Int]
                                       )
 
 object RelationshipItemPersistence {
@@ -88,7 +88,7 @@ object RelationshipItemPersistence {
   implicit val writes: OWrites[RelationshipItemPersistence] = OWrites { data =>
     Json.obj(
       "place" -> data.place,
-      "identifier" -> data.identifier.map(JsString.apply).getOrElse(JsNull)
+      "identifier" -> data.identifier.map(int => JsNumber(int)).getOrElse(JsNull)
     )
   }
 }

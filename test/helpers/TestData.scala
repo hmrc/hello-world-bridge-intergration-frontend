@@ -120,7 +120,7 @@ trait TestData {
 
   val relationshipItem = RelationshipItem(
     transportation = RelationshipItemTransportation("/org/rel"),
-    persistence = RelationshipItemPersistence("STORE", Some("ID123"))
+    persistence = RelationshipItemPersistence("STORE", Some(123))
   )
 
   val manifestation = RelationshipManifestation(

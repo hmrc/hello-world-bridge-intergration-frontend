@@ -128,7 +128,7 @@ class CheckYourAnswersRatepayerPropertyLinksController @Inject()(
           persistence =
             RelationshipItemPersistence(
               place = "LTX-DOM-AST",
-              identifier = Some("13")
+              identifier = Some(13)
             )
         ),
         RelationshipItem(
@@ -139,7 +139,7 @@ class CheckYourAnswersRatepayerPropertyLinksController @Inject()(
           persistence =
             RelationshipItemPersistence(
               place = "LTX-DOM-PSA",
-              identifier = Some("13")
+              identifier = Some(13)
             )
         )
       )
