@@ -254,19 +254,17 @@ class BridgeIntegrationConnector @Inject()(
     val url = uri(s"property-assessment/$credId/assessment/$assessmentId").toURL
 
     http.get(url).execute[JsValue].map { json =>
-     val assessment =
+      println(Console.CYAN + Json.prettyPrint(json) + Console.RESET)
+
+      val assessmentOpt =
         (json \ "properties")
-          .asOpt[List[JsObject]]
-          .flatMap(_.headOption)
-          .flatMap(prop =>
-            (prop \ "data" \ "assessments").asOpt[List[PropertyAssessment]]
-          )
+          .asOpt[List[Property]]
           .flatMap(_.headOption)
 
-      assessment.map { a =>
+      assessmentOpt.map { assessment =>
         PropertyAssessmentContext(
           originalJson = json,
-          assessment = a
+          assessment = assessment
         )
       }
     }.recover {

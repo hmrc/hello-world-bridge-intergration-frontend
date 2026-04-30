@@ -18,11 +18,10 @@ package utils
 
 import base.SpecBase
 import helpers.{TestSupport, ViewBaseSpec}
-import play.api.mvc.Call
-import uk.gov.hmrc.govukfrontend.views.Aliases.{CardTitle, Text}
-
 import models.Status.{Approved, Pending, Rejected}
 import models.components.Link
+import play.api.mvc.Call
+import uk.gov.hmrc.govukfrontend.views.Aliases.{CardTitle, Text}
 
 class DashboardHelperSpec extends ViewBaseSpec {
 

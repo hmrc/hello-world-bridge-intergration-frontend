@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-package models.registration
+package forms
 
-import helpers.TestSupport
-import org.scalatest.matchers.should.Matchers.*
-import play.api.libs.json.Json
+import forms.mappings.Mappings
+import play.api.data.Form
 
-class EmailSpec extends TestSupport{
-  "Email model" should {
-    "serialise into json" in {
-      Json.toJson(emailModel) mustBe emailJson
-    }
-    "deserialize from json" in {
-      emailJson.as[Email] mustBe emailModel
-    }
-  }
+import javax.inject.Inject
+
+
+class RelationshipDescriptionFormProvider @Inject() extends Mappings {
+
+  def apply(): Form[String] =
+    Form(
+      "value" -> text("relationshipDescription.error.required")
+        .verifying(
+          firstError(
+            maxLength(53, "relationshipDescription.error.length"),
+          )
+        )
+    )
 }

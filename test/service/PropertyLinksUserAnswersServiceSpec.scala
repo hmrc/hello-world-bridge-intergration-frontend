@@ -17,14 +17,12 @@
 package service
 
 import base.SpecBase
-import models.UserAnswers
-import models.bridge.relationhship.*
-import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
+import models.bridge.relationhship.*
 import pages.relationship.*
 import play.api.libs.json.*
-import play.api.test.Helpers.*
 import models.bridge.common.*
+
 
 class PropertyLinksUserAnswersServiceSpec
   extends SpecBase

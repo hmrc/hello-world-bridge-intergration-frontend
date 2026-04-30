@@ -48,6 +48,8 @@ GET        /no-results                                                          
 GET        /view-linked-properties                                                 controllers.ViewLinkedPropertiesController.onPageLoad()
 GET        /ratepayer-property-links/relationship-label                            controllers.RelationshipLabelController.onPageLoad()
 POST       /ratepayer-property-links/relationship-label                            controllers.RelationshipLabelController.onSubmit()
+GET        /ratepayer-property-links/relationship-description                      controllers.RelationshipDescriptionController.onPageLoad()
+POST       /ratepayer-property-links/relationship-description                      controllers.RelationshipDescriptionController.onSubmit()
 GET        /ratepayer-property-links/check-your-answers                            controllers.CheckYourAnswersRatepayerPropertyLinksController.onPageLoad()
 POST       /ratepayer-property-links/check-your-answers                            controllers.CheckYourAnswersRatepayerPropertyLinksController.postRatepayerPropertyLinks
 
@@ -55,6 +57,8 @@ GET        /ratepayer-property-assessment/check-your-answers                    
 POST       /ratepayer-property-assessment/check-your-answers                       controllers.CheckYourAnswersPropertyAssessmentController.postRatepayerPropertyAssessment
 GET        /ratepayer-property-assessment/property-label                           controllers.PropertyLabelController.onPageLoad()
 POST       /ratepayer-property-assessment/property-label                           controllers.PropertyLabelController.onSubmit()
+GET        /ratepayer-property-assessment/property-address                         controllers.PropertyAddressController.onPageLoad()
+POST       /ratepayer-property-assessment/property-address                         controllers.PropertyAddressController.onSubmit()
 
 GET        /ratepayer-property-links                                               controllers.PropertiesController.onPageLoad()
 POST       /ratepayer-property-links                                               controllers.PropertiesController.sort()

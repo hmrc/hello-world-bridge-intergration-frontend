@@ -69,10 +69,11 @@ object CheckAnswers {
 
   private def optionalRow(
                            labelKey: String,
-                           value: Option[String]
+                           value: Option[String],
+                           href: Option[Call] = None
                          )(implicit messages: Messages): Option[CheckAnswersSummaryListRow] =
     value.filter(_.nonEmpty).map { v =>
-      buildRow(labelKey, v, labelKey, None, labelKey)
+      buildRow(labelKey = labelKey, value = v, linkId = labelKey, href = href, hiddenKey = labelKey)
     }
 
   private def listRow(
@@ -151,10 +152,17 @@ object CheckAnswers {
         .map(name => requiredRow("checkAnswers.relationship.name", name)),
 
       answers.get(RelationshipLabelPage)
-        .map(label => requiredRow("checkAnswers.relationship.label", label, href = Some(routes. RelationshipLabelController.onPageLoad()))),
+        .map(label => requiredRow(
+          "checkAnswers.relationship.label",
+          label,
+          href = Some(routes. RelationshipLabelController.onPageLoad()))),
 
       answers.get(RelationshipDescriptionPage)
-        .map(description => requiredRow("checkAnswers.relationship.description", description)),
+        .map(description => requiredRow(
+          "checkAnswers.relationship.description",
+          description,
+          href = Some(routes. RelationshipDescriptionController.onPageLoad())
+        )),
 
       answers.get(RelationshipOriginationPage)
         .map(origination => requiredRow("checkAnswers.relationship.origination", origination)),
@@ -178,7 +186,13 @@ object CheckAnswers {
         .map(classCode => requiredRow("checkAnswers.relationship.classCode", classCode)),
 
       answers.get(RelationshipClassMeaningPage)
-        .map(classMeaning => requiredRow("checkAnswers.relationship.classMeaning", classMeaning))
+        .map(classMeaning => requiredRow("checkAnswers.relationship.classMeaning", classMeaning)),
+
+      answers.get(PropertyAddressPage)
+        .map(address => requiredRow("checkAnswers.property.data.address.full", address)),
+
+      answers.get(PropertyPostcodePage)
+        .map(postcode => requiredRow("checkAnswers.property.data.address.postcode", postcode)),
     )
     SummaryList(
       rows.flatten.map(summarise),
@@ -196,9 +210,6 @@ object CheckAnswers {
 
     val rows: Seq[Option[CheckAnswersSummaryListRow]] = Seq(
 
-      // ------------------------------------------------
-      // Core identity
-      // ------------------------------------------------
       answers.get(PropertyIdPage)
         .map(id => requiredRow("checkAnswers.property.id", id.toString)),
 
@@ -210,10 +221,7 @@ object CheckAnswers {
       
       answers.get(PropertyOriginationPage)
         .map(orig => requiredRow("checkAnswers.property.origination", orig)),
-      
-      // ------------------------------------------------
-      // Optional top-level fields
-      // ------------------------------------------------
+
       optionalRow(
         "checkAnswers.property.name",
         answers.get(PropertyNamePage)
@@ -229,12 +237,27 @@ object CheckAnswers {
         answers.get(PropertyTerminationPage)
       ),
 
-      // ------------------------------------------------
-      // Category
-      // ------------------------------------------------
       optionalRow(
         "checkAnswers.property.category.code",
         answers.get(PropertyCategoryCodePage)
+      ),
+
+      optionalRow(
+        "checkAnswers.property.data.address.full",
+        answers.get(PropertyAddressPage),
+        href = Some(routes.PropertyAddressController.onPageLoad())
+      ),
+
+      optionalRow(
+        "checkAnswers.property.data.address.postcode",
+        answers.get(PropertyPostcodePage),
+        href = Some(routes.PropertyLabelController.onPageLoad())
+      ),
+
+      optionalRow(
+        "checkAnswers.property.data.property.value",
+        answers.get(PropertyValuePage),
+        href = Some(routes.PropertyLabelController.onPageLoad())
       ),
 
       optionalRow(

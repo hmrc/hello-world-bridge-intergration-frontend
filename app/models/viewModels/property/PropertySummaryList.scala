@@ -408,6 +408,7 @@ trait PropertySummaryList {
 
               data.addresses.property_full_address
                 .map(v => row("property data.address.full:", v)),
+              
               data.addresses.address_line_1
                 .map(v => row("property data.address.line1:", v)),
               data.addresses.address_postcode

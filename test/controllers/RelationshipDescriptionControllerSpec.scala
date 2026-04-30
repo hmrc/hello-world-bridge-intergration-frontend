@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,8 @@
  * limitations under the License.
  */
 
-package models.registration
+package controllers
 
-import helpers.TestSupport
-import org.scalatest.matchers.should.Matchers.*
-import play.api.libs.json.Json
+class RelationshipDescriptionControllerSpec {
 
-class EmailSpec extends TestSupport{
-  "Email model" should {
-    "serialise into json" in {
-      Json.toJson(emailModel) mustBe emailJson
-    }
-    "deserialize from json" in {
-      emailJson.as[Email] mustBe emailModel
-    }
-  }
 }

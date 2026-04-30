@@ -18,7 +18,7 @@ package controllers
 
 import connectors.BridgeIntegrationConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
-import models.UserAnswers
+import models.{RelationshipRequestHelper, UserAnswers}
 import models.bridge.common.*
 import models.bridge.relationhship.*
 import models.requests.DataRequest
@@ -49,105 +49,9 @@ class CheckYourAnswersRatepayerPropertyLinksController @Inject()(
                                                                   view: CheckYourAnswersRatepayerPropertyLinksView
                                                                 )(implicit ec: ExecutionContext)
   extends FrontendBaseController
+    with RelationshipRequestHelper
     with I18nSupport
     with Logging {
-
-  // ==================================================================
-  // SERVER‑SIDE AUTHORITATIVE RELATIONSHIP MODEL
-  // ==================================================================
-
-  private val relationshipRequest: Relationship =
-    Relationship(
-      id = Some(13),
-      idx = "1.13.1",
-      name = "Property Link",
-      label = "Ratepayer-ListEntry-Property",
-      description =
-        "A relationships between LGFA88shd9para4J person-personas and LGFA88 hereditaments for which such personas are obliged to provide LGFA88shd9para4I(1) notofiable information.",
-      origination = None,
-      termination = None,
-      category = CodeMeaning(
-        code = Some("LTX-DOM-REL"),
-        meaning = Some("Local taxation domain relationship")
-      ),
-      `type` = CodeMeaning(
-        code = Some("LIB"),
-        meaning = Some(
-          "Liability | One entity is liable for other entity(s)"
-        )
-      ),
-      `class` = CodeMeaning(
-        code = Some("LOC"),
-        meaning = Some("Local Non Domestic Rating Occupied Hereditament Charge")
-      ),
-      data = RelationshipData(
-        foreign_ids = List.empty,
-        foreign_names = List.empty,
-        foreign_labels = List.empty,
-        manifestations = List(
-          RelationshipManifestation(
-            artifact_reference = None,
-            artifact_code = Some("NRB"),
-            artifact_description = None,
-            issued_date = None,
-            withdrawn_date = None,
-            effective_from_date = None,
-            effective_to_date = None,
-            observed_date = None,
-            operative_area_code = None,
-            operative_area_name = None,
-            protodata_ptr = Some("https://hmrc/sdes/yry64849ree"),
-            notes = None
-          )
-        )
-      ),
-      protodata = List.empty,
-      metadata = Metadata(
-        sending = SendingMetadata(
-          extracting = MetadataStage(selecting = Map.empty),
-          transforming = MetadataStage(
-            filtering = Map.empty,
-            supplementing = Map.empty,
-            recontextualising = Map.empty
-          ),
-          loading = MetadataStage()
-        ),
-        receiving = ReceivingMetadata(
-          unloading = MetadataStage(),
-          transforming = MetadataStage(),
-          storing = MetadataStage()
-        )
-      ),
-      compartments = Map.empty,
-      items = List(
-        RelationshipItem(
-          transportation =
-            RelationshipItemTransportation(
-              path = "/job/compartments/properties/@id=13/data/assessments/@id=13"
-            ),
-          persistence =
-            RelationshipItemPersistence(
-              place = "LTX-DOM-AST",
-              identifier = Some(13)
-            )
-        ),
-        RelationshipItem(
-          transportation =
-            RelationshipItemTransportation(
-              path = "/job/compartments/persons/@id=16/items/@id=13"
-            ),
-          persistence =
-            RelationshipItemPersistence(
-              place = "LTX-DOM-PSA",
-              identifier = Some(13)
-            )
-        )
-      )
-    )
-
-  // ==================================================================
-  // PAGE LOAD
-  // ==================================================================
 
   def onPageLoad(): Action[AnyContent] =
     (identify andThen getData).async { implicit request =>
@@ -183,14 +87,12 @@ class CheckYourAnswersRatepayerPropertyLinksController @Inject()(
                           answers: UserAnswers
                         )(implicit request: Request[AnyContent]): Future[Result] = {
 
-    // ✅ MERGE INTO RELATIONSHIP JSON ONLY
     val outboundJson =
       propertyLinksUserAnswersService.mergeIntoOriginalJson(
         originalJson = originalJson,
         answers = answers
       )
-
-    // ✅ CRITICAL SAFETY LOG
+    
     logger.info(
       s"""Outbound Relationship JSON:
          |${Json.prettyPrint(outboundJson)}
@@ -208,11 +110,7 @@ class CheckYourAnswersRatepayerPropertyLinksController @Inject()(
         )
     }
   }
-
-  // ==================================================================
-  // POST
-  // ==================================================================
-
+  
   def postRatepayerPropertyLinks: Action[AnyContent] =
     (identify andThen getData andThen requireData).async {
       implicit request: DataRequest[AnyContent] =>

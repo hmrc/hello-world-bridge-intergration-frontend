@@ -18,19 +18,18 @@ package repositories
 
 import config.FrontendAppConfig
 import models.properties.{StoredVMVProperties, VMVProperties}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.*
 import org.mongodb.scala.*
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.ReplaceOptions
 import org.mongodb.scala.result.UpdateResult
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.*
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.mongo.MongoComponent
-import org.mongodb.scala.{Observable, SingleObservable}
 
 import scala.concurrent.{ExecutionContext, Future}
 

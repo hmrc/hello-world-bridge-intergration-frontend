@@ -68,12 +68,14 @@ class CheckYourAnswersPropertyAssessmentController @Inject()(
                     .set(PropertyAssessmentOriginalJsonPage, propertyAssessmentContext.originalJson)
                     .getOrElse(baseAnswers)
                 }(_ => baseAnswers)
-            val hydratedAnswers =
+            val hydratedAnswers = {
+              println(Console.MAGENTA + propertyAssessmentContext + Console.RESET)
               propertyAssessmentUserAnswersService
-                .populateFromAssessment(
+                .populateFromProperty(
                   answersWithOriginalJson,
                   propertyAssessmentContext.assessment
                 )
+            }
             sessionRepository.set(hydratedAnswers)
             val summary =
               createPropertySummaryRows(hydratedAnswers)

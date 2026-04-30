@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package models.registration
+package pages.property
 
-import helpers.TestSupport
-import org.scalatest.matchers.should.Matchers.*
-import play.api.libs.json.Json
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-class EmailSpec extends TestSupport{
-  "Email model" should {
-    "serialise into json" in {
-      Json.toJson(emailModel) mustBe emailJson
-    }
-    "deserialize from json" in {
-      emailJson.as[Email] mustBe emailModel
-    }
-  }
+case object PropertyAddressPage extends QuestionPage[String] {
+
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "propertyAddress"
 }

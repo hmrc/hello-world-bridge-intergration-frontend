@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
+import models.{CheckMode, UserAnswers, UserName}
+import org.scalatest.OptionValues.convertOptionToValuable
+import org.scalatest.TryValues.convertTryToSuccessOrFailure
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import pages.ContactNumberPage
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.test.Helpers.stubMessagesApi
-import models.{UserName, UserAnswers}
-import pages.ContactNumberPage
-import org.scalatest.TryValues.convertTryToSuccessOrFailure
 import viewmodels.checkAnswers.contactNumberSummary.row
-import org.scalatest.OptionValues.convertOptionToValuable
-import models.CheckMode
 
 class ContactNumberSummarySpec extends AnyWordSpec with Matchers {
   

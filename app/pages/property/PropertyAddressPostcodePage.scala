@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package models.assessment
-import models.assessment.AssessmentProperty
+package pages.property
 
-import play.api.libs.json.{Json, OFormat}
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-case class AssessmentPropertiesResponse(
-                                         properties: List[AssessmentProperty]
-                                       )
+case object PropertyAddressPostcodePage extends QuestionPage[String] {
 
-object AssessmentPropertiesResponse {
-  implicit val format: OFormat[AssessmentPropertiesResponse] = Json.format[AssessmentPropertiesResponse]
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "propertyAddress"
 }

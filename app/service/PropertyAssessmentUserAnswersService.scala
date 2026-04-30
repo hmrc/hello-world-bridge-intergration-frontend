@@ -17,63 +17,125 @@
 package service
 
 import models.UserAnswers
-import models.bridge.property.PropertyAssessment
-import pages.*
-import pages.property.*
+import models.bridge.property.Property
+import pages._
+import pages.property._
 import play.api.Logging
-import play.api.libs.json.*
+import play.api.libs.json._
 import models.RichJsObject
 
 import scala.util.{Failure, Success}
 
-class PropertyAssessmentUserAnswersService extends Logging {
+class PropertyAssessmentUserAnswersService extends ServiceHelper {
 
-  // ====================================================
-  // Populate UserAnswers (unchanged responsibility)
-  // ====================================================
+  private def mergeAddressFields(
+                                  original: JsObject,
+                                  answers: UserAnswers
+                                ): JsObject = {
 
-  private def setIfEmpty[A](
-                             answers: UserAnswers,
-                             page: QuestionPage[A],
-                             value: Option[A]
-                           )(implicit reads: Reads[A], writes: Writes[A]): UserAnswers =
-    (answers.get(page), value) match {
+    var updated = original
 
-      case (None, Some(v)) =>
-        answers.set(page, v) match {
-          case Success(updated) => updated
-          case Failure(e) =>
-            logger.warn(s"Failed to auto-populate $page from assessment", e)
-            answers
-        }
-
-      case _ =>
+    updated =
+      overrideString(
+        updated,
+        PropertyFullAddressPage,
+        __ \ "property_full_address",
         answers
-    }
+      )
 
-  def populateFromAssessment(
-                              existingAnswers: UserAnswers,
-                              assessment: PropertyAssessment
-                            ): UserAnswers = {
+    updated =
+      overrideString(
+        updated,
+        PropertyAddressLine1Page,
+        __ \ "address_line_1",
+        answers
+      )
+
+    updated =
+      overrideString(
+        updated,
+        PropertyAddressPostcodePage,
+        __ \ "address_postcode",
+        answers
+      )
+
+    updated =
+      overrideString(
+        updated,
+        PropertyKnownAsPage,
+        __ \ "known_as",
+        answers
+      )
+
+    updated
+  }
+
+
+  def populateFromProperty(
+                            existingAnswers: UserAnswers,
+                            property: Property
+                          ): UserAnswers = {
 
     val updates: List[UserAnswers => UserAnswers] = List(
-      ua => setIfEmpty(ua, PropertyIdPage, Some(assessment.id)),
-      ua => setIfEmpty(ua, PropertyIdxPage, Some(assessment.idx)),
-      ua => setIfEmpty(ua, PropertyNamePage, assessment.name),
-      ua => setIfEmpty(ua, PropertyLabelPage, Some(assessment.label)),
-      ua => setIfEmpty(ua, PropertyDescriptionPage, assessment.description),
-      ua => setIfEmpty(ua, PropertyOriginationPage, Some(assessment.origination)),
-      ua => setIfEmpty(ua, PropertyTerminationPage, assessment.termination),
-      ua => setIfEmpty(ua, PropertyCategoryCodePage, assessment.category.code),
-      ua => setIfEmpty(ua, PropertyCategoryMeaningPage, assessment.category.meaning),
-      ua => setIfEmpty(ua, PropertyTypeCodePage, assessment.`type`.code),
-      ua => setIfEmpty(ua, PropertyTypeMeaningPage, assessment.`type`.meaning),
-      ua => setIfEmpty(ua, PropertyClassCodePage, assessment.`class`.code),
-      ua => setIfEmpty(ua, PropertyClassMeaningPage, assessment.`class`.meaning)
+      ua => setIfEmpty(ua, PropertyIdPage, property.id),
+      ua => setIfEmpty(ua, PropertyIdxPage, property.idx),
+      ua => setIfEmpty(ua, PropertyNamePage, property.name),
+      ua => setIfEmpty(ua, PropertyLabelPage, property.label),
+      ua => setIfEmpty(ua, PropertyDescriptionPage, property.description),
+      ua => setIfEmpty(ua, PropertyOriginationPage, property.origination),
+      ua => setIfEmpty(ua, PropertyTerminationPage, property.termination),
+
+      ua => setIfEmpty(
+        ua,
+        PropertyCategoryCodePage,
+        property.category.flatMap(_.code).filter(_.nonEmpty)
+      ),
+      ua => setIfEmpty(
+        ua,
+        PropertyCategoryMeaningPage,
+        property.category.flatMap(_.meaning).filter(_.nonEmpty)
+      ),
+
+      ua => setIfEmpty(ua, PropertyTypeCodePage, property.`type`.flatMap(_.code).filter(_.nonEmpty)),
+      ua => setIfEmpty(ua, PropertyTypeMeaningPage, property.`type`.flatMap(_.meaning).filter(_.nonEmpty)),
+
+      ua => setIfEmpty(ua, PropertyClassCodePage, property.`class`.flatMap(_.code).filter(_.nonEmpty)),
+      ua => setIfEmpty(ua, PropertyClassMeaningPage, property.`class`.flatMap(_.meaning).filter(_.nonEmpty)),
+
+      // Address fields
+      ua => setIfEmpty(
+        ua,
+        PropertyFullAddressPage,
+        property.data.flatMap(_.addresses.property_full_address)
+      ),
+
+      ua => setIfEmpty(
+        ua,
+        PropertyAddressLine1Page,
+        property.data.flatMap(_.addresses.address_line_1)
+      ),
+
+      ua => setIfEmpty(
+        ua,
+        PropertyAddressPostcodePage,
+        property.data.flatMap(_.addresses.address_postcode)
+      ),
+
+      ua => setIfEmpty(
+        ua,
+        PropertyKnownAsPage,
+        property.data.flatMap(_.addresses.known_as)
+      )
+
+
     )
 
     updates.foldLeft(existingAnswers)((ua, f) => f(ua))
   }
+
+  // ====================================================
+  // JSON override helpers
+  // ====================================================
 
   private def overrideString(
                               json: JsObject,
@@ -88,8 +150,21 @@ class PropertyAssessmentUserAnswersService extends Logging {
         json
     }
 
+  private def overrideLong(
+                            json: JsObject,
+                            page: QuestionPage[Long],
+                            path: JsPath,
+                            answers: UserAnswers
+                          ): JsObject =
+    answers.get(page) match {
+      case Some(value) =>
+        json.setObject(path, JsNumber(value)).getOrElse(json)
+      case None =>
+        json
+    }
+
   // ====================================================
-  // Merge UserAnswers back into ORIGINAL JSON
+  // Merge UserAnswers BACK INTO original Property JSON
   // ====================================================
 
   def mergeIntoOriginalJson(
@@ -99,54 +174,52 @@ class PropertyAssessmentUserAnswersService extends Logging {
 
     originalJson match {
       case root: JsObject =>
+        (root \ "properties").asOpt[JsArray] match {
 
-        val updatedProperties =
-          (root \ "properties").asOpt[JsArray].map { propertiesArray =>
-            val updatedProps = propertiesArray.value.zipWithIndex.map {
-              case (propObj: JsObject, propIndex) if propIndex == 0 =>
+          case Some(properties) =>
+            val updatedProperties =
+              properties.value.zipWithIndex.map {
+                case (propObj: JsObject, 0) =>
+                  mergePropertyFields(propObj, answers)
 
-                val updatedData =
-                  (propObj \ "data").asOpt[JsObject].map { dataObj =>
-                    val updatedAssessments =
-                      (dataObj \ "assessments").asOpt[JsArray].map { assessmentsArray =>
-                        val updatedAssessmentsValues =
-                          assessmentsArray.value.zipWithIndex.map {
-                            case (assessmentObj: JsObject, assessmentIndex)
-                              if assessmentIndex == 0 =>
-                              mergeAssessmentFields(assessmentObj, answers)
+                case (other, _) =>
+                  other
+              }
 
-                            case (other, _) => other
-                          }
+            root + ("properties" -> JsArray(updatedProperties))
 
-                        dataObj + ("assessments" -> JsArray(updatedAssessmentsValues))
-                      }.getOrElse(dataObj)
-
-                    dataObj ++ updatedAssessments
-                  }.getOrElse(propObj)
-
-                propObj + ("data" -> updatedData)
-
-              case (other, _) => other
-            }
-
-            JsArray(updatedProps)
-          }
-
-        updatedProperties
-          .map(arr => root + ("properties" -> arr))
-          .getOrElse(originalJson)
+          case None =>
+            originalJson
+        }
 
       case _ =>
         originalJson
     }
   }
 
-  private def mergeAssessmentFields(
-                                     original: JsObject,
-                                     answers: UserAnswers
-                                   ): JsObject = {
+  // ====================================================
+  // Merge ALL editable Property fields
+  // ====================================================
+
+  private def mergePropertyFields(
+                                   original: JsObject,
+                                   answers: UserAnswers
+                                 ): JsObject = {
 
     var updated = original
+
+    // ─────────────────────────────
+    // Property top-level fields
+    // ─────────────────────────────
+
+    updated =
+      overrideLong(updated, PropertyIdPage, __ \ "id", answers)
+
+    updated =
+      overrideString(updated, PropertyIdxPage, __ \ "idx", answers)
+
+    updated =
+      overrideString(updated, PropertyNamePage, __ \ "name", answers)
 
     updated =
       overrideString(updated, PropertyLabelPage, __ \ "label", answers)
@@ -159,7 +232,13 @@ class PropertyAssessmentUserAnswersService extends Logging {
 
     updated =
       overrideString(updated, PropertyTerminationPage, __ \ "termination", answers)
-    
+
+    updated =
+      overrideString(updated, PropertyCategoryCodePage, __ \ "category" \ "code", answers)
+
+    updated =
+      overrideString(updated, PropertyCategoryMeaningPage, __ \ "category" \ "meaning", answers)
+
     updated =
       overrideString(updated, PropertyTypeCodePage, __ \ "type" \ "code", answers)
 
@@ -171,6 +250,27 @@ class PropertyAssessmentUserAnswersService extends Logging {
 
     updated =
       overrideString(updated, PropertyClassMeaningPage, __ \ "class" \ "meaning", answers)
+
+    // ─────────────────────────────
+    // Address (data.addresses)
+    // ─────────────────────────────
+
+    updated =
+      (updated \ "data").asOpt[JsObject] match {
+        case Some(dataObj) =>
+          val newAddresses =
+            (dataObj \ "addresses").asOpt[JsObject]
+              .map(addr => mergeAddressFields(addr, answers))
+              .getOrElse(JsObject.empty)
+
+          val mergedData =
+            dataObj + ("addresses" -> newAddresses)
+
+          updated + ("data" -> mergedData)
+
+        case None =>
+          updated
+      }
 
     updated
   }

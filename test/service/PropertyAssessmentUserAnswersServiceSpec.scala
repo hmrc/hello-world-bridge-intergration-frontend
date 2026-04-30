@@ -19,8 +19,8 @@ package service
 import base.SpecBase
 import helpers.TestData
 import org.scalatestplus.mockito.MockitoSugar
-import pages.property.*
-import play.api.libs.json.*
+import pages.property._
+import play.api.libs.json._
 
 class PropertyAssessmentUserAnswersServiceSpec
   extends SpecBase
@@ -29,31 +29,23 @@ class PropertyAssessmentUserAnswersServiceSpec
 
   private val service = new PropertyAssessmentUserAnswersService
 
-
-
   // =========================================================
-  // populateFromAssessment
+  // populateFromProperty
   // =========================================================
 
-  "populateFromAssessment" - {
+  "populateFromProperty" - {
 
-    "populate empty UserAnswers from assessment" in {
+    "populate empty UserAnswers from property" in {
 
       val result =
-        service.populateFromAssessment(emptyUserAnswers, assessment)
+        service.populateFromProperty(emptyUserAnswers, testProperty)
 
-      result.get(PropertyIdPage) mustBe Some(42)
-      result.get(PropertyIdxPage) mustBe Some("PA")
-      result.get(PropertyNamePage) mustBe Some("Assessment")
-      result.get(PropertyLabelPage) mustBe Some("Label")
-      result.get(PropertyDescriptionPage) mustBe Some("Desc")
-      result.get(PropertyOriginationPage) mustBe Some("2021")
-      result.get(PropertyCategoryCodePage) mustBe Some("PA")
-      result.get(PropertyCategoryMeaningPage) mustBe Some("Cat1")
-      result.get(PropertyTypeCodePage) mustBe Some("T1")
-      result.get(PropertyTypeMeaningPage) mustBe Some("Type1")
-      result.get(PropertyClassCodePage) mustBe Some("CL1")
-      result.get(PropertyClassMeaningPage) mustBe Some("Class1")
+      result.get(PropertyIdPage) mustBe Some(777)
+      result.get(PropertyIdxPage) mustBe Some("PROP")
+      result.get(PropertyNamePage) mustBe Some("Main Property")
+      result.get(PropertyLabelPage) mustBe Some("Main Label")
+      result.get(PropertyDescriptionPage) mustBe Some("Property description")
+      result.get(PropertyOriginationPage) mustBe Some("2020")
     }
 
     "not overwrite existing answers" in {
@@ -61,10 +53,11 @@ class PropertyAssessmentUserAnswersServiceSpec
       val existing =
         emptyUserAnswers
           .set(PropertyLabelPage, "Existing Label")
-          .success.value
+          .success
+          .value
 
       val result =
-        service.populateFromAssessment(existing, assessment)
+        service.populateFromProperty(existing, testProperty)
 
       result.get(PropertyLabelPage) mustBe Some("Existing Label")
     }
@@ -76,7 +69,7 @@ class PropertyAssessmentUserAnswersServiceSpec
 
   "mergeIntoOriginalJson" - {
 
-    "merge assessment fields into the first assessment of the first property" in {
+    "merge property fields into the first property only" in {
 
       val answers =
         emptyUserAnswers
@@ -89,17 +82,11 @@ class PropertyAssessmentUserAnswersServiceSpec
         Json.obj(
           "properties" -> Json.arr(
             Json.obj(
-              "data" -> Json.obj(
-                "assessments" -> Json.arr(
-                  Json.obj(
-                    "label" -> "Old Label",
-                    "description" -> "Old Description",
-                    "type" -> Json.obj(
-                      "code" -> "OLD",
-                      "meaning" -> "Old Type"
-                    )
-                  )
-                )
+              "label" -> "Old Label",
+              "description" -> "Old Description",
+              "type" -> Json.obj(
+                "code" -> "OLD",
+                "meaning" -> "Old Type"
               )
             )
           )
@@ -108,47 +95,39 @@ class PropertyAssessmentUserAnswersServiceSpec
       val result =
         service.mergeIntoOriginalJson(originalJson, answers)
 
-      val assessmentJson =
-        ((result \ "properties")(0) \ "data" \ "assessments")
-          .as[JsArray]
-          .value(0)
-          .as[JsObject]
+      val propertyJson =
+        (result \ "properties")(0).as[JsObject]
 
-      (assessmentJson \ "label").as[String] mustBe "Updated Label"
-      (assessmentJson \ "description").as[String] mustBe "Updated Description"
-      (assessmentJson \ "type" \ "code").as[String] mustBe "NEW-TYPE"
-      (assessmentJson \ "type" \ "meaning").as[String] mustBe "New Type"
+      (propertyJson \ "label").as[String] mustBe "Updated Label"
+      (propertyJson \ "description").as[String] mustBe "Updated Description"
+      (propertyJson \ "type" \ "code").as[String] mustBe "NEW-TYPE"
+      (propertyJson \ "type" \ "meaning").as[String] mustBe "New Type"
     }
 
-    "only update the first assessment and leave others unchanged" in {
+    "only update the first property and leave others unchanged" in {
 
       val answers =
         emptyUserAnswers
           .set(PropertyLabelPage, "Updated Label")
-          .success.value
+          .success
+          .value
 
       val originalJson =
         Json.obj(
           "properties" -> Json.arr(
-            Json.obj(
-              "data" -> Json.obj(
-                "assessments" -> Json.arr(
-                  Json.obj("label" -> "First"),
-                  Json.obj("label" -> "Second")
-                )
-              )
-            )
+            Json.obj("label" -> "First"),
+            Json.obj("label" -> "Second")
           )
         )
 
       val result =
         service.mergeIntoOriginalJson(originalJson, answers)
 
-      val assessments =
-        ((result \ "properties")(0) \ "data" \ "assessments").as[JsArray]
+      val properties =
+        (result \ "properties").as[JsArray]
 
-      (assessments(0) \ "label").as[String] mustBe "Updated Label"
-      (assessments(1) \ "label").as[String] mustBe "Second"
+      (properties(0) \ "label").as[String] mustBe "Updated Label"
+      (properties(1) \ "label").as[String] mustBe "Second"
     }
 
     "return original JSON unchanged if properties array is missing" in {
@@ -162,25 +141,27 @@ class PropertyAssessmentUserAnswersServiceSpec
       result mustBe originalJson
     }
 
-    "return original JSON unchanged if not an object" in {
+    "return original JSON unchanged if root is not an object" in {
 
       val json = JsString("not-object")
 
       service.mergeIntoOriginalJson(json, emptyUserAnswers) mustBe json
     }
 
-    "handle missing assessments array safely" in {
+    "handle missing data or addresses safely" in {
 
       val answers =
         emptyUserAnswers
           .set(PropertyLabelPage, "Updated")
-          .success.value
+          .success
+          .value
 
       val originalJson =
         Json.obj(
           "properties" -> Json.arr(
             Json.obj(
-              "data" -> Json.obj()
+              "label" -> "Original"
+              // no data / no addresses
             )
           )
         )
@@ -188,8 +169,7 @@ class PropertyAssessmentUserAnswersServiceSpec
       val result =
         service.mergeIntoOriginalJson(originalJson, answers)
 
-      // no crash, structure preserved
-      (result \ "properties").isDefined mustBe true
+      ((result \ "properties")(0) \ "label").as[String] mustBe "Updated"
     }
   }
 }

@@ -314,7 +314,7 @@ object PropertyAssessmentData {
 
 final case class PropertyAssessmentContext(
                                             originalJson: JsValue,
-                                            assessment: PropertyAssessment
+                                            assessment: Property
                                           )
 
 object PropertyAssessmentContext {

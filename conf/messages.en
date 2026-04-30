@@ -196,18 +196,21 @@ checkAnswers.relationship.classMeaning = relationship class meaning
 checkAnswers.property.id = Property Id
 checkAnswers.property.idx = Property IDX
 checkAnswers.property.label = Property label
-checkAnswers.property.origination = property origination
-checkAnswers.property.category.code = property category code
-checkAnswers.property.category.meaning = property category meaning
-checkAnswers.property.type.code = property type code
-checkAnswers.property.type.meaning = property type meaning
-checkAnswers.property.class.code = property class code
-checkAnswers.property.class.meaning = property class meaning
+checkAnswers.property.origination = Property origination
+checkAnswers.property.category.code = Property category code
+checkAnswers.property.category.meaning = Property category meaning
+checkAnswers.property.type.code = Property type code
+checkAnswers.property.type.meaning = Property type meaning
+checkAnswers.property.class.code = Property class code
+checkAnswers.property.class.meaning = Property class meaning
+checkAnswers.property.data.address.full = Full property address
 
 checkAnswers.relationship.id = Relationship id
 checkAnswers.relationship.idx = Relationship idx
 
 
+propertyLabel.heading = Property Label
+propertyAddress.heading = Property Address
 
 checkAnswers.manifestation.artifactReference = Artifact reference
 checkAnswers.manifestation.artifactCode = Artifact code

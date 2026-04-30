@@ -297,46 +297,14 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
 
   "BridgeIntegrationConnector.getPropertiesForAssessment" should {
 
-    "return Some(PropertyAssessmentContext) when JSON is valid" in {
+    "return Some(PropertyAssessmentContext) when JSON contains properties array" in {
 
-      val assessment = PropertyAssessment(
-        id = 1,
-        idx = "1.1",
-        name = Some("Assessment"),
-        label = "Assessment",
-        description = Some("desc"),
-        origination = "20250101T000000Z",
-        termination = None,
-        category = CodeMeaning(Some("CAT"), Some("Category")),
-        `type` = CodeMeaning(Some("TYPE"), Some("Type")),
-        `class` = CodeMeaning(Some("CLASS"), Some("Class")),
-        data = PropertyAssessmentData(
-          foreign_ids = Nil,
-          foreign_names = Nil,
-          foreign_labels = Nil,
-          property = PropertyReference(1, 1),
-          use = PropertyUse(None, None, None),
-          valuation_surveys = Nil,
-          valuations = Nil,
-          valuation = ValuationData(None, None, None),
-          list = ListData(None, None, None, None),
-          workflow = WorkflowData(None)
-        ),
-        protodata = Nil,
-        metadata = metadata,
-        compartments = Map.empty,
-        items = Nil
-      )
-
-      val json = Json.obj(
-        "properties" -> Json.arr(
-          Json.obj(
-            "data" -> Json.obj(
-              "assessments" -> Json.arr(Json.toJson(assessment))
-            )
+      val json =
+        Json.obj(
+          "properties" -> Json.arr(
+            Json.toJson(testProperty)
           )
         )
-      )
 
       setupMockHttpV2Get(
         "http://localhost:1300/bridge-integration/property-assessment/cred/assessment/aid"
@@ -346,18 +314,12 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
         connector.getPropertiesForAssessment("cred", "aid").futureValue
 
       result mustBe defined
-      result.value.assessment.id mustBe 1
-    }
-
-    "return None when exception occurs" in {
-      setupMockFailedHttpV2Get(
-        "http://localhost:1300/bridge-integration/property-assessment/cred/assessment/aid"
-      )
-
-      connector.getPropertiesForAssessment("cred", "aid").futureValue mustBe None
+      result.value.assessment.id mustBe testProperty.id
+      result.value.originalJson mustBe json
     }
 
     "return None when properties array is empty" in {
+
       val json = Json.obj("properties" -> Json.arr())
 
       setupMockHttpV2Get(
@@ -367,16 +329,23 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
       connector.getPropertiesForAssessment("cred", "aid").futureValue mustBe None
     }
 
-    "return None when assessments are missing" in {
-      val json = Json.obj(
-        "properties" -> Json.arr(
-          Json.obj("data" -> Json.obj())
-        )
-      )
+    "return None when properties field is missing" in {
+
+      val json = Json.obj("foo" -> "bar")
 
       setupMockHttpV2Get(
         "http://localhost:1300/bridge-integration/property-assessment/cred/assessment/aid"
       )(json)
+
+      connector.getPropertiesForAssessment("cred", "aid").futureValue mustBe None
+    }
+
+
+    "return None when exception occurs" in {
+
+      setupMockFailedHttpV2Get(
+        "http://localhost:1300/bridge-integration/property-assessment/cred/assessment/aid"
+      )
 
       connector.getPropertiesForAssessment("cred", "aid").futureValue mustBe None
     }

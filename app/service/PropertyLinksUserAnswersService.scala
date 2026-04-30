@@ -23,26 +23,7 @@ import pages.relationship.*
 import play.api.Logging
 import play.api.libs.json.*
 
-class PropertyLinksUserAnswersService extends Logging {
-
-  // ====================================================
-  // Populate UserAnswers from Relationship
-  // ====================================================
-
-  private def setIfEmpty[A](
-                             answers: UserAnswers,
-                             page: QuestionPage[A],
-                             value: Option[A]
-                           )(implicit reads: Reads[A], writes: Writes[A]): UserAnswers =
-    (answers.get(page), value) match {
-      case (None, Some(v)) =>
-        answers.set(page, v).getOrElse {
-          logger.warn(s"Failed to auto-populate $page")
-          answers
-        }
-      case _ =>
-        answers
-    }
+class PropertyLinksUserAnswersService extends ServiceHelper {
 
   def populateFromRelationship(
                                 existingAnswers: UserAnswers,
