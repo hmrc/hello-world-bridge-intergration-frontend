@@ -254,8 +254,6 @@ class BridgeIntegrationConnector @Inject()(
     val url = uri(s"property-assessment/$credId/assessment/$assessmentId").toURL
 
     http.get(url).execute[JsValue].map { json =>
-      println(Console.CYAN + Json.prettyPrint(json) + Console.RESET)
-
       val assessmentOpt =
         (json \ "properties")
           .asOpt[List[Property]]

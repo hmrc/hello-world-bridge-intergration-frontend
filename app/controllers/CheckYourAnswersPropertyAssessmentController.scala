@@ -69,7 +69,6 @@ class CheckYourAnswersPropertyAssessmentController @Inject()(
                     .getOrElse(baseAnswers)
                 }(_ => baseAnswers)
             val hydratedAnswers = {
-              println(Console.MAGENTA + propertyAssessmentContext + Console.RESET)
               propertyAssessmentUserAnswersService
                 .populateFromProperty(
                   answersWithOriginalJson,
@@ -86,7 +85,7 @@ class CheckYourAnswersPropertyAssessmentController @Inject()(
             Ok(view(summary))
         }
     }
-  
+
   // =========================================================
   // Internal submit helper
   // =========================================================
@@ -136,8 +135,8 @@ class CheckYourAnswersPropertyAssessmentController @Inject()(
                 "Original property assessment JSON missing from UserAnswers"
               )
             }
-            
-          
+
+
         submitData(
           userId = request.userId,
           originalJson = originalJson,
