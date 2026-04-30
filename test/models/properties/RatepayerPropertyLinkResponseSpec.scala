@@ -79,25 +79,25 @@ class RatepayerPropertyLinkResponseSpec extends AnyWordSpec with Matchers {
       )
 
       val property = Property(
-        id = 200,
-        idx = "PR1",
-        name = "Property Name",
-        label = "Label",
-        description = "A property",
-        origination = "2021",
+        id = Some(200),
+        idx = Some("PR1"),
+        name = Some("Property Name"),
+        label = Some("Label"),
+        description = Some("A property"),
+        origination = Some("2021"),
         termination = None,
-        category = codeMeaning,
-        `type` = codeMeaning,
-        `class` = codeMeaning,
-        data = propertyData,
-        protodata = List(proto),
-        metadata = metadata,
-        compartments = Map("meta" -> "value"),
-        items = Nil
+        category = Some(codeMeaning),
+        `type` = Some(codeMeaning),
+        `class` = Some(codeMeaning),
+        data = Some(propertyData),
+        protodata = Some(List(proto)),
+        metadata = Some(metadata),
+        compartments = Some(Map("meta" -> "value")),
+        items = None
       )
 
       // Relationship sample
-      val manifestation = Manifestation(
+      val manifestation = RelationshipManifestation(
         artifact_reference = Some("REF"),
         artifact_code = Some("CODE"),
         artifact_description = None,
@@ -120,17 +120,17 @@ class RatepayerPropertyLinkResponseSpec extends AnyWordSpec with Matchers {
       )
 
       val relationshipItem = RelationshipItem(
-        transportation = Transportation("/org/rel"),
-        persistence = Persistence("STORE", "ID123")
+        transportation = RelationshipItemTransportation("/org/rel"),
+        persistence = RelationshipItemPersistence("STORE", Some(123))
       )
 
       val relationship = Relationship(
-        id = 300,
+        id = Some(300),
         idx = "R1",
         name = "Rel Name",
         label = "Label",
         description = "Relationship",
-        origination = "2019",
+        origination = Some("2019"),
         termination = None,
         category = codeMeaning,
         `type` = codeMeaning,

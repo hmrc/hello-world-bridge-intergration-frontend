@@ -16,11 +16,9 @@
 
 package models.registration
 
-import org.scalatest.matchers.should.Matchers.*
-import play.api.data.Form
-import play.api.libs.json.Json
 import helpers.TestSupport
-import models.registration.Email
+import org.scalatest.matchers.should.Matchers.*
+import play.api.libs.json.Json
 
 class EmailSpec extends TestSupport{
   "Email model" should {

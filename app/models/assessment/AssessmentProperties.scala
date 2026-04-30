@@ -16,10 +16,11 @@
 
 package models.assessment
 
+import models.bridge.property.Property
 import play.api.libs.json.{Json, OFormat}
 
 case class AssessmentProperties(
-                               properties: Seq[AssessmentProperty]
+                               properties: Seq[Property]
                                )
 object AssessmentProperties {
   implicit val format: OFormat[AssessmentProperties] = Json.format[AssessmentProperties]

@@ -183,3 +183,44 @@ results.sortBy.rateableDesc = Rateable value (high to low)
 
 #RatepayerPropertyLinks
 ratepayerPropertyLinks.title = Ratepayer Property Links
+relationshipLabel.heading = Relationship label
+relationshipDescription.heading = Relationship description
+checkAnswers.relationship.name = Relationship name
+checkAnswers.relationship.label = Relationship label
+checkAnswers.relationship.description = Relationship description
+checkAnswers.relationship.categoryCode= Relationship category code
+checkAnswers.relationship.categoryMeaning = Relationship category meaning
+checkAnswers.relationship.typeCode = Relationship type code
+checkAnswers.relationship.typeMeaning = Relationship type meaning
+checkAnswers.relationship.classCode = Relationship class code
+checkAnswers.relationship.classMeaning = Relationship class meaning
+checkAnswers.property.id = Property Id
+checkAnswers.property.idx = Property IDX
+checkAnswers.property.label = Property label
+checkAnswers.property.origination = Property origination
+checkAnswers.property.category.code = Property category code
+checkAnswers.property.category.meaning = Property category meaning
+checkAnswers.property.type.code = Property type code
+checkAnswers.property.type.meaning = Property type meaning
+checkAnswers.property.class.code = Property class code
+checkAnswers.property.class.meaning = Property class meaning
+checkAnswers.property.data.address.full = Full property address
+
+checkAnswers.relationship.id = Relationship id
+checkAnswers.relationship.idx = Relationship idx
+
+
+propertyLabel.heading = Property Label
+propertyAddress.heading = Property Address
+
+checkAnswers.manifestation.artifactReference = Artifact reference
+checkAnswers.manifestation.artifactCode = Artifact code
+checkAnswers.manifestation.artifactDescription = Description
+checkAnswers.manifestation.issuedDate = Issued date
+checkAnswers.manifestation.withdrawnDate = Withdrawn date
+checkAnswers.manifestation.effectiveFrom = Effective from
+checkAnswers.manifestation.effectiveTo = Effective to
+checkAnswers.manifestation.observedDate = Observed date
+checkAnswers.manifestation.operativeArea = Operative area
+checkAnswers.manifestation.protodataPtr = Protodata pointer
+checkAnswers.manifestation.notes = Notes

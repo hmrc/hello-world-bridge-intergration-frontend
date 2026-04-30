@@ -46,7 +46,7 @@ class NavigatorSpec extends SpecBase {
         val emptyUA = emptyUserAnswers
         val result = navigator.nextPage(UserNamePage, NormalMode, emptyUA)
 
-        result mustBe routes.CheckYourAnswersController.onPageLoad()
+        result mustBe routes.CheckYourAnswersRegisterUserController.onPageLoad()
       }
     }
 
@@ -55,7 +55,7 @@ class NavigatorSpec extends SpecBase {
       "must go from a page that doesn't exist in the edit route map to CheckYourAnswers" in {
 
         case object UnknownPage extends Page
-        navigator.nextPage(UnknownPage, CheckMode, UserAnswers("id")) mustBe routes.CheckYourAnswersController.onPageLoad()
+        navigator.nextPage(UnknownPage, CheckMode, UserAnswers("id")) mustBe routes.CheckYourAnswersRegisterUserController.onPageLoad()
       }
     }
   }

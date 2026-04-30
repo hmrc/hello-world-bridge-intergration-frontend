@@ -16,53 +16,333 @@
 
 package service
 
+import models.bridge.relationhship.*
+import models.bridge.property.*
 import models.{CheckMode, UserAnswers}
 import play.api.i18n.Messages
-import play.api.mvc.*
+import play.api.mvc.Call
 import models.checkAnswers.*
 import models.checkAnswers.CheckAnswersSummaryListRow.summarise
+import pages.property.*
+import controllers.routes
+import pages.relationship.*
 import pages.{ContactNumberPage, UserNamePage}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 
-
 object CheckAnswers {
 
-  def buildRow(labelKey: String, value: String, linkId: String, href: Call, hiddenKey: String)(implicit messages: Messages): CheckAnswersSummaryListRow = {
+  // -----------------------------------------------------
+  // Base row builder
+  // -----------------------------------------------------
+
+  def buildRow(
+                labelKey: String,
+                value: String,
+                linkId: String,
+                href: Option[Call],
+                hiddenKey: String
+              )(implicit messages: Messages): CheckAnswersSummaryListRow =
     CheckAnswersSummaryListRow(
       titleMessageKey = labelKey,
       captionKey = None,
       value = Seq(value),
-      changeLink = Some(Link(
-        href = href,
-        linkId = linkId,
-        messageKey = "site.change",
-        visuallyHiddenMessageKey = Some(hiddenKey)
-      ))
+      changeLink = href.map { call =>
+        Link(
+          href = call,
+          linkId = linkId,
+          messageKey = "site.change",
+          visuallyHiddenMessageKey = Some(hiddenKey)
+        )
+      }
+    )
+
+  // -----------------------------------------------------
+  // Conditional helpers
+  // -----------------------------------------------------
+
+  private def requiredRow(
+                           labelKey: String,
+                           value: String,
+                           href: Option[Call] = None
+                         )(implicit messages: Messages): CheckAnswersSummaryListRow =
+    buildRow(labelKey = labelKey, value = value, linkId = labelKey, href = href, hiddenKey = labelKey)
+
+  private def optionalRow(
+                           labelKey: String,
+                           value: Option[String],
+                           href: Option[Call] = None
+                         )(implicit messages: Messages): Option[CheckAnswersSummaryListRow] =
+    value.filter(_.nonEmpty).map { v =>
+      buildRow(labelKey = labelKey, value = v, linkId = labelKey, href = href, hiddenKey = labelKey)
+    }
+
+  private def listRow(
+                       labelKey: String,
+                       values: List[String]
+                     )(implicit messages: Messages): Option[CheckAnswersSummaryListRow] =
+    Option.when(values.nonEmpty) {
+      buildRow(labelKey, values.mkString(", "), labelKey, None, labelKey)
+    }
+
+  // -----------------------------------------------------
+  // Rich manifestation rendering
+  // -----------------------------------------------------
+
+  private def manifestationRows(
+                                 manifestation: RelationshipManifestation,
+                                 index: Int
+                               )(implicit messages: Messages): Seq[CheckAnswersSummaryListRow] = {
+
+    def opt(labelSuffix: String, value: Option[String]) =
+      value.filter(_.nonEmpty).map { v =>
+        buildRow(
+          labelKey  = s"checkAnswers.manifestation.$labelSuffix",
+          value     = v,
+          linkId    = s"manifestation-$index-$labelSuffix",
+          href      = None,
+          hiddenKey = s"manifestation-$index-$labelSuffix"
+        )
+      }
+
+    Seq(
+      opt("artifactReference", manifestation.artifact_reference),
+      opt("artifactCode", manifestation.artifact_code),
+      opt("artifactDescription", manifestation.artifact_description),
+      opt("issuedDate", manifestation.issued_date),
+      opt("withdrawnDate", manifestation.withdrawn_date),
+      opt("effectiveFrom", manifestation.effective_from_date),
+      opt("effectiveTo", manifestation.effective_to_date),
+      opt("observedDate", manifestation.observed_date),
+      opt(
+        "operativeArea",
+        for {
+          code <- manifestation.operative_area_code
+          name <- manifestation.operative_area_name
+        } yield s"$code – $name"
+      ),
+      opt("protodataPtr", manifestation.protodata_ptr),
+      opt("notes", manifestation.notes)
+    ).flatten
+  }
+
+  private def manifestationsSummaryRows(
+                                         manifestations: List[RelationshipManifestation]
+                                       )(implicit messages: Messages): Seq[CheckAnswersSummaryListRow] =
+    manifestations.zipWithIndex.flatMap {
+      case (m, idx) => manifestationRows(m, idx + 1)
+    }
+
+  // -----------------------------------------------------
+  // Relationship summary
+  // -----------------------------------------------------
+
+  def createRatePayersPropertyLinksSummaryRows(
+                                                answers: UserAnswers
+                                              )(implicit messages: Messages): SummaryList = {
+
+    val rows: Seq[Option[CheckAnswersSummaryListRow]] = Seq(
+
+      answers.get(RelationshipIdPage)
+        .map(id => requiredRow("checkAnswers.relationship.id", id.toString)),
+
+      answers.get(RelationshipIdxPage)
+        .map(idx => requiredRow("checkAnswers.relationship.idx", idx)),
+
+      answers.get(RelationshipNamePage)
+        .map(name => requiredRow("checkAnswers.relationship.name", name)),
+
+      answers.get(RelationshipLabelPage)
+        .map(label => requiredRow(
+          "checkAnswers.relationship.label",
+          label,
+          href = Some(routes. RelationshipLabelController.onPageLoad()))),
+
+      answers.get(RelationshipDescriptionPage)
+        .map(description => requiredRow(
+          "checkAnswers.relationship.description",
+          description,
+          href = Some(routes. RelationshipDescriptionController.onPageLoad())
+        )),
+
+      answers.get(RelationshipOriginationPage)
+        .map(origination => requiredRow("checkAnswers.relationship.origination", origination)),
+
+      answers.get(RelationshipTerminationPage)
+        .map(termination => requiredRow("checkAnswers.relationship.termination", termination)),
+
+      answers.get(RelationshipCategoryCodePage)
+        .map(categoryCode => requiredRow("checkAnswers.relationship.categoryCode", categoryCode)),
+
+      answers.get(RelationshipCategoryMeaningPage)
+        .map(categoryMeaning => requiredRow("checkAnswers.relationship.categoryMeaning", categoryMeaning)),
+
+      answers.get(RelationshipTypeCodePage)
+        .map(typeCode => requiredRow("checkAnswers.relationship.typeCode", typeCode)),
+
+      answers.get(RelationshipTypeMeaningPage)
+        .map(typeMeaning => requiredRow("checkAnswers.relationship.typeMeaning", typeMeaning)),
+
+      answers.get(RelationshipClassCodePage)
+        .map(classCode => requiredRow("checkAnswers.relationship.classCode", classCode)),
+
+      answers.get(RelationshipClassMeaningPage)
+        .map(classMeaning => requiredRow("checkAnswers.relationship.classMeaning", classMeaning)),
+
+      answers.get(PropertyAddressPage)
+        .map(address => requiredRow("checkAnswers.property.data.address.full", address)),
+
+      answers.get(PropertyPostcodePage)
+        .map(postcode => requiredRow("checkAnswers.property.data.address.postcode", postcode)),
+    )
+    SummaryList(
+      rows.flatten.map(summarise),
+      classes = "govuk-!-margin-bottom-9"
     )
   }
 
-    def createSummaryRows(answers: UserAnswers)(implicit messages: Messages): SummaryList = { 
+  // -----------------------------------------------------
+  // ✅ Property summary (ADDED)
+  // -----------------------------------------------------
 
-      val userNameAnswer = answers.get(UserNamePage)
-      val contactNumberAnswer = answers.get(ContactNumberPage)
+  def createPropertySummaryRows(
+                                 answers: UserAnswers
+                               )(implicit messages: Messages): SummaryList = {
 
-      val userName = buildRow(
-        labelKey = "checkAnswers.userName",
-        value = userNameAnswer.map(value => value).getOrElse(""),
-        linkId = "user-name",
-        href = controllers.routes.UserNameController.onPageLoad(CheckMode),
-        hiddenKey = "user-name"
-      )
+    val rows: Seq[Option[CheckAnswersSummaryListRow]] = Seq(
 
-      val contactNumber = buildRow(
-        labelKey = "checkAnswers.contactNumber",
-        value = contactNumberAnswer.map(value => value.toString).getOrElse(""),
-        linkId = "contact-number",
-        href = controllers.routes.ContactNumberController.onPageLoad(CheckMode),
-        hiddenKey = "contact-number"
-      )
+      answers.get(PropertyIdPage)
+        .map(id => requiredRow("checkAnswers.property.id", id.toString)),
 
-      val rows = Seq(userName, contactNumber)
-      SummaryList(rows.map(summarise), classes = "govuk-!-margin-bottom-9")
-    }
+      answers.get(PropertyIdxPage)
+        .map(idx => requiredRow("checkAnswers.property.idx", idx)),
+
+      answers.get(PropertyLabelPage)
+        .map(label => requiredRow("checkAnswers.property.label", label, href = Some(routes.PropertyLabelController.onPageLoad()))),
+      
+      answers.get(PropertyOriginationPage)
+        .map(orig => requiredRow("checkAnswers.property.origination", orig)),
+
+      optionalRow(
+        "checkAnswers.property.name",
+        answers.get(PropertyNamePage)
+      ),
+
+      optionalRow(
+        "checkAnswers.property.description",
+        answers.get(PropertyDescriptionPage)
+      ),
+
+      optionalRow(
+        "checkAnswers.property.termination",
+        answers.get(PropertyTerminationPage)
+      ),
+
+      optionalRow(
+        "checkAnswers.property.category.code",
+        answers.get(PropertyCategoryCodePage)
+      ),
+
+      optionalRow(
+        "checkAnswers.property.data.address.full",
+        answers.get(PropertyAddressPage),
+        href = Some(routes.PropertyAddressController.onPageLoad())
+      ),
+
+      optionalRow(
+        "checkAnswers.property.data.address.postcode",
+        answers.get(PropertyPostcodePage),
+        href = Some(routes.PropertyLabelController.onPageLoad())
+      ),
+
+      optionalRow(
+        "checkAnswers.property.data.property.value",
+        answers.get(PropertyValuePage),
+        href = Some(routes.PropertyLabelController.onPageLoad())
+      ),
+
+      optionalRow(
+        "checkAnswers.property.category.meaning",
+        answers.get(PropertyCategoryMeaningPage)
+      ),
+
+      // ------------------------------------------------
+      // Type
+      // ------------------------------------------------
+      optionalRow(
+        "checkAnswers.property.type.code",
+        answers.get(PropertyTypeCodePage)
+      ),
+
+      optionalRow(
+        "checkAnswers.property.type.meaning",
+        answers.get(PropertyTypeMeaningPage)
+      ),
+
+      // ------------------------------------------------
+      // Class
+      // ------------------------------------------------
+      optionalRow(
+        "checkAnswers.property.class.code",
+        answers.get(PropertyClassCodePage)
+      ),
+
+      optionalRow(
+        "checkAnswers.property.class.meaning",
+        answers.get(PropertyClassMeaningPage)
+      ),
+
+      // ------------------------------------------------
+      // Items count
+      // ------------------------------------------------
+      answers.get(PropertyItemsCountPage).map { count =>
+        buildRow(
+          labelKey = "checkAnswers.property.items.count",
+          value = count.toString,
+          linkId = "checkAnswers.property.items.count",
+          href = None,
+          hiddenKey = "checkAnswers.property.items.count"
+        )
+      }
+    )
+
+    SummaryList(
+      rows.flatten.map(summarise),
+      classes = "govuk-!-margin-bottom-9"
+    )
+  }
+
+// -----------------------------------------------------
+  // Registration summary
+  // -----------------------------------------------------
+
+  def createRegistrationSummaryRows(
+                                     answers: UserAnswers
+                                   )(implicit messages: Messages): SummaryList = {
+
+    val rows = Seq(
+      answers.get(UserNamePage).map { userName =>
+        buildRow(
+          labelKey = "checkAnswers.userName",
+          value = userName,
+          linkId = "user-name",
+          href = Some(controllers.routes.UserNameController.onPageLoad(CheckMode)),
+          hiddenKey = "user-name"
+        )
+      },
+      answers.get(ContactNumberPage).map { contactNumber =>
+        buildRow(
+          labelKey = "checkAnswers.contactNumber",
+          value = contactNumber.toString,
+          linkId = "contact-number",
+          href = Some(controllers.routes.ContactNumberController.onPageLoad(CheckMode)),
+          hiddenKey = "contact-number"
+        )
+      }
+    )
+
+    SummaryList(
+      rows.flatten.map(summarise),
+      classes = "govuk-!-margin-bottom-9"
+    )
+  }
 }

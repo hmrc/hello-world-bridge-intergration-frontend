@@ -17,11 +17,17 @@
 package controllers
 
 import connectors.BridgeIntegrationConnector
-import controllers.actions.IdentifierAction
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import forms.ContactNumberFormProvider
+import models.viewModels.Relationship.RelationshipSummaryList
+import models.viewModels.person.PersonSummaryList
 import models.viewModels.property.PropertySummaryList
+import navigation.Navigator
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ViewLinkedPropertiesView
 
@@ -30,38 +36,67 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ViewLinkedPropertiesController @Inject()(
                                                 override val messagesApi: MessagesApi,
+                                                sessionRepository: SessionRepository,
+                                                navigator: Navigator,
                                                 identify: IdentifierAction,
+                                                getData: DataRetrievalAction,
+                                                requireData: DataRequiredAction,
+                                                formProvider: ContactNumberFormProvider,
                                                 val controllerComponents: MessagesControllerComponents,
                                                 bridgeIntegrationConnector: BridgeIntegrationConnector,
                                                 view: ViewLinkedPropertiesView
-                                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging with PropertySummaryList {
+                                              )(implicit ec: ExecutionContext)
+  extends FrontendBaseController
+    with I18nSupport
+    with Logging
+    with PropertySummaryList
+    with PersonSummaryList
+    with RelationshipSummaryList {
 
-  def onPageLoad(): Action[AnyContent] = identify.async {
-    implicit request =>
-      bridgeIntegrationConnector.getRatepayerProperties().flatMap{
-        case Some(ratepayerPropertyLinksResponse) =>
-          Future.successful(Ok(view(
-            linkedProperties = true,
-            createPropertySummaryList(ratepayerPropertyLinksResponse.properties),
-            createPersonSummaryList(ratepayerPropertyLinksResponse.persons),
-            createRelationshipSummaryList(ratepayerPropertyLinksResponse.relationships)
-          )))
-        case None =>
-          Future.successful(Ok(view(
+  // ✅ Explicitly resolve the conflict
+  override def createPersonSummaryList(
+                                        persons: List[models.bridge.person.Person]
+                                      )(implicit messages: play.api.i18n.Messages) =
+    super[PersonSummaryList].createPersonSummaryList(persons)
+
+  def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
+    bridgeIntegrationConnector.getRatepayerProperties().flatMap {
+      case Some(ratepayerPropertyLinksResponse) =>
+        Future.successful(
+          Ok(
+            view(
+              linkedProperties = true,
+              createPropertySummaryList(ratepayerPropertyLinksResponse.properties),
+              createPersonSummaryList(ratepayerPropertyLinksResponse.persons),
+              createRelationshipSummaryList(ratepayerPropertyLinksResponse.relationships)
+            )
+          )
+        )
+
+      case None =>
+        Future.successful(
+          Ok(
+            view(
+              linkedProperties = false,
+              createPropertySummaryList(List.empty),
+              createPersonSummaryList(List.empty),
+              createRelationshipSummaryList(List.empty)
+            )
+          )
+        )
+    }.recover {
+      case e =>
+        logger.error(
+          s"[bridgeIntegrationConnector][getDashboard] Failed for ${request.userId}: ${e.getMessage}"
+        )
+        Ok(
+          view(
             linkedProperties = false,
             createPropertySummaryList(List.empty),
             createPersonSummaryList(List.empty),
             createRelationshipSummaryList(List.empty)
-          )))
-      }.recover{
-        case e =>
-          logger.error(s"[bridgeIntegrationConnector][getDashboard] Failed for ${request.userId}: ${e.getMessage}")
-          Ok(view(
-            linkedProperties = false,
-            createPropertySummaryList(List.empty),
-            createPersonSummaryList(List.empty),
-            createRelationshipSummaryList(List.empty)
-          ))
-      }
+          )
+        )
+    }
   }
 }

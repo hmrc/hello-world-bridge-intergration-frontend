@@ -25,14 +25,14 @@ import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
-import service.CheckAnswers.createSummaryRows
+import service.CheckAnswers.createRegistrationSummaryRows
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.UniqueIdGenerator
 import views.html.CheckYourAnswersView
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckYourAnswersController @Inject()(
+class CheckYourAnswersRegisterUserController @Inject()(
                                             override val messagesApi: MessagesApi,
                                             identify: IdentifierAction,
                                             getData: DataRetrievalAction,
@@ -47,7 +47,7 @@ class CheckYourAnswersController @Inject()(
   // GET /check-answers
   def onPageLoad(): Action[AnyContent] =
     (identify andThen getData andThen requireData) { implicit request =>
-      Ok(view(createSummaryRows(request.userAnswers)))
+      Ok(view(createRegistrationSummaryRows(request.userAnswers)))
     }
 
   /**
@@ -91,11 +91,11 @@ class CheckYourAnswersController @Inject()(
           Future.successful(Redirect(routes.IndexController.onPageLoad()))
 
         case Some(existingAnswers) =>
-          val nameOpt: Option[Name] =
-            existingAnswers.get(UserNamePage).map(Name(_))
+          val nameOpt: Option[String] =
+            existingAnswers.get(UserNamePage)
 
-          val contactNumberOpt: Option[PhoneNumber] =
-            existingAnswers.get(ContactNumberPage).map(number => PhoneNumber(number.toString))
+          val contactNumberOpt: Option[String] =
+            existingAnswers.get(ContactNumberPage)
 
           //Making the model you can send to the bridge.
           val ratepayerRequest = RegisterRatepayer(

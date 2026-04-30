@@ -16,10 +16,6 @@
 
 package models.registration
 
-import helpers.TestSupport
-import models.registration.Address
-import models.registration.ReferenceType.Trn
-import play.api.libs.json.{JsValue, Json}
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsSuccess, Json}
 
@@ -29,13 +25,13 @@ import play.api.libs.json.{JsSuccess, Json}
         val model = RegisterRatepayer(
           userType = Some(RatepayerType.Individual),
           agentStatus = Some(AgentStatus.Agent),
-          name = Some(Name("Test Name")),
+          name = Some("Test Name"),
           tradingName = Some(TradingName("Trading Name")),
-          email = Some(Email("test@email.com")),
+          email = Some("test@email.com"),
           nino = Some(Nino("AA123456A")),
-          contactNumber = Some(PhoneNumber("0123456789")),
-          secondaryNumber = Some(PhoneNumber("0987654321")),
-          address = Some(Address("1 Test St", Some("Suite 2"), "Testville", Some("Testshire"), Postcode("TE5 7ST"))),
+          contactNumber = Some("0123456789"),
+          secondaryNumber = Some("0987654321"),
+          address = Some("1 Test St, Suite 2, Testville, Testshire TE5 7ST"),
           trnReferenceNumber = Some(TRNReferenceNumber(ReferenceType.Trn, "TRN-123")),
           isRegistered = Some(true),
           recoveryId = Some("1234567890")

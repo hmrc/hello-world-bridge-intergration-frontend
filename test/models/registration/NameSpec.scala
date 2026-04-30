@@ -16,11 +16,9 @@
 
 package models.registration
 
-import org.scalatest.matchers.should.Matchers.*
-import play.api.data.Form
-import play.api.libs.json.Json
 import helpers.TestSupport
-import models.registration.Name
+import org.scalatest.matchers.should.Matchers.*
+import play.api.libs.json.Json
 
 class NameSpec extends TestSupport{
   "Name model" should {

@@ -16,19 +16,18 @@
 
 package helpers
 
-import play.api.libs.json.{JsValue, Json}
+import models.registration.RatepayerType.Individual
 import models.registration.*
 import models.*
-import models.bridge.common.{CodeMeaning, ForeignId, Metadata, MetadataStage, ProtoData, ReceivingMetadata, SendingMetadata}
-import models.bridge.person.{Communications, NameData, Person, PersonItemData, Persons}
-import models.bridge.property.{AddressData, ListData, LocationData, Property, PropertyAssessment, PropertyAssessmentData, PropertyData, PropertyReference, PropertyUse, ValuationData, WorkflowData}
-import models.bridge.relationhship.{Manifestation, Persistence, Relationship, RelationshipData, RelationshipItem, Transportation}
-import models.registration.RatepayerType.Individual
+import models.bridge.relationhship.*
+import models.bridge.property.*
+import models.bridge.person.*
+import models.bridge.common.*
+import play.api.libs.json.{JsValue, Json}
 
 import java.time.{Instant, LocalDate}
 
 trait TestData {
-
 
   val proto = ProtoData("application/pdf", "Doc", false, "", "xyz")
   val stage = MetadataStage(selecting = Map("a" -> "b"))
@@ -40,9 +39,9 @@ trait TestData {
   val assessment = PropertyAssessment(
     id = 42L,
     idx = "PA",
-    name = "Assessment",
+    name = Some("Assessment"),
     label = "Label",
-    description = "Desc",
+    description = Some("Desc"),
     origination = "2021",
     termination = Some("2023"),
     category = CodeMeaning(Some("C1"), Some("Cat1")),
@@ -63,32 +62,32 @@ trait TestData {
     protodata = List(proto),
     metadata = metadata,
     compartments = Map("zone" -> "restricted"),
-    items = List(Json.obj("x" -> "y"))
+    items = List.empty
   )
   
   val testProperty = Property(
-    id = 777,
-    idx = "PROP",
-    name = "Main Property",
-    label = "Main Label",
-    description = "Property description",
-    origination = "2020",
+    id = Some(777),
+    idx = Some("PROP"),
+    name = Some("Main Property"),
+    label = Some("Main Label"),
+    description = Some("Property description"),
+    origination = Some("2020"),
     termination = None,
-    category = CodeMeaning(Some("PCAT"), Some("PersonCat")),
-    `type` = CodeMeaning(Some("PT"), Some("Type")),
-    `class` = CodeMeaning(Some("PCL"), Some("Class")),
-    data = PropertyData(
+    category = Some(CodeMeaning(Some("PCAT"), Some("PersonCat"))),
+    `type` = Some(CodeMeaning(Some("PT"), Some("Type"))),
+    `class` = Some(CodeMeaning(Some("PCL"), Some("Class"))),
+    data = Some(PropertyData(
       foreign_ids = List(ForeignId("SYS", "R1", "001")),
       foreign_names = Nil,
       foreign_labels = Nil,
       addresses = AddressData(Some("123 St"), None, Some("ZZ1 1ZZ"), None),
       location = LocationData(None, None, Some("gmaps")),
       assessments = List(assessment)
-    ),
-    protodata = List(proto),
-    metadata = metadata,
-    compartments = Map("meta" -> "data"),
-    items = List(Json.obj("child" -> "item"))
+    )),
+    protodata = Some(List(proto)),
+    metadata = Some(metadata),
+    compartments = Some(Map("meta" -> "data")),
+    items =  None
   )
 
   val codeMeaning = CodeMeaning(Some("C"), Some("Meaning"))
@@ -120,11 +119,11 @@ trait TestData {
   )
 
   val relationshipItem = RelationshipItem(
-    transportation = Transportation("/org/rel"),
-    persistence = Persistence("STORE", "ID123")
+    transportation = RelationshipItemTransportation("/org/rel"),
+    persistence = RelationshipItemPersistence("STORE", Some(123))
   )
 
-  val manifestation = Manifestation(
+  val manifestation = RelationshipManifestation(
     artifact_reference = Some("REF"),
     artifact_code = Some("CODE"),
     artifact_description = None,
@@ -147,12 +146,12 @@ trait TestData {
   )
   
   val testRelationship = Relationship(
-    id = 300,
+    id = Some(300),
     idx = "R1",
     name = "Rel Name",
     label = "Label",
     description = "Relationship",
-    origination = "2019",
+    origination = Some("2019"),
     termination = None,
     category = codeMeaning,
     `type` = codeMeaning,
@@ -168,19 +167,12 @@ trait TestData {
     RegisterRatepayer(
       userType = Some(Individual),
       agentStatus = Some(AgentStatus.Agent),
-      name = Some(Name("John Doe")),
+      name = Some("John Doe"),
       tradingName = Some(TradingName("CompanyLTD")),
-      email = Some(Email("JohnDoe@digital.hmrc.gov.uk")),
-      contactNumber = Some(PhoneNumber("07123456789")),
-      secondaryNumber = Some(PhoneNumber("07123456789")),
-      address = Some(
-        Address(line1 = "99",
-          line2 = Some("Wibble Rd"),
-          town = "Worthing",
-          county = Some("West Sussex"),
-          postcode = Postcode("BN110AA")
-        )
-      ),
+      email = Some("JohnDoe@digital.hmrc.gov.uk"),
+      contactNumber = Some("07123456789"),
+      secondaryNumber = Some("07123456789"),
+      address = Some("99, Wibble Rd, Worthing, West Sussex, BN110AA"),
       trnReferenceNumber = Some(TRNReferenceNumber(ReferenceType.Nino, "12345")),
       isRegistered = Some(false)
     )
@@ -203,7 +195,7 @@ trait TestData {
       |{"value":"Lovely Fella"}
       |""".stripMargin)
     
-  val contactNumberModel: PhoneNumber = PhoneNumber("0300 200 3310")
+  val contactNumberModel = "0300 200 3310"
 
   val phoneNumberJson: JsValue = Json.parse(
     """

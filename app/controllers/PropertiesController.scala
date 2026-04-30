@@ -44,37 +44,42 @@ class PropertiesController @Inject()(
 
   val pageSize = 100
 
-  def onPageLoad(credId: String, assessmentId: String): Action[AnyContent] =
+  def onPageLoad(): Action[AnyContent] =
     identify.async { implicit request =>
-      val page = request.getQueryString("page").map(_.toInt).getOrElse(1)
+      val page = request.getQueryString("page").flatMap(_.toIntOption).getOrElse(1)
       val sortBy = request.getQueryString("sortBy").getOrElse("AddressASC")
 
-      connector.getPropertiesForAssessment(credId, assessmentId).map { response =>
-
-        val sorted = sorting.sort(response.properties, sortBy)
-        val total = sorted.size
-        val from = (page - 1) * pageSize
-        val until = from + pageSize
-        val pageItems = sorted.slice(from, until)
-        
-        Ok(view(
-          AssessmentProperties(pageItems),
-          page,
-          total,
-          pageSize,
-          sortBy,
-          credId,
-          assessmentId
-        ))
-      }.recover {
-        case ex =>
-          InternalServerError(s"Failed to load assessment properties: ${ex.getMessage}")
-      }
+      connector
+        .getRatepayerProperties()
+        .map {
+          case Some(propertyAssessmentContext) =>
+            val sorted = sorting.sort(propertyAssessmentContext.properties, sortBy)
+            val total = sorted.size
+            val from = (page - 1) * pageSize
+            val until = from + pageSize
+            val pageItems = sorted.slice(from, until)
+            Ok(
+              view(
+                AssessmentProperties(pageItems),
+                page,
+                total,
+                pageSize,
+                sortBy
+              )
+            )
+          case None =>
+            NotFound("No properties found for this assessment")
+        }
+        .recover {
+          case ex =>
+            InternalServerError(
+              s"Failed to load assessment properties: ${ex.getMessage}"
+            )
+        }
     }
 
 
-
-  def sort(credId: String, assessmentId: String): Action[AnyContent] =
+  def sort(): Action[AnyContent] =
     identify { implicit request =>
       val sortBy =
         request.body.asFormUrlEncoded
@@ -83,7 +88,7 @@ class PropertiesController @Inject()(
 
       Redirect(
         routes.PropertiesController
-          .onPageLoad(credId, assessmentId)
+          .onPageLoad()
           .url + s"?page=1&sortBy=$sortBy"
       )
     }

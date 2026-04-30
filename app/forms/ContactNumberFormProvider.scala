@@ -31,7 +31,7 @@ class ContactNumberFormProvider @Inject() extends Mappings {
         "contactNumber.error.invalid",
         "contactNumber.error.length",
         phoneRegex,
-        maximumLength
+        maxLength = maximumLength
       )
     )
 }

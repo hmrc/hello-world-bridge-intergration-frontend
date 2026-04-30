@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package models.registration
+package pages.property
 
-import org.scalatest.matchers.should.Matchers.*
-import play.api.data.Form
-import play.api.libs.json.Json
-import helpers.TestSupport
-import models.registration.PhoneNumber
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-class PhoneNumberSpec extends TestSupport{
-  "Phone number model" should {
-    "serialise into json" in {
-      Json.toJson(contactNumberModel) mustBe phoneNumberJson
-    }
-    "deserialize from json" in {
-      phoneNumberJson.as[PhoneNumber] mustBe contactNumberModel
-    }
-  }
+case object PropertyTypeCodePage extends QuestionPage[String] {
+
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "propertyTypeCode"
 }
 
