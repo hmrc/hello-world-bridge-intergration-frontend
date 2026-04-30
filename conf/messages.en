@@ -183,16 +183,17 @@ results.sortBy.rateableDesc = Rateable value (high to low)
 
 #RatepayerPropertyLinks
 ratepayerPropertyLinks.title = Ratepayer Property Links
-
-checkAnswers.relationship.name = relationship name
-checkAnswers.relationship.label = relationship label
-checkAnswers.relationship.description = relationship description
-checkAnswers.relationship.categoryCode= relationship category code
-checkAnswers.relationship.categoryMeaning = relationship category meaning
-checkAnswers.relationship.typeCode = relationship type code
-checkAnswers.relationship.typeMeaning = relationship type meaning
-checkAnswers.relationship.classCode = relationship class code
-checkAnswers.relationship.classMeaning = relationship class meaning
+relationshipLabel.heading = Relationship label
+relationshipDescription.heading = Relationship description
+checkAnswers.relationship.name = Relationship name
+checkAnswers.relationship.label = Relationship label
+checkAnswers.relationship.description = Relationship description
+checkAnswers.relationship.categoryCode= Relationship category code
+checkAnswers.relationship.categoryMeaning = Relationship category meaning
+checkAnswers.relationship.typeCode = Relationship type code
+checkAnswers.relationship.typeMeaning = Relationship type meaning
+checkAnswers.relationship.classCode = Relationship class code
+checkAnswers.relationship.classMeaning = Relationship class meaning
 checkAnswers.property.id = Property Id
 checkAnswers.property.idx = Property IDX
 checkAnswers.property.label = Property label
