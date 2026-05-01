@@ -92,7 +92,6 @@ class BridgeIntegrationConnector @Inject()(
   def changePropertyAssessment(
                                 payload: JsValue
                               )(implicit hc: HeaderCarrier): Future[Boolean] = {
-
     http
       .post(uri(s"property-assessment/123456789567/assessment/27399677000").toURL)
       .withBody(payload)
