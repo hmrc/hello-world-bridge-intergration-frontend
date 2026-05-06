@@ -38,18 +38,31 @@ class DashboardController  @Inject()(override val messagesApi: MessagesApi,
                                      view: DashboardView)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging{
 
   def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
-    
-    bridgeIntegrationConnector.getDashboard().flatMap {
-      case Some(answer) if answer.activeRatepayerPersonExists =>
-        Future.successful(
-          Ok(
-            view(
-              cards = DashboardHelper.getDashboardCards(answer.activePropertyLinkCount > 0, Approved),
-              name = "Registered User"
-            )
-          )
-        )
 
+
+
+    bridgeIntegrationConnector.getDashboard().flatMap {
+      case Some(dashboardAnswer) if dashboardAnswer.activeRatepayerPersonExists =>
+        bridgeIntegrationConnector.exploreRatePayer().flatMap{
+          case Some(ratepayerAnswer) =>
+            Future.successful(
+              Ok(
+                view(
+                  cards = DashboardHelper.getDashboardCards(dashboardAnswer.activePropertyLinkCount > 0, Approved),
+                  name = "Registered User"
+                )
+              )
+            )
+          case None =>
+            Future.successful(
+              Ok(
+                view(
+                  cards = DashboardHelper.getDashboardCards(dashboardAnswer.activePropertyLinkCount > 0, Approved),
+                  name = "Registered User"
+                )
+              )
+            )
+        }
       case Some(answer) =>
         Future.successful(
           Redirect(routes.IndexController.onPageLoad())

@@ -52,7 +52,7 @@ object DashboardHelper {
     links = Some(
       Seq(
         Link(
-          href = Call(method = "GET", url = controllers.routes.ViewLinkedPropertiesController.onPageLoad().url),//TODO
+          href = Call(method = "GET", url = controllers.routes.CheckYourAnswersRatepayerPropertyLinksController.onPageLoad().url),//TODO
           linkId = "LinkId1-Card",
           messageKey = "home.yourPropertiesCard.link.1",
         ),
@@ -98,7 +98,7 @@ object DashboardHelper {
     links = Some(
       Seq(
         Link(
-          href = Call(method = "GET", url = ""),
+          href = Call(method = "GET", url = controllers.routes.CheckYourAnswersPropertyAssessmentController.onPageLoad().url),
           linkId = "LinkId-Card",
           messageKey = "home.reportChangeCard.link1",
         )
