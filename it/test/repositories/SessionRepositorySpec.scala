@@ -51,6 +51,7 @@ class SessionRepositorySpec
 
   private val mockAppConfig = mock[FrontendAppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1L
+ 
 
   implicit val productionLikeTestMdcExecutionContext: ExecutionContext = MdcExecutionContext()
 

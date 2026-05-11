@@ -47,9 +47,12 @@ trait SpecBase
   
   protected def applicationBuilder(userAnswers: Option[UserAnswers] = None): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
+      .configure("centralised-authorisation-resource-client.filter.enabled" -> false)
       .overrides(
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[IdentifierAction].to[FakeIdentifierAction],
         bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers))
       )
+
+
 }
