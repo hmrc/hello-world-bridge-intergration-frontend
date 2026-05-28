@@ -22,6 +22,7 @@ import pages._
 import pages.property._
 import play.api.libs.json._
 import models.RichJsObject
+import scala.collection.immutable.Seq
 
 class PropertyAssessmentUserAnswersService extends ServiceHelper {
 
@@ -154,27 +155,32 @@ class PropertyAssessmentUserAnswersService extends ServiceHelper {
                              answers: UserAnswers
                            ): JsValue = {
 
-    originalJson match {
-      case root: JsObject =>
-        (root \ "properties").asOpt[JsArray] match {
-          case Some(properties) =>
-            val updatedProperties =
-              properties.value.zipWithIndex.map {
-                case (propObj: JsObject, 0) =>
-                  mergePropertyFields(propObj, answers)
-                case (other, _) =>
-                  other
-              }
 
-            Json.obj("properties" -> JsArray(updatedProperties))
+    val properties: Seq[JsObject] = originalJson match {
 
-          case None =>
-            root
-        }
+      case obj: JsObject =>
+        (obj \ "properties").asOpt[JsArray]
+          .map(_.value.collect { case o: JsObject => o }.toList)
+          .getOrElse(List(obj))
+
+      case JsArray(values) =>
+        values.collect { case o: JsObject => o }.toList
+
+      case obj: JsObject =>
+        List(obj)
 
       case _ =>
-        originalJson
+        List.empty
     }
+
+
+    val updatedProperties =
+      properties.zipWithIndex.map {
+        case (prop, 0) => mergePropertyFields(prop, answers)
+        case (prop, _) => prop
+      }
+
+    Json.obj("properties" -> JsArray(updatedProperties))
   }
 
   // ====================================================
@@ -211,20 +217,26 @@ class PropertyAssessmentUserAnswersService extends ServiceHelper {
     // Address (data.addresses) — VALIDATED
     // ─────────────────────────────
 
-    updated =
-      (updated \ "data").asOpt[JsObject] match {
-        case Some(dataObj) =>
-          (dataObj \ "addresses").asOpt[JsObject] match {
-            case Some(addressesObj) =>
-              val mergedAddresses = mergeAddressFields(addressesObj, answers)
-              updated + ("data" -> (dataObj + ("addresses" -> mergedAddresses)))
-            case None =>
-              updated
-          }
-        case None =>
-          updated
-      }
+    updated = answers.get(PropertyAddressLine1Page) match {
+      case Some(value) =>
+        val dataObj =
+          (updated \ "data").asOpt[JsObject].getOrElse(Json.obj())
 
+        val addressesObj =
+          (dataObj \ "addresses").asOpt[JsObject].getOrElse(Json.obj())
+
+        val updatedAddresses =
+          addressesObj + ("property_full_address" -> JsString(value))
+
+        val updatedData =
+          dataObj + ("addresses" -> updatedAddresses)
+
+        updated + ("data" -> updatedData)
+
+      case None =>
+        updated
+    }
     updated
   }
+
 }
