@@ -16,8 +16,7 @@
 
 package utils
 
-import base.SpecBase
-import helpers.{TestSupport, ViewBaseSpec}
+import helpers.ViewBaseSpec
 import models.Status.{Approved, Pending, Rejected}
 import models.components.Link
 import play.api.mvc.Call
@@ -53,7 +52,7 @@ class DashboardHelperSpec extends ViewBaseSpec {
 
         assert(links.size == 2)
         assert(link1.linkId == "LinkId1-Card")
-        assert(link1.href.url == "/hello-world-bridge-intergration-frontend/view-linked-properties")
+        assert(link1.href.url == "/hello-world-bridge-intergration-frontend/ratepayer-property-links/check-your-answers")
         assert(link2.linkId == "LinkId2-Card")
         assert(link2.href.url == "")
       }
@@ -66,7 +65,7 @@ class DashboardHelperSpec extends ViewBaseSpec {
         assert(cards(0).titleKey.contains(CardTitle(Text("Your property"), None, "")))
         assert(cards(0).links.get.links.length == 1)
         assert(cards(0).links.get.links.head.messageKey.contains("home.yourPropertiesCard.link.1"))
-        assert(cards(0).links.get.links.head.href == Call(method = "GET", url = ""))
+        assert(cards(0).links.get.links.head.href == Call(method = "GET", url = "/hello-world-bridge-intergration-frontend/ratepayer-property-assessment/check-your-answers"))
       }
       "return the correct dashboard cards when property is not linked" in {
         val cards = DashboardHelper.getDashboardCards(isPropertyLinked = false, Pending)
@@ -81,7 +80,7 @@ class DashboardHelperSpec extends ViewBaseSpec {
         assert(cards(0).titleKey.contains(CardTitle(Text("Your property"), None, "")))
         assert(cards(0).links.get.links.length == 1)
         assert(cards(0).links.get.links.head.messageKey.contains("home.yourPropertiesCard.link.1"))
-        assert(cards(0).links.get.links.head.href == Call(method = "GET", url = ""))
+        assert(cards(0).links.get.links.head.href == Call(method = "GET", url = "/hello-world-bridge-intergration-frontend/ratepayer-property-assessment/check-your-answers"))
       }
       "return the correct dashboard cards when property is not linked" in {
         val cards = DashboardHelper.getDashboardCards(isPropertyLinked = false, Rejected)
