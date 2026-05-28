@@ -94,6 +94,7 @@ class BridgeIntegrationConnector @Inject()(
                               )(implicit hc: HeaderCarrier): Future[Boolean] = {
     http
       .post(uri(s"property-assessment/123456789567/assessment/27399677000").toURL)
+      .setHeader("Content-Type" -> "application/json")
       .withBody(payload)
       .execute[HttpResponse]
       .map { response =>

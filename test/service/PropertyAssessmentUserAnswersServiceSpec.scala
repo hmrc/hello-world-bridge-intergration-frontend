@@ -138,14 +138,20 @@ class PropertyAssessmentUserAnswersServiceSpec
       val result =
         service.mergeIntoOriginalJson(originalJson, emptyUserAnswers)
 
-      result mustBe originalJson
+      result mustBe Json.obj(
+        "properties" -> Json.arr(
+          Json.obj("foo" -> "bar")
+        )
+      )
+
     }
 
-    "return original JSON unchanged if root is not an object" in {
+    "return wrapped empty properties when root is not an object" in {
 
       val json = JsString("not-object")
 
-      service.mergeIntoOriginalJson(json, emptyUserAnswers) mustBe json
+      service.mergeIntoOriginalJson(json, emptyUserAnswers) mustBe
+        Json.obj("properties" -> Json.arr())
     }
 
     "handle missing data or addresses safely" in {

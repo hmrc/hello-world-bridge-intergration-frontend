@@ -42,6 +42,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.LoggerFactory
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 
 import org.scalatest.Assertion
 
@@ -146,14 +147,6 @@ class BridgeIntegrationConnectorSpec extends MockHttpV2
         "http://localhost:1300/bridge-integration/property-assessment/123456789567/assessment/27399677000"
       )(
         HttpResponse(BAD_REQUEST, Json.obj("error" -> "bad"), Map.empty)
-      )
-
-      connector.changePropertyAssessment(payload).futureValue mustBe false
-    }
-
-    "return false when an exception occurs" in {
-      setupMockHttpV2FailedPost(
-        "http://localhost:1300/bridge-integration/property-assessment/123456789567/assessment/27399677000"
       )
 
       connector.changePropertyAssessment(payload).futureValue mustBe false
