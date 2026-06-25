@@ -37,11 +37,16 @@ GET         /unauthorised                                                       
 GET        /property-search                                                        controllers.FindAPropertyController.onPageLoad()
 POST       /property-search                                                        controllers.FindAPropertyController.onSubmit()
 
-
 GET        /property-results                                                       controllers.PropertyResultsController.onPageLoad(page: Int ?= 1 ,sortBy: String ?= "AddressASC")
 POST       /property-results                                                       controllers.PropertyResultsController.sort
 GET        /property-results/select/:index                                         controllers.PropertyResultsController.selectProperty(index: Int, sortBy: String ?= "AddressASC")
 
+GET        /property-search-bridge                                                 controllers.FindAPropertyBridgeController.onPageLoad()
+POST       /property-search-bridge                                                 controllers.FindAPropertyBridgeController.onSubmit()
+
+GET        /property-results-bridge                                                controllers.PropertyResultsBridgeController.onPageLoad(page: Int ?= 1 ,sortBy: String ?= "AddressASC")
+POST       /property-results-bridge                                                controllers.PropertyResultsBridgeController.sort
+GET        /property-results-bridge/select/:index                                  controllers.PropertyResultsBridgeController.selectProperty(index: Int, sortBy: String ?= "AddressASC")
 
 GET        /no-results                                                             controllers.NoResultsFoundController.onPageLoad
 

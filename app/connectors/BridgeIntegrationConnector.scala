@@ -17,21 +17,28 @@
 package connectors
 
 import config.FrontendAppConfig
+import forms.FindAPropertyBridgeForm
 import models.bridge.person.Persons
 import models.bridge.property.*
 import models.bridge.relationhship.Relationship
+import models.bridge.search.PostcodeSearchResult
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
 import models.registration.RegisterRatepayer
-import play.api.http.Status.*
+import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SEE_OTHER}
 import play.api.i18n.Lang.logger
-import play.api.libs.json.{JsError, JsObject, JsValue, Json}
+import play.api.libs.json.{JsError, JsObject, JsSuccess, JsValue, Json}
 import play.api.libs.ws.writeableOf_JsValue
+import play.api.mvc.Results.*
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
+import scala.util.control.NonFatal
 
 import java.net.URI
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -291,6 +298,73 @@ class BridgeIntegrationConnector @Inject()(
             s"Failed to retrieve property links for person=$credId: ${ex.getMessage}"
           )
           Json.obj("error" -> "Unable to fetch property links")
+      }
+  }
+
+  def postcodeSearch(
+                      searchParams: FindAPropertyBridgeForm
+                    )(implicit hc: HeaderCarrier): Future[Either[ErrorResponse, PostcodeSearchResult]] = {
+
+    val postcode: String =
+      searchParams.postcode.value.trim.toUpperCase
+
+    val normalisedPostcode = postcode.replaceAll("\\s+", "").toUpperCase
+
+    val url = uri(s"postcode/$normalisedPostcode").toURL
+
+    logger.info(
+      Console.GREEN +
+      s"[BridgeIntegrationConnector][postcodeSearch] Calling backend postcode search url=$url" + Console.RESET
+    )
+
+    http
+      .get(url)
+      .setHeader("Content-Type" -> "application/json")
+      .execute[HttpResponse]
+      .map { response =>
+        logger.info(s"[BridgeIntegrationConnector][postcodeSearch] Response Status=${response.status}, body=${response.body}")
+        response.status match {
+          case OK =>
+            response.json.validate[PostcodeSearchResult] match {
+              case JsSuccess(result, _) =>
+                Right(result)
+              case JsError(errors) =>
+                Left(ErrorResponse(BAD_REQUEST, s"Json Validation Error: $errors"))
+            }
+
+          case NOT_FOUND =>
+            // If backend returns 404 for no results, preserve the shape expected by the UI flow.
+            response.json.validate[PostcodeSearchResult] match {
+              case JsSuccess(result, _) =>
+                Right(result)
+              case JsError(_) =>
+                Left(ErrorResponse(NOT_FOUND, response.body))
+            }
+
+          case BAD_REQUEST =>
+            Left(ErrorResponse(BAD_REQUEST, response.body))
+          case status if status >= INTERNAL_SERVER_ERROR =>
+            Left(ErrorResponse(status, response.body))
+          case status =>
+            Left(ErrorResponse(status, response.body))
+        }
+      }
+
+      .recover {
+
+        case e: UpstreamErrorResponse =>
+          logger.error(Console.RED +
+            s"[BridgeIntegrationConnector][postcodeSearch] Upstream status=${e.statusCode}, message=${e.message}"  + Console.RESET,
+            e
+          )
+          Left(ErrorResponse(e.statusCode, e.message))
+
+        case NonFatal(ex) =>
+          logger.error(Console.BLUE +
+            s"[BridgeIntegrationConnector][postcodeSearch] Unexpected error calling postcode search: ${ex.getMessage}" + Console.RESET,
+            ex
+          )
+        Left(ErrorResponse(INTERNAL_SERVER_ERROR, "Call to Bridge postcode search failed"))
       }
   }
 }
