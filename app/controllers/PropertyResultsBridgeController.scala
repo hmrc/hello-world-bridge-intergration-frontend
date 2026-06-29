@@ -19,21 +19,22 @@ package controllers
 import controllers.actions.IdentifierAction
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.FindAPropertyRepo
-import service.SortingVMVPropertiesService
+import repositories.FindAPropertyBridgeRepo
+import service.SortingBridgePropertiesService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import views.html.PropertyResultsView
+import views.html.PropertyResultsBridgeView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class PropertyResultsBridgeController @Inject()(
-                                           identify: IdentifierAction,
-                                           repo: FindAPropertyRepo,
-                                           sorting: SortingVMVPropertiesService,
-                                           view: PropertyResultsView,
-                                           mcc: MessagesControllerComponents
-                                         )(implicit ec: ExecutionContext)
+                                                 identify: IdentifierAction,
+                                                 repo: FindAPropertyBridgeRepo,
+                                                 sorting: SortingBridgePropertiesService,
+                                                 view: PropertyResultsBridgeView,
+                                                 mcc: MessagesControllerComponents
+                                               )(implicit ec: ExecutionContext)
+
   extends FrontendController(mcc) with I18nSupport {
 
   private val pageSize = 10
@@ -42,14 +43,14 @@ class PropertyResultsBridgeController @Inject()(
     identify.async { implicit request =>
       repo.findByUserId(request.userId).map {
         case Some(stored) =>
-          val sorted = sorting.sort(stored.properties.properties.toList, sortBy)
-          val total  = sorted.size
+          val sorted = sorting.sort(stored.result.results.records, sortBy)
 
-          val from   = (page - 1) * pageSize
-          val until  = from + pageSize
+          val total  = sorted.size
+          val from      = (page - 1) * pageSize
+          val until     = from + pageSize
           val pageItems = sorted.slice(from, until)
 
-          Ok(view(stored.properties, pageItems, page, total, pageSize, sortBy))
+          Ok(view(stored.result, pageItems, page, total, pageSize, sortBy))
 
         case None =>
           Redirect(routes.PropertyResultsBridgeController.onPageLoad())
@@ -63,28 +64,29 @@ class PropertyResultsBridgeController @Inject()(
           .flatMap(_.get("sortBy").flatMap(_.headOption))
           .getOrElse("AddressASC")
 
-      Redirect(routes.PropertyResultsController.onPageLoad( 1, sortBy))
+      Redirect(routes.PropertyResultsBridgeController.onPageLoad(1, sortBy))
     }
 
   def selectProperty(index: Int, sortBy: String): Action[AnyContent] =
     identify.async { implicit request =>
       repo.findByUserId(request.userId).map {
         case Some(stored) =>
-          val sorted = sorting.sort(stored.properties.properties.toList, sortBy)
-
+          val sorted = sorting.sort(stored.result.results.records, sortBy)
           sorted.lift(index) match {
             case Some(selected) =>
-              // TODO: Replace when ready
-              Redirect(routes.PropertyResultsBridgeController.onPageLoad())
+              // selected is a RecordWrapper
+              // selected.record.data.list_entry contains the selected property data
+              Redirect(routes.PropertyResultsBridgeController.onPageLoad(1, sortBy))
             case None =>
               Redirect(routes.PropertyResultsBridgeController.onPageLoad(1, sortBy))
           }
 
         case None =>
+
           Redirect(routes.PropertyResultsBridgeController.onPageLoad())
+
       }
+
     }
+
 }
-
-
-

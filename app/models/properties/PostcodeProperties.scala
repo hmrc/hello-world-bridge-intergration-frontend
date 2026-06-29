@@ -16,17 +16,21 @@
 
 package models.properties
 
-import models.bridge.search.PostcodeSearchResult
 import play.api.libs.json.{Format, Json, OFormat}
 
-case class StoredPostcodeSearchResults(
-                                userId: String,
-                                result: PostcodeSearchResult
-                              )
+case class PostcodeProperties(total: Int, properties: List[PostcodeProperty], hasNext: Boolean = true, hasPrevious: Boolean = true)
 
-object StoredPostcodeSearchResults {
-  implicit val format: Format[StoredPostcodeSearchResults] = Json.format[StoredPostcodeSearchResults]
+object PostcodeProperties {
+  implicit val format: Format[PostcodeProperties] = Json.format[PostcodeProperties]
 }
 
+case class PostcodeProperty(uarn: Long,
+                       addressFull: String,
+                       localAuthorityCode: String,
+                       localAuthorityReference: String,
+                       valuations: List[Valuation],
+                      )
 
-  
+object PostcodeProperty {
+  implicit val format: OFormat[PostcodeProperty] = Json.format[PostcodeProperty]
+}

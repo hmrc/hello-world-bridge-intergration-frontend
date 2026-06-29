@@ -20,7 +20,7 @@ import com.google.inject.Singleton
 import com.mongodb.client.model.Indexes.{ascending, descending}
 import config.FrontendAppConfig
 import models.bridge.search.PostcodeSearchResult
-import models.properties.{StoredPostcodeSearchResults, StoredVMVProperties, VMVProperties}
+import models.properties.StoredPostcodeSearchResults
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.equal
 import play.api.Logging
@@ -34,9 +34,9 @@ import scala.util.{Failure, Success}
 
 @Singleton
 case class FindAPropertyBridgeRepo @Inject()(
-                                        mongo: MongoComponent,
-                                        config: FrontendAppConfig
-                                      )(implicit ec: ExecutionContext)
+                                              mongo: MongoComponent,
+                                              config: FrontendAppConfig
+                                            )(implicit ec: ExecutionContext)
   extends PlayMongoRepository[StoredPostcodeSearchResults](
     collectionName = "findAProperty",
     mongoComponent = mongo,
@@ -59,13 +59,11 @@ case class FindAPropertyBridgeRepo @Inject()(
       )
     )
   ) with Logging {
-
   override lazy val requiresTtlIndex: Boolean = false
 
   def upsert(userId: String, result: PostcodeSearchResult): Future[Boolean] = {
     val document = StoredPostcodeSearchResults(userId, result)
-    val errorMsg = s"VMV properties have not been inserted"
-
+    val errorMsg = "Stored properties have not been inserted"
     collection
       .replaceOne(
         filter = equal("userId", userId),
@@ -74,18 +72,19 @@ case class FindAPropertyBridgeRepo @Inject()(
       )
       .toFuture()
       .transformWith {
-        case Success(result) =>
-          logger.info(s"VMV properties have been upserted for userId: $userId")
-          result.wasAcknowledged()
-          Future.successful(true)
-
+        case Success(writeResult) =>
+          logger.info(s"Stored properties have been upserted for userId: $userId")
+          Future.successful(writeResult.wasAcknowledged())
         case Failure(exception) =>
           logger.error(errorMsg)
-          Future.failed(new IllegalStateException(s"$errorMsg: ${exception.getMessage} ${exception.getCause}"))
+          Future.failed(
+            new IllegalStateException(
+              s"$errorMsg: ${exception.getMessage} ${exception.getCause}"
+            )
+          )
       }
   }
 
   def findByUserId(userId: String): Future[Option[StoredPostcodeSearchResults]] =
     collection.find(equal("userId", userId)).headOption()
 }
-

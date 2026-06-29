@@ -59,7 +59,7 @@ extends FrontendController(mcc) with I18nSupport {
 
             case Right(searchResult) =>
               repo.upsert(request.userId, searchResult).map { _ =>
-                Redirect(routes.PropertyResultsController.onPageLoad())
+                Redirect(routes.PropertyResultsBridgeController.onPageLoad())
               }
 
             case Left(error) =>
