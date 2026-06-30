@@ -16,37 +16,35 @@
 
 package controllers.relationship
 
-
 import base.SpecBase
 import controllers.routes
-import forms.RelationshipDescriptionFormProvider
+import forms.RelationshipLabelFormProvider
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.relationship.RelationshipDescriptionPage
+import pages.relationship.RelationshipLabelPage
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
-import views.html.relationship.RelationshipDescriptionView
+import views.html.relationship.RelationshipLabelView
 
 import scala.concurrent.Future
 
-class RelationshipDescriptionControllerSpec extends SpecBase with MockitoSugar {
+class RelationshipLabelControllerSpec extends SpecBase with MockitoSugar {
 
-  private val formProvider = new RelationshipDescriptionFormProvider()
-  private val form = formProvider()
+  private val formProvider = new RelationshipLabelFormProvider()
+  private val form         = formProvider()
 
-  private val validAnswer = "Parent company"
-  private val onwardRoute = Call("GET", "/foo")
-
+  private val validAnswer = "Associated Company"
   private val mockSessionRepository = mock[SessionRepository]
 
   when(mockSessionRepository.set(any()))
     .thenReturn(Future.successful(true))
 
+  private val onwardRoute = Call("GET", "/foo")
 
   lazy val app =
     applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -56,21 +54,21 @@ class RelationshipDescriptionControllerSpec extends SpecBase with MockitoSugar {
       )
       .build()
 
-  "RelationshipDescriptionController onPageLoad" - {
+  "RelationshipLabelController onPageLoad" - {
     "return OK and render the view" in {
-      val request = FakeRequest(GET, routes.RelationshipDescriptionController.onPageLoad().url)
+      val request =
+        FakeRequest(GET, routes.RelationshipLabelController.onPageLoad().url)
       val result = route(app, request).value
+      val view = app.injector.instanceOf[RelationshipLabelView]
 
-      val view = app.injector.instanceOf[RelationshipDescriptionView]
       status(result) mustEqual OK
-
-      contentAsString(result) mustEqual view(form)(request, messages(app)).toString
+      contentAsString(result) mustEqual
+        view(form)(request, messages(app)).toString
     }
 
-    "populate the form when an existing answer is present" in {
-
+    "populate the form when an existing answer is available" in {
       val userAnswers =
-        emptyUserAnswers.set(RelationshipDescriptionPage, validAnswer).success.value
+        emptyUserAnswers.set(RelationshipLabelPage, validAnswer).success.value
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
@@ -79,39 +77,40 @@ class RelationshipDescriptionControllerSpec extends SpecBase with MockitoSugar {
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
           .build()
-
       running(application) {
-        val request =
-          FakeRequest(GET, routes.RelationshipDescriptionController.onPageLoad().url)
-        val result = route(application, request).value
 
-        val view = application.injector.instanceOf[RelationshipDescriptionView]
+        val request =
+          FakeRequest(GET, routes.RelationshipLabelController.onPageLoad().url)
+
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[RelationshipLabelView]
+
         status(result) mustEqual OK
+
         contentAsString(result) mustEqual view(form.fill(validAnswer))(request, messages(application)).toString
       }
     }
   }
-
-
-  "RelationshipDescriptionController onSubmit" - {
+  
+  "RelationshipLabelController onSubmit" - {
     "redirect to Check Your Answers when valid data is submitted" in {
-      val request = FakeRequest(
-        POST, routes.RelationshipDescriptionController.onSubmit().url).withFormUrlEncodedBody("value" -> validAnswer)
+      val request =
+        FakeRequest(POST, routes.RelationshipLabelController.onSubmit().url).withFormUrlEncodedBody("value" -> validAnswer)
       val result = route(app, request).value
-
       status(result) mustEqual SEE_OTHER
+      
       redirectLocation(result).value mustEqual routes.CheckYourAnswersRatepayerPropertyLinksController.onPageLoad().url
-
+      
       verify(mockSessionRepository).set(any())
     }
-
-    "return BadRequest when invalid data is submitted" in {
-      val request = FakeRequest(POST, routes.RelationshipDescriptionController.onSubmit().url).withFormUrlEncodedBody(
-        "value" -> ""
-      )
-
+    
+    "return BAD_REQUEST when invalid data is submitted" in {
+      val request =
+        FakeRequest(POST, routes.RelationshipLabelController.onSubmit().url).withFormUrlEncodedBody("value" -> "")
       val result = route(app, request).value
       status(result) mustEqual BAD_REQUEST
     }
   }
 }
+
+ 
