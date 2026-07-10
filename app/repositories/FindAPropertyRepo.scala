@@ -87,4 +87,3 @@ case class FindAPropertyRepo @Inject()(
   def findByUserId(userId: String): Future[Option[StoredVMVProperties]] =
     collection.find(equal("userId", userId)).headOption()
 }
-

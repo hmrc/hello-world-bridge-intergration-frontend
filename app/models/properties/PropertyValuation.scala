@@ -20,7 +20,7 @@ import play.api.libs.json.{Format, Json}
 
 import java.time.LocalDate
 
-case class Valuation(
+case class PropertyValuation(
                       assessmentRef: Long,
                       assessmentStatus: String,
                       rateableValue: Option[BigDecimal],
@@ -35,8 +35,8 @@ case class Valuation(
                       listType: String,
                     )
 
-object Valuation {
+object PropertyValuation {
 
-  implicit val format:Format[Valuation] = Json.format[Valuation]
+  implicit val format:Format[PropertyValuation] = Json.format[PropertyValuation]
 
 }

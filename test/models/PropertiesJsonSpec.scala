@@ -16,10 +16,11 @@
 
 package models
 
-import models.properties._
+import models.properties.*
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import play.api.libs.json._
+import play.api.libs.json.*
+
 import java.time.{Instant, LocalDate}
 
 class PropertiesJsonSpec extends AnyFreeSpec with Matchers {

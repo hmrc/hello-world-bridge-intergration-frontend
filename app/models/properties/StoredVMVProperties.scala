@@ -16,6 +16,7 @@
 
 package models.properties
 
+import models.properties.PostcodeSearchResult
 import play.api.libs.json.{Format, Json, OFormat}
 
 import java.time.Instant
@@ -29,5 +30,16 @@ case class StoredVMVProperties(
 object StoredVMVProperties {
   implicit val format: Format[StoredVMVProperties] = Json.format[StoredVMVProperties]
 }
+
+case class NewStoredVMVProperties(
+                                userId: String,
+                                properties: PostcodeSearchResult,
+                                createdAt: Instant = Instant.now()
+                              )
+
+object NewStoredVMVProperties {
+  implicit val format: Format[NewStoredVMVProperties] = Json.format[NewStoredVMVProperties]
+}
+
 
 

@@ -16,7 +16,6 @@
 
 package models.properties
 
-import models.bridge.search.PostcodeSearchResult
 import play.api.libs.json.{Format, Json, OFormat}
 
 case class StoredPostcodeSearchResults(

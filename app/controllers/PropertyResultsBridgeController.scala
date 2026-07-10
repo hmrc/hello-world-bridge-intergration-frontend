@@ -20,7 +20,7 @@ import controllers.actions.IdentifierAction
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.FindAPropertyBridgeRepo
-import service.SortingBridgePropertiesService
+import services.SortingPostcodeAddressResultsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import views.html.PropertyResultsBridgeView
 
@@ -30,7 +30,7 @@ import scala.concurrent.ExecutionContext
 class PropertyResultsBridgeController @Inject()(
                                                  identify: IdentifierAction,
                                                  repo: FindAPropertyBridgeRepo,
-                                                 sorting: SortingBridgePropertiesService,
+                                                 sorting: SortingPostcodeAddressResultsService,
                                                  view: PropertyResultsBridgeView,
                                                  mcc: MessagesControllerComponents
                                                )(implicit ec: ExecutionContext)
@@ -43,50 +43,72 @@ class PropertyResultsBridgeController @Inject()(
     identify.async { implicit request =>
       repo.findByUserId(request.userId).map {
         case Some(stored) =>
-          val sorted = sorting.sort(stored.result.results.records, sortBy)
+          val sortedRecords =
+            sorting.sort(stored.properties.results.records.toList, sortBy)
 
-          val total  = sorted.size
-          val from      = (page - 1) * pageSize
-          val until     = from + pageSize
-          val pageItems = sorted.slice(from, until)
+          val totalRecords =
+            sortedRecords.size
 
-          Ok(view(stored.result, pageItems, page, total, pageSize, sortBy))
+          val totalPages =
+            Math.ceil(totalRecords.toDouble / pageSize).toInt.max(1)
+
+          val safePage =
+            page.max(1).min(totalPages)
+
+          val from =
+            (safePage - 1) * pageSize
+
+          val until =
+            from + pageSize
+
+          val pageRecords =
+            sortedRecords.slice(from, until)
+
+          val pagedProperties =
+            stored.properties.copy(
+              results = stored.properties.results.copy(
+                current_page = safePage,
+                page_size = pageSize,
+                total_results = totalRecords,
+                total_pages = totalPages,
+                has_next = safePage < totalPages,
+                has_previous = safePage > 1,
+                records = pageRecords
+              )
+            )
+
+          Ok(view(pagedProperties, sortBy))
 
         case None =>
-          Redirect(routes.PropertyResultsBridgeController.onPageLoad())
+          Redirect(routes.FindAPropertyController.onPageLoad())
       }
-    }
-
-  def sort: Action[AnyContent] =
-    identify { implicit request =>
-      val sortBy =
-        request.body.asFormUrlEncoded
-          .flatMap(_.get("sortBy").flatMap(_.headOption))
-          .getOrElse("AddressASC")
-
-      Redirect(routes.PropertyResultsBridgeController.onPageLoad(1, sortBy))
     }
 
   def selectProperty(index: Int, sortBy: String): Action[AnyContent] =
     identify.async { implicit request =>
       repo.findByUserId(request.userId).map {
         case Some(stored) =>
-          val sorted = sorting.sort(stored.result.results.records, sortBy)
-          sorted.lift(index) match {
+          val sortedRecords =
+            sorting.sort(stored.properties.results.records.toList, sortBy)
+
+          sortedRecords.lift(index) match {
             case Some(selected) =>
-              // selected is a RecordWrapper
-              // selected.record.data.list_entry contains the selected property data
-              Redirect(routes.PropertyResultsBridgeController.onPageLoad(1, sortBy))
+              // TODO: Use selected when ready.
+              // Example available values:
+              // selected.list_entry.relevant_property.id
+              // selected.list_entry.addresses.property_full_address
+              // selected.list.collection_authority.ons_code
+              // selected.list.id
+              // selected.list_entry.valuation.value
+
+              Redirect(routes.FindAPropertyController.onPageLoad())
+
             case None =>
-              Redirect(routes.PropertyResultsBridgeController.onPageLoad(1, sortBy))
+              Redirect(routes.PropertyResultsController.onPageLoad(1, sortBy))
           }
 
         case None =>
-
-          Redirect(routes.PropertyResultsBridgeController.onPageLoad())
-
+          Redirect(routes.FindAPropertyController.onPageLoad())
       }
-
     }
-
 }

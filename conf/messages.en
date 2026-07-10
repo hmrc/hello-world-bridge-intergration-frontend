@@ -114,7 +114,7 @@ dashboard.propertiesForAssessment.title.noLinked=No Properties for Assessment (J
 
 nav.actionNeeded = Action Needed
 #FindAProperty
-findAProperty.title=Find a property
+findAProperty.title= Find a property
 findAProperty.postcode.label=Postcode
 findAProperty.manual=Enter the address manually
 findAProperty.propertyName=Property name or number (optional)
