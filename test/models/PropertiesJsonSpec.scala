@@ -27,7 +27,7 @@ class PropertiesJsonSpec extends AnyFreeSpec with Matchers {
 
   "Valuation JSON format" - {
     "must serialize and deserialize correctly" in {
-      val valuation = Valuation(
+      val valuation = PropertyValuation(
         assessmentRef = 123L,
         assessmentStatus = "",
         rateableValue = Some(BigDecimal(1)),
@@ -43,13 +43,13 @@ class PropertiesJsonSpec extends AnyFreeSpec with Matchers {
       )
 
       val json = Json.toJson(valuation)
-      json.as[Valuation] mustEqual valuation
+      json.as[PropertyValuation] mustEqual valuation
     }
   }
 
   "VMVProperty JSON format" - {
     "must serialize and deserialize correctly" in {
-      val valuation = Valuation(
+      val valuation = PropertyValuation(
         1L, "LIVE", None, None,
         LocalDate.now(), LocalDate.now(), None,
         "", "", "", Nil, ""
