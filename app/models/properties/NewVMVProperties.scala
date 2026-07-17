@@ -18,19 +18,19 @@ package models.properties
 
 import play.api.libs.json.{Format, Json, OFormat}
 
-case class VMVProperties(total: Int, properties: List[VMVProperty], hasNext: Boolean = true, hasPrevious: Boolean = true)
+case class NewVMVProperties(total: Int, properties: List[NewVMVProperty], hasNext: Boolean = true, hasPrevious: Boolean = true)
 
-object VMVProperties {
-  implicit val format: Format[VMVProperties] = Json.format[VMVProperties]
+object NewVMVProperties {
+  implicit val format: Format[NewVMVProperties] = Json.format[NewVMVProperties]
 }
 
-case class VMVProperty(uarn: Long,
+case class NewVMVProperty(uarn: Long,
                        addressFull: String,
                        localAuthorityCode: String,
                        localAuthorityReference: String,
-                       valuations: List[PropertyValuation],
+                       valuations: List[Valuation],
                       )
 
-object VMVProperty {
-  implicit val format: OFormat[VMVProperty] = Json.format[VMVProperty]
+object NewVMVProperty {
+  implicit val format: OFormat[NewVMVProperty] = Json.format[NewVMVProperty]
 }

@@ -17,30 +17,30 @@
 package connectors
 
 import config.FrontendAppConfig
-import forms.FindAPropertyBridgeForm
+import forms.*
 import models.bridge.person.Persons
 import models.bridge.property.*
+import models.properties.*
 import models.bridge.relationhship.Relationship
-import models.bridge.search.PostcodeSearchResult
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
 import models.registration.RegisterRatepayer
-import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SEE_OTHER}
+import play.api.http.Status.*
+import play.api.http.Status
 import play.api.i18n.Lang.logger
-import play.api.libs.json.{JsError, JsObject, JsSuccess, JsValue, Json}
+import play.api.libs.json.*
 import play.api.libs.ws.writeableOf_JsValue
 import play.api.mvc.Results.*
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
-import scala.util.control.NonFatal
 
-import java.net.URI
-import java.net.URLEncoder
+import java.net.{URI, URLEncoder}
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 
 class BridgeIntegrationConnector @Inject()(
@@ -300,6 +300,42 @@ class BridgeIntegrationConnector @Inject()(
           Json.obj("error" -> "Unable to fetch property links")
       }
   }
+  
+  def findPropertyPostcodeSearch(
+                                  searchParams: FindAPropertyForm
+                                )(implicit hc: HeaderCarrier): Future[Either[ErrorResponse, PostcodeSearchResult]] = {
+    val urlEndpoint =
+      if (appConfig.useStubForVmv) {
+        uri(s"postcode/${searchParams.postcode.value.toUpperCase.replaceAll("\\s", "")}").toURL
+      } else {
+        if (searchParams.propertyName.nonEmpty) {
+          val cleanedName = searchParams.propertyName.map(_.replaceAll("['()]", "")).getOrElse("")
+          url"${appConfig.vmvAddressLookup}/vmv/rating-listing/api/properties?postcode=${searchParams.postcode.value}&propertyNameNumber=$cleanedName&size=15&searchDirection=FORWARD"
+        } else {
+          url"${appConfig.vmvAddressLookup}/vmv/rating-listing/api/properties?postcode=${searchParams.postcode.value}&size=15&searchDirection=FORWARD"
+        }
+      }
+
+    http.get(urlEndpoint)
+      .execute[HttpResponse]
+      .map { response =>
+        response.status match {
+          case OK | NOT_FOUND =>
+            response.json.validate[PostcodeSearchResult] match {
+              case JsSuccess(valid, _) => Right(valid)
+              case JsError(errors) =>
+                println(Console.RED + s"I still screwed up and need to fix: ${response.json}" + Console.RESET)
+                Left(ErrorResponse(BAD_REQUEST, s"Json Validation Error: $errors"))
+            }
+          case _ =>
+            Left(ErrorResponse(response.status, response.body))
+        }
+      }
+      .recover {
+        case _ =>
+          Left(ErrorResponse(Status.INTERNAL_SERVER_ERROR, "Call to VMV find a property failed"))
+      }
+  }
 
   def postcodeSearch(
                       searchParams: FindAPropertyBridgeForm
@@ -314,7 +350,7 @@ class BridgeIntegrationConnector @Inject()(
 
     logger.info(
       Console.GREEN +
-      s"[BridgeIntegrationConnector][postcodeSearch] Calling backend postcode search url=$url" + Console.RESET
+        s"[BridgeIntegrationConnector][postcodeSearch] Calling backend postcode search url=$url" + Console.RESET
     )
 
     http
@@ -354,7 +390,7 @@ class BridgeIntegrationConnector @Inject()(
 
         case e: UpstreamErrorResponse =>
           logger.error(Console.RED +
-            s"[BridgeIntegrationConnector][postcodeSearch] Upstream status=${e.statusCode}, message=${e.message}"  + Console.RESET,
+            s"[BridgeIntegrationConnector][postcodeSearch] Upstream status=${e.statusCode}, message=${e.message}" + Console.RESET,
             e
           )
           Left(ErrorResponse(e.statusCode, e.message))
@@ -364,7 +400,7 @@ class BridgeIntegrationConnector @Inject()(
             s"[BridgeIntegrationConnector][postcodeSearch] Unexpected error calling postcode search: ${ex.getMessage}" + Console.RESET,
             ex
           )
-        Left(ErrorResponse(INTERNAL_SERVER_ERROR, "Call to Bridge postcode search failed"))
+          Left(ErrorResponse(INTERNAL_SERVER_ERROR, "Call to Bridge postcode search failed"))
       }
   }
 }

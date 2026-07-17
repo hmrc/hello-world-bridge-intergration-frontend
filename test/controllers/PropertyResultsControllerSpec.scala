@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import models.properties.{StoredVMVProperties, VMVProperties, VMVProperty, Valuation}
+import models.properties.{StoredVMVProperties, VMVProperties, PropertyValuation, VMVProperty, Valuation}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
@@ -51,8 +51,8 @@ class PropertyResultsControllerSpec
   def testValuation(
                      description: String,
                      rv: BigDecimal
-                   ): Valuation =
-    Valuation(
+                   ): PropertyValuation =
+    PropertyValuation(
       assessmentRef = 1L,
       assessmentStatus = "CURRENT",
       rateableValue = Some(rv),
@@ -70,8 +70,8 @@ class PropertyResultsControllerSpec
 
   val postcode = "BH1 1HU"
 
-  val valuation1: Valuation = testValuation("Shop", 1000)
-  val valuation2: Valuation = testValuation("Office", 2000)
+  val valuation1: PropertyValuation = testValuation("Shop", 1000)
+  val valuation2: PropertyValuation = testValuation("Office", 2000)
 
   val property1 = VMVProperty(
     addressFull = s"0 test $postcode",

@@ -14,57 +14,96 @@
  * limitations under the License.
  */
 
-package service
+package services
 
-import models.bridge.search.RecordWrapper
 import javax.inject.{Inject, Singleton}
-
-import scala.util.Try
+import models.properties.Record
 
 @Singleton
-class SortingBridgePropertiesService @Inject()() {
+class SortingPostcodeAddressResultsService @Inject()() {
 
-  def sort(properties: Seq[RecordWrapper], sortBy: String): Seq[RecordWrapper] = {
-    def address(p: RecordWrapper): String =
-      p.record.data.list_entry.relevant_property.full_address.toLowerCase
+  def sort(records: List[Record], sortBy: String): List[Record] = {
 
-    def description(p: RecordWrapper): String =
-      p.record.data.list_entry.use.description.getOrElse("").toLowerCase
+    def normalise(value: Option[String]): String =
+      value.getOrElse("").toLowerCase.trim
 
-    def reference(p: RecordWrapper): String =
-      p.record.data.list_entry.administration.collection_authority_ref.getOrElse("").toLowerCase
+    def safeAddress(record: Record): String =
+      normalise(record.list_entry.addresses.property_full_address)
 
-    def rateableValue(p: RecordWrapper): BigDecimal =
-      Try(BigDecimal(p.record.data.list_entry.valuation.value.replace(",", "")))
-        .getOrElse(BigDecimal(0))
+    def safePropertyReference(record: Record): String =
+      normalise(record.list_entry.relevant_property.id)
+
+    def safeListReference(record: Record): String =
+      normalise(record.list.id)
+
+    def safeClassificationCode(record: Record): String =
+      normalise(record.list.classification.code)
+
+    def safeClassificationLabel(record: Record): String =
+      normalise(record.list.classification.label)
+
+    def safeLocalAuthorityCode(record: Record): String =
+      normalise(record.list.collection_authority.ons_code)
+
+    def safeLocalAuthorityName(record: Record): String =
+      normalise(record.list.collection_authority.ons_code_label)
+
+    def safeValuation(record: Record): String =
+      normalise(record.list_entry.valuation.value)
 
     sortBy match {
+
       case "AddressASC" =>
-        properties.sortBy(address)
+        records.sortBy(safeAddress)
 
       case "AddressDESC" =>
-        properties.sortBy(address)(Ordering[String].reverse)
+        records.sortBy(safeAddress)(Ordering[String].reverse)
 
-      case "DescriptionASC" =>
-        properties.sortBy(description)
+      case "PropertyReferenceASC" =>
+        records.sortBy(safePropertyReference)
 
-      case "DescriptionDESC" =>
-        properties.sortBy(description)(Ordering[String].reverse)
+      case "PropertyReferenceDESC" =>
+        records.sortBy(safePropertyReference)(Ordering[String].reverse)
 
-      case "ReferenceASC" =>
-        properties.sortBy(reference)
+      case "ListReferenceASC" =>
+        records.sortBy(safeListReference)
 
-      case "ReferenceDESC" =>
-        properties.sortBy(reference)(Ordering[String].reverse)
+      case "ListReferenceDESC" =>
+        records.sortBy(safeListReference)(Ordering[String].reverse)
 
-      case "RateableValueASC" =>
-        properties.sortBy(rateableValue)
+      case "ClassificationCodeASC" =>
+        records.sortBy(safeClassificationCode)
 
-      case "RateableValueDESC" =>
-        properties.sortBy(rateableValue)(Ordering[BigDecimal].reverse)
+      case "ClassificationCodeDESC" =>
+        records.sortBy(safeClassificationCode)(Ordering[String].reverse)
+
+      case "ClassificationLabelASC" =>
+        records.sortBy(safeClassificationLabel)
+
+      case "ClassificationLabelDESC" =>
+        records.sortBy(safeClassificationLabel)(Ordering[String].reverse)
+
+      case "LocalAuthorityCodeASC" =>
+        records.sortBy(safeLocalAuthorityCode)
+
+      case "LocalAuthorityCodeDESC" =>
+        records.sortBy(safeLocalAuthorityCode)(Ordering[String].reverse)
+
+      case "LocalAuthorityNameASC" =>
+        records.sortBy(safeLocalAuthorityName)
+
+      case "LocalAuthorityNameDESC" =>
+        records.sortBy(safeLocalAuthorityName)(Ordering[String].reverse)
+
+      case "ValuationASC" =>
+        records.sortBy(safeValuation)
+
+      case "ValuationDESC" =>
+        records.sortBy(safeValuation)(Ordering[String].reverse)
 
       case _ =>
-        properties.sortBy(address)
+        // Default sort: Address A → Z
+        records.sortBy(safeAddress)
     }
   }
 }

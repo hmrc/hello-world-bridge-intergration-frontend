@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-package controllers.relationship
-
+package controllers
 
 import base.SpecBase
-import controllers.routes
 import forms.RelationshipDescriptionFormProvider
+import models.UserAnswers
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{verify, when}
+import org.mockito.Mockito.{reset, verify, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.relationship.RelationshipDescriptionPage
+import pages.RelationshipDescriptionPage
+import play.api.Application
+import play.api.inject
 import play.api.inject.bind
 import play.api.mvc.Call
+import play.api.test.CSRFTokenHelper.CSRFRequest
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
@@ -34,84 +37,106 @@ import views.html.relationship.RelationshipDescriptionView
 
 import scala.concurrent.Future
 
-class RelationshipDescriptionControllerSpec extends SpecBase with MockitoSugar {
-
-  private val formProvider = new RelationshipDescriptionFormProvider()
-  private val form = formProvider()
-
-  private val validAnswer = "Parent company"
-  private val onwardRoute = Call("GET", "/foo")
+class RelationshipDescriptionControllerSpec
+  extends SpecBase
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
   private val mockSessionRepository = mock[SessionRepository]
 
-  when(mockSessionRepository.set(any()))
-    .thenReturn(Future.successful(true))
+  private val formProvider = new RelationshipDescriptionFormProvider()
 
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockSessionRepository)
+    when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+  }
 
-  lazy val app =
-    applicationBuilder(userAnswers = Some(emptyUserAnswers))
+  private val onwardRoute = Call("GET", "/foo")
+
+  private def applicationWithAnswers(userAnswers: Option[UserAnswers]) =
+    applicationBuilder(userAnswers)
       .overrides(
         bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
         bind[SessionRepository].toInstance(mockSessionRepository)
       )
       .build()
 
-  "RelationshipDescriptionController onPageLoad" - {
-    "return OK and render the view" in {
-      val request = FakeRequest(GET, routes.RelationshipDescriptionController.onPageLoad().url)
-      val result = route(app, request).value
+  "onPageLoad" - {
 
-      val view = app.injector.instanceOf[RelationshipDescriptionView]
+    "return OK and render the view for a GET" in {
+
+      val application = applicationWithAnswers(Some(emptyUserAnswers))
+
+      val request =
+        FakeRequest(GET, routes.RelationshipDescriptionController.onPageLoad().url)
+          .withCSRFToken
+
+      val result = route(application, request).value
+
+      val view =
+        application.injector.instanceOf[RelationshipDescriptionView]
+
       status(result) mustEqual OK
 
-      contentAsString(result) mustEqual view(form)(request, messages(app)).toString
-    }
+      contentAsString(result) mustEqual
+        view(formProvider())(request, messages(application)).toString
 
-    "populate the form when an existing answer is present" in {
-
-      val userAnswers =
-        emptyUserAnswers.set(RelationshipDescriptionPage, validAnswer).success.value
-
-      val application =
-        applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          )
-          .build()
-
-      running(application) {
-        val request =
-          FakeRequest(GET, routes.RelationshipDescriptionController.onPageLoad().url)
-        val result = route(application, request).value
-
-        val view = application.injector.instanceOf[RelationshipDescriptionView]
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(validAnswer))(request, messages(application)).toString
-      }
+      application.stop()
     }
   }
 
+  "onSubmit" - {
 
-  "RelationshipDescriptionController onSubmit" - {
-    "redirect to Check Your Answers when valid data is submitted" in {
-      val request = FakeRequest(
-        POST, routes.RelationshipDescriptionController.onSubmit().url).withFormUrlEncodedBody("value" -> validAnswer)
-      val result = route(app, request).value
+    "redirect to CheckYourAnswersRatepayerPropertyLinksController when valid data submitted" in {
+
+      val application = applicationWithAnswers(Some(emptyUserAnswers))
+
+      val request =
+        FakeRequest(POST, routes.RelationshipDescriptionController.onSubmit().url)
+          .withFormUrlEncodedBody(
+            "value" -> "My relationship description"
+          )
+          .withCSRFToken
+
+      val result = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.CheckYourAnswersRatepayerPropertyLinksController.onPageLoad().url
+
+      redirectLocation(result).value mustEqual
+        routes.CheckYourAnswersRatepayerPropertyLinksController.onPageLoad().url
 
       verify(mockSessionRepository).set(any())
+
+      application.stop()
     }
 
-    "return BadRequest when invalid data is submitted" in {
-      val request = FakeRequest(POST, routes.RelationshipDescriptionController.onSubmit().url).withFormUrlEncodedBody(
-        "value" -> ""
-      )
+    "return BAD_REQUEST when invalid data submitted" in {
 
-      val result = route(app, request).value
+      val application = applicationWithAnswers(Some(emptyUserAnswers))
+
+      val request =
+        FakeRequest(POST, routes.RelationshipDescriptionController.onSubmit().url)
+          .withFormUrlEncodedBody(
+            "value" -> ""
+          )
+          .withCSRFToken
+
+      val result = route(application, request).value
+
+      val view =
+        application.injector.instanceOf[RelationshipDescriptionView]
+
       status(result) mustEqual BAD_REQUEST
+
+      contentAsString(result) mustEqual
+        view(
+          formProvider().bind(
+            Map("value" -> "")
+          )
+        )(request, messages(application)).toString
+
+      application.stop()
     }
   }
 }

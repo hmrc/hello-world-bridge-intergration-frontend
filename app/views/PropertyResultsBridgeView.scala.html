@@ -16,177 +16,202 @@
 
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import views.html.components.Link
-@import models.properties.{PostcodeProperties, PostcodeProperty}
-@import uk.gov.hmrc.govukfrontend.views.viewmodels.FormGroup
-@import models.bridge.search.{PostcodeSearchResult, RecordWrapper}
+@import models.properties.PostcodeSearchResult
 
 @this(
-        layout: templates.Layout,
-        sortingComponent: views.html.components.Sorting,
-        govukTable: GovukTable,
-        govukSelect: GovukSelect,
-        govukPagination: GovukPagination,
-        linkComponent: Link,
-        govukButton: GovukButton,
-        govukDetails: GovukDetails
+layout: templates.Layout,
+sortingComponent: views.html.components.Sorting,
+govukTable: GovukTable,
+govukSelect: GovukSelect,
+govukPagination: GovukPagination,
+linkComponent: Link,
+govukButton: GovukButton,
+govukDetails: GovukDetails
 )
 
-
-@(result: PostcodeSearchResult,
-        properties: Seq[RecordWrapper],
-        currentPage: Int,
-        totalProperties: Int,
-        pageSize: Int,
-        sortBy: String
+@(postcodeAddressSearchResult: PostcodeSearchResult,
+sortBy: String
 )(implicit request: Request[_], messages: Messages)
 
-@postcode = {
-    @properties.head.record.data.list_entry.relevant_property.full_address.takeRight(8)
+@results = @{
+postcodeAddressSearchResult.results
+}
+
+@records = @{
+results.records
+}
+
+@currentPage = @{
+results.current_page.getOrElse(1)
+}
+
+@pageSize = @{
+results.page_size.getOrElse(10)
+}
+
+@totalProperties = @{
+results.total_results.getOrElse(records.size)
+}
+
+@totalPages = @{
+results.total_pages.getOrElse(1)
+}
+
+@hasPrevious = @{
+results.has_previous.getOrElse(false)
+}
+
+@hasNext = @{
+results.has_next.getOrElse(false)
+}
+
+@postcode = @{
+records.headOption
+.flatMap(_.list_entry.addresses.property_full_address)
+.map(_.takeRight(8))
+.getOrElse("")
 }
 
 @dropDownContent = {
-    <p class="govuk-body">@messages("propertyResults.details.content.1")</p>
+<p class="govuk-body">@messages("propertyResults.details.content.1")</p>
 
-    <p class="govuk-body">
+<p class="govuk-body">
     @linkComponent(
-        label = messages("propertyResults.details.link"),
-        hrefUrl = controllers.routes.FindAPropertyController.onPageLoad().url,
-        beforeLinkContent = messages("propertyResults.details.content.2"),
-        afterLinkContent = "."
+    label = messages("propertyResults.details.link"),
+    hrefUrl = controllers.routes.FindAPropertyController.onPageLoad().url,
+    beforeLinkContent = messages("propertyResults.details.content.2"),
+    afterLinkContent = "."
     )
-    </p>
+</p>
 
-    <p class="govuk-body">
-        @messages("propertyResults.details.telephone")<br>
-        <strong>@messages("propertyResults.details.telephoneNumber")</strong>
-        @messages("propertyResults.details.england")<br>
+<p class="govuk-body">
+    @messages("propertyResults.details.telephone")<br>
+    <strong>@messages("propertyResults.details.telephoneNumber")</strong>
+    @messages("propertyResults.details.england")<br>
 
-        <strong>@messages("propertyResults.details.telephoneNumber.welsh")</strong>
-        @messages("propertyResults.details.wales")
-    </p>
+    <strong>@messages("propertyResults.details.telephoneNumber.welsh")</strong>
+    @messages("propertyResults.details.wales")
+</p>
 
-    <p class="govuk-body">
-        @messages("propertyResults.details.openTime")<br>
-        <strong>@messages("propertyResults.details.openDaysAndTime")</strong>
-    </p>
+<p class="govuk-body">
+    @messages("propertyResults.details.openTime")<br>
+    <strong>@messages("propertyResults.details.openDaysAndTime")</strong>
+</p>
 }
 
+@layout(
+pageTitle = messages("propertyResults.title", postcode),
+fullWidth = true
+) {
 
-@defining(Math.ceil(totalProperties.toDouble / pageSize).toInt) { totalPages =>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
 
-    @layout(
-        pageTitle = messages("propertyResults.title", postcode),
-        fullWidth = true
-    ) {
+        <h1 class="govuk-heading-l">
+            @messages("propertyResults.title", postcode)
+        </h1>
 
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-full">
+        <h2 class="govuk-heading-l">
+            @messages("propertyResults.heading", totalProperties)
+        </h2>
 
-                <h1 class="govuk-heading-l">
-                @messages("propertyResults.title", postcode)
-                </h1>
-
-                <h2 class="govuk-heading-l">
-                    @messages("propertyResults.heading", totalProperties)
-                </h2>
-
-                @helper.form(
-                    action = controllers.routes.PropertyResultsController.onPageLoad(currentPage, sortBy),
-                    Symbol("autoComplete") -> "off"
-                ) {
+        @helper.form(
+        action = controllers.routes.PropertyResultsController.onPageLoad(currentPage, sortBy),
+        Symbol("autoComplete") -> "off"
+        ) {
         @sortingComponent(sortBy, controllers.routes.PropertyResultsController.onPageLoad(currentPage, sortBy))
-                }
+        }
 
-                @defining(
-                    properties.zipWithIndex.map { case (p, i) =>
-                        val index = (currentPage - 1) * pageSize + i
-                        (p, index)
-                    }
-                ) { indexedProperties =>
+        @defining(
+        records.zipWithIndex.map { case (record, i) =>
+        val index = (currentPage - 1) * pageSize + i
+        (record, index)
+        }
+        ) { indexedRecords =>
 
-                    @govukTable(
-                        Table(
-                            head = Some(Seq(
-                                HeadCell(Text(messages("propertyResults.address"))),
-                                HeadCell(Text(messages("propertyResults.uarn"))),
-                                HeadCell(Text(messages("propertyResults.laRef"))),
-                                HeadCell(Text(messages("propertyResults.description"))),
-                                HeadCell(Text(""))
-                            )),
-                            rows = indexedProperties.map { case (p, index) =>
-                                val entry = p.record.data.list_entry
-                                Seq(
-                                    TableRow(Text(entry.relevant_property.full_address)),
-                                    TableRow(Text(entry.relevant_property.id)),
-                                    TableRow(Text(entry.administration.collection_authority_ref.getOrElse(""))),
-                                    TableRow(Text(entry.use.description.getOrElse(""))),
-                                    TableRow(
-                                        HtmlContent(
-                                            linkComponent(
-                                                label = messages("propertyResults.select"),
-                                                hrefUrl = controllers.routes.PropertyResultsController.selectProperty(index, sortBy).url
-                                            )
-                                        )
-                                    )
-                                )
-                            },
-                            caption = None,
-                            captionClasses = "",
-                            firstCellIsHeader = false,
-                            classes = "",
-                            attributes = Map.empty
-                        )
-                    )
-                }
-                @govukPagination(
-                    Pagination(
-                        items = Some(
-                            (1 to totalPages).map { page =>
-                                PaginationItem(
-                                    number = Some(page.toString),
-                                    href = controllers.routes.PropertyResultsController.onPageLoad(page, sortBy).url,
-                                    current = Some(page == currentPage)
-                                )
-                            }
-                        ),
-                        previous =
-                            if (currentPage > 1)
-                                Some(PaginationLink(
-                                    href = controllers.routes.PropertyResultsController.onPageLoad(currentPage - 1, sortBy).url
-                                ))
-                            else None,
-                        next =
-                            if (currentPage < totalPages)
-                                Some(PaginationLink(
-                                    href = controllers.routes.PropertyResultsController.onPageLoad(currentPage + 1, sortBy).url
-                                ))
-                            else None
-                    )
-                )
+        @govukTable(
+        Table(
+        head = Some(Seq(
+        HeadCell(Text(messages("propertyResults.address"))),
+        HeadCell(Text(messages("propertyResults.propertyId"))),
+        HeadCell(Text(messages("propertyResults.ref"))),
+        HeadCell(Text(messages("propertyResults.value"))),
+        HeadCell(Text(""))
+        )),
+        rows = indexedRecords.map { case (record, index) =>
+        Seq(
+        TableRow(
+        Text(record.list_entry.addresses.property_full_address.getOrElse(""))
+        ),
+        TableRow(
+        Text(record.list_entry.relevant_property.id.getOrElse(""))
+        ),
+        TableRow(
+        Text(record.list.id.getOrElse(""))
+        ),
+        TableRow(
+        Text(record.list_entry.valuation.value.getOrElse(""))
+        ),
+        TableRow(
+        HtmlContent(
+        linkComponent(
+        label = messages("propertyResults.select"),
+        hrefUrl = controllers.routes.PropertyResultsController.selectProperty(index, sortBy).url
+        )
+        )
+        )
+        )
+        },
+        caption = None,
+        captionClasses = "",
+        firstCellIsHeader = false,
+        classes = "",
+        attributes = Map.empty
+        )
+        )
+        }
 
-                <div class="govuk-grid-row govuk-!-margin-top-6">
-                    <div class="govuk-grid-column-two-thirds">
-                    @govukDetails(
-                        Details(
-                            id = Some("help-if-you-cannot-find-your-property"),
-                            summary = Text(messages("propertyResults.details.summary")),
-                            content = HtmlContent(dropDownContent)
-                        )
-                    )
-                    </div>
-                </div>
+        @if(totalPages > 1) {
+        @govukPagination(
+        Pagination(
+        items = Some(
+        (1 to totalPages).map { page =>
+        PaginationItem(
+        number = Some(page.toString),
+        href = controllers.routes.PropertyResultsController.onPageLoad(page, sortBy).url,
+        current = Some(page == currentPage)
+        )
+        }
+        ),
+        previous =
+        if (hasPrevious)
+        Some(
+        PaginationLink(
+        href = controllers.routes.PropertyResultsController.onPageLoad(currentPage - 1, sortBy).url
+        )
+        )
+        else None,
+        next =
+        if (hasNext)
+        Some(
+        PaginationLink(
+        href = controllers.routes.PropertyResultsController.onPageLoad(currentPage + 1, sortBy).url
+        )
+        )
+        else None
+        )
+        )
+        }
 
-                <div class="govuk-!-margin-top-6">
-                @linkComponent(
-                    label = messages("propertyResults.searchAgain"),
-                    hrefUrl = controllers.routes.FindAPropertyController.onPageLoad().url
-                )
-                </div>
 
-            </div>
+
+        <div class="govuk-!-margin-top-6">
+            @linkComponent(
+            label = messages("propertyResults.searchAgain"),
+            hrefUrl = controllers.routes.FindAPropertyController.onPageLoad().url
+            )
         </div>
 
-    }
+    </div>
+</div>
 }
-
-

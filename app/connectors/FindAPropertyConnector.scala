@@ -16,16 +16,17 @@
 
 package connectors
 
+import config.AppConfig
+import forms.FindAPropertyForm
+import models.properties.{PostcodeSearchResult, VMVProperties}
+import play.api.Logging
 import play.api.http.Status
-import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
+import play.api.i18n.Lang.logger
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import config.AppConfig
-import forms.FindAPropertyForm
-import models.properties.VMVProperties
-import play.api.Logging
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
 
 import javax.inject.{Inject, Singleton}
@@ -73,4 +74,3 @@ class FindAPropertyConnector @Inject()(
       }
   }
 }
-
