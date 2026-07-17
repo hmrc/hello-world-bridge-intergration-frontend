@@ -16,32 +16,34 @@
 
 package models.properties
 
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json.{Json, OFormat}
 
 case class PostcodeSearchResult(
                                  results: Results
                                )
 
 object PostcodeSearchResult:
-  implicit val format: OFormat[PostcodeSearchResult] = Json.format[PostcodeSearchResult]
+  implicit val format: OFormat[PostcodeSearchResult] =
+    Json.format[PostcodeSearchResult]
 
 case class Results(
-                    current_page: Int,
-                    page_size: Int,
-                    total_results: Int,
-                    total_pages: Int,
-                    has_next: Boolean,
-                    has_previous: Boolean,
-                    self: String,
+                    current_page: Option[Int],
+                    page_size: Option[Int],
+                    total_results: Option[Int],
+                    total_pages: Option[Int],
+                    has_next: Option[Boolean],
+                    has_previous: Option[Boolean],
+                    self: Option[String],
                     next: Option[String],
                     prev: Option[String],
-                    first: String,
-                    last: String,
+                    first: Option[String],
+                    last: Option[String],
                     records: Seq[Record]
                   )
 
 object Results:
-  implicit val format: OFormat[Results] = Json.format[Results]
+  implicit val format: OFormat[Results] =
+    Json.format[Results]
 
 case class Record(
                    list: ValuationList,
@@ -49,32 +51,36 @@ case class Record(
                  )
 
 object Record:
-  implicit val format: OFormat[Record] = Json.format[Record]
+  implicit val format: OFormat[Record] =
+    Json.format[Record]
 
 case class ValuationList(
-                          id: String,
+                          id: Option[String],
                           classification: Classification,
                           collection_authority: CollectionAuthority
                         )
 
 object ValuationList:
-  implicit val format: OFormat[ValuationList] = Json.format[ValuationList]
+  implicit val format: OFormat[ValuationList] =
+    Json.format[ValuationList]
 
 case class Classification(
-                           code: String,
-                           label: String
+                           code: Option[String],
+                           label: Option[String]
                          )
 
 object Classification:
-  implicit val format: OFormat[Classification] = Json.format[Classification]
+  implicit val format: OFormat[Classification] =
+    Json.format[Classification]
 
 case class CollectionAuthority(
-                                ons_code: String,
-                                ons_code_label: String
+                                ons_code: Option[String],
+                                ons_code_label: Option[String]
                               )
 
 object CollectionAuthority:
-  implicit val format: OFormat[CollectionAuthority] = Json.format[CollectionAuthority]
+  implicit val format: OFormat[CollectionAuthority] =
+    Json.format[CollectionAuthority]
 
 case class ListEntry(
                       relevant_property: RelevantProperty,
@@ -83,25 +89,29 @@ case class ListEntry(
                     )
 
 object ListEntry:
-  implicit val format: OFormat[ListEntry] = Json.format[ListEntry]
+  implicit val format: OFormat[ListEntry] =
+    Json.format[ListEntry]
 
 case class RelevantProperty(
-                             id: String
+                             id: Option[String]
                            )
 
 object RelevantProperty:
-  implicit val format: OFormat[RelevantProperty] = Json.format[RelevantProperty]
+  implicit val format: OFormat[RelevantProperty] =
+    Json.format[RelevantProperty]
 
 case class Addresses(
-                      property_full_address: String
+                      property_full_address: Option[String]
                     )
 
 object Addresses:
-  implicit val format: OFormat[Addresses] = Json.format[Addresses]
+  implicit val format: OFormat[Addresses] =
+    Json.format[Addresses]
 
 case class Valuation(
-                      value: String
+                      value: Option[String]
                     )
 
 object Valuation:
-  implicit val format: OFormat[Valuation] = Json.format[Valuation]
+  implicit val format: OFormat[Valuation] =
+    Json.format[Valuation]

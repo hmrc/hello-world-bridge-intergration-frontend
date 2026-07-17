@@ -128,6 +128,9 @@ findAProperty.property.invalid.error=Property name or number must be 100 charact
 propertyResults.title = Search results for {0}
 propertyResults.heading = {0} properties found
 
+propertyResults.value = Property value
+propertyResults.ref = Property reference
+propertyResults.propertyId = Property Id
 propertyResults.address = Address
 propertyResults.uarn = UARN
 propertyResults.laRef = Local authority reference

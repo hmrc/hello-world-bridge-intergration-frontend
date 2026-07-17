@@ -67,12 +67,12 @@ class PropertyResultsBridgeController @Inject()(
           val pagedProperties =
             stored.properties.copy(
               results = stored.properties.results.copy(
-                current_page = safePage,
-                page_size = pageSize,
-                total_results = totalRecords,
-                total_pages = totalPages,
-                has_next = safePage < totalPages,
-                has_previous = safePage > 1,
+                current_page = Some(safePage),
+                page_size = Some(pageSize),
+                total_results = Some(totalRecords),
+                total_pages = Some(totalPages),
+                has_next = Some(safePage < totalPages),
+                has_previous = Some(safePage > 1),
                 records = pageRecords
               )
             )

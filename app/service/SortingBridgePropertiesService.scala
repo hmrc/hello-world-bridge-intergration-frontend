@@ -24,29 +24,32 @@ class SortingPostcodeAddressResultsService @Inject()() {
 
   def sort(records: List[Record], sortBy: String): List[Record] = {
 
+    def normalise(value: Option[String]): String =
+      value.getOrElse("").toLowerCase.trim
+
     def safeAddress(record: Record): String =
-      record.list_entry.addresses.property_full_address.toLowerCase
+      normalise(record.list_entry.addresses.property_full_address)
 
     def safePropertyReference(record: Record): String =
-      record.list_entry.relevant_property.id.toLowerCase
+      normalise(record.list_entry.relevant_property.id)
 
     def safeListReference(record: Record): String =
-      record.list.id.toLowerCase
+      normalise(record.list.id)
 
     def safeClassificationCode(record: Record): String =
-      record.list.classification.code.toLowerCase
+      normalise(record.list.classification.code)
 
     def safeClassificationLabel(record: Record): String =
-      record.list.classification.label.toLowerCase
+      normalise(record.list.classification.label)
 
     def safeLocalAuthorityCode(record: Record): String =
-      record.list.collection_authority.ons_code.toLowerCase
+      normalise(record.list.collection_authority.ons_code)
 
     def safeLocalAuthorityName(record: Record): String =
-      record.list.collection_authority.ons_code_label.toLowerCase
+      normalise(record.list.collection_authority.ons_code_label)
 
     def safeValuation(record: Record): String =
-      record.list_entry.valuation.value.toLowerCase
+      normalise(record.list_entry.valuation.value)
 
     sortBy match {
 

@@ -19,7 +19,7 @@ package repositories
 import com.google.inject.Singleton
 import com.mongodb.client.model.Indexes.{ascending, descending}
 import config.FrontendAppConfig
-import models.properties.{NewStoredVMVProperties, PostcodeSearchResult, StoredPostcodeSearchResults, StoredVMVProperties}
+import models.properties.{NewStoredVMVProperties, PostcodeSearchResult}
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.equal
 import play.api.Logging

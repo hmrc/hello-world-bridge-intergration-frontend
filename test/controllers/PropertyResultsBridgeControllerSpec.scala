@@ -47,25 +47,25 @@ class PropertyResultsBridgeControllerSpec
   private val recordOne =
     Record(
       list = ValuationList(
-        id = "list-1",
+        id = Some("list-1"),
         classification = Classification(
-          code = "C",
-          label = "Council Tax"
+          code = Some("C"),
+          label = Some("Council Tax")
         ),
         collection_authority = CollectionAuthority(
-          ons_code = "E07000192",
-          ons_code_label = "Test Council"
+          ons_code = Some("E07000192"),
+          ons_code_label = Some("Test Council")
         )
       ),
       list_entry = ListEntry(
         relevant_property = RelevantProperty(
-          id = "property-1"
+          id = Some("property-1")
         ),
         addresses = Addresses(
-          property_full_address = "1 Test Street, Test Town, TT1 1TT"
-        ),
+          property_full_address = Some("1 Test Street, Test Town, TT1 1TT"
+        )),
         valuation = Valuation(
-          value = "A"
+          value = Some("A")
         )
       )
     )
@@ -73,25 +73,25 @@ class PropertyResultsBridgeControllerSpec
   private val recordTwo =
     Record(
       list = ValuationList(
-        id = "list-2",
+        id = Some("list-2"),
         classification = Classification(
-          code = "C",
-          label = "Council Tax"
+          code = Some("C"),
+          label = Some("Council Tax")
         ),
         collection_authority = CollectionAuthority(
-          ons_code = "E07000192",
-          ons_code_label = "Test Council"
+          ons_code = Some("E07000192"),
+          ons_code_label = Some("Test Council")
         )
       ),
       list_entry = ListEntry(
         relevant_property = RelevantProperty(
-          id = "property-2"
+          id = Some("property-2")
         ),
         addresses = Addresses(
-          property_full_address = "2 Test Street, Test Town, TT1 1TT"
+          property_full_address = Some("2 Test Street, Test Town, TT1 1TT")
         ),
         valuation = Valuation(
-          value = "B"
+          value = Some("B")
         )
       )
     )
@@ -99,17 +99,17 @@ class PropertyResultsBridgeControllerSpec
   private val baseProperties =
     PostcodeSearchResult(
       results = Results(
-        current_page = 1,
-        page_size = 10,
-        total_results = 2,
-        total_pages = 1,
-        has_next = false,
-        has_previous = false,
-        self = "/self",
+        current_page = Some(1),
+        page_size = Some(10),
+        total_results = Some(2),
+        total_pages = Some(1),
+        has_next = Some(false),
+        has_previous = Some(false),
+        self = Some("/self"),
         next = None,
         prev = None,
-        first = "/first",
-        last = "/last",
+        first = Some("/first"),
+        last = Some("/last"),
         records = Seq(recordOne, recordTwo)
       )
     )
@@ -175,12 +175,12 @@ class PropertyResultsBridgeControllerSpec
         val expectedPagedProperties =
           storedPropertiesWithTwelveRecords.properties.copy(
             results = storedPropertiesWithTwelveRecords.properties.results.copy(
-              current_page = 1,
-              page_size = 10,
-              total_results = 12,
-              total_pages = 2,
-              has_next = true,
-              has_previous = false,
+              current_page = Some(1),
+              page_size = Some(10),
+              total_results = Some(12),
+              total_pages = Some(2),
+              has_next = Some(true),
+              has_previous = Some(false),
               records = expectedPageRecords
             )
           )
@@ -221,12 +221,12 @@ class PropertyResultsBridgeControllerSpec
         val expectedPagedProperties =
           storedPropertiesWithTwelveRecords.properties.copy(
             results = storedPropertiesWithTwelveRecords.properties.results.copy(
-              current_page = 2,
-              page_size = 10,
-              total_results = 12,
-              total_pages = 2,
-              has_next = false,
-              has_previous = true,
+              current_page = Some(2),
+              page_size = Some(10),
+              total_results = Some(12),
+              total_pages = Some(2),
+              has_next = Some(false),
+              has_previous = Some(true),
               records = expectedPageRecords
             )
           )
@@ -267,12 +267,12 @@ class PropertyResultsBridgeControllerSpec
         val expectedPagedProperties =
           storedPropertiesWithTwelveRecords.properties.copy(
             results = storedPropertiesWithTwelveRecords.properties.results.copy(
-              current_page = 1,
-              page_size = 10,
-              total_results = 12,
-              total_pages = 2,
-              has_next = true,
-              has_previous = false,
+              current_page = Some(1),
+              page_size = Some(10),
+              total_results = Some(12),
+              total_pages = Some(2),
+              has_next = Some(true),
+              has_previous = Some(false),
               records = expectedPageRecords
             )
           )
@@ -310,12 +310,12 @@ class PropertyResultsBridgeControllerSpec
         val expectedPagedProperties =
           storedPropertiesWithTwelveRecords.properties.copy(
             results = storedPropertiesWithTwelveRecords.properties.results.copy(
-              current_page = 2,
-              page_size = 10,
-              total_results = 12,
-              total_pages = 2,
-              has_next = false,
-              has_previous = true,
+              current_page = Some(2),
+              page_size = Some(10),
+              total_results = Some(12),
+              total_pages = Some(2),
+              has_next = Some(false),
+              has_previous = Some(true),
               records = expectedPageRecords
             )
           )

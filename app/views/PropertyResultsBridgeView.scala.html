@@ -42,24 +42,33 @@ results.records
 }
 
 @currentPage = @{
-results.current_page
+results.current_page.getOrElse(1)
 }
 
 @pageSize = @{
-results.page_size
+results.page_size.getOrElse(10)
 }
 
 @totalProperties = @{
-results.total_results
+results.total_results.getOrElse(records.size)
 }
 
 @totalPages = @{
-results.total_pages
+results.total_pages.getOrElse(1)
+}
+
+@hasPrevious = @{
+results.has_previous.getOrElse(false)
+}
+
+@hasNext = @{
+results.has_next.getOrElse(false)
 }
 
 @postcode = @{
 records.headOption
-.map(_.list_entry.addresses.property_full_address.takeRight(8))
+.flatMap(_.list_entry.addresses.property_full_address)
+.map(_.takeRight(8))
 .getOrElse("")
 }
 
@@ -132,16 +141,16 @@ fullWidth = true
         rows = indexedRecords.map { case (record, index) =>
         Seq(
         TableRow(
-        Text(record.list_entry.addresses.property_full_address)
+        Text(record.list_entry.addresses.property_full_address.getOrElse(""))
         ),
         TableRow(
-        Text(record.list_entry.relevant_property.id)
+        Text(record.list_entry.relevant_property.id.getOrElse(""))
         ),
         TableRow(
-        Text(record.list.id)
+        Text(record.list.id.getOrElse(""))
         ),
         TableRow(
-        Text(record.list_entry.valuation.value)
+        Text(record.list_entry.valuation.value.getOrElse(""))
         ),
         TableRow(
         HtmlContent(
@@ -175,7 +184,7 @@ fullWidth = true
         }
         ),
         previous =
-        if (results.has_previous)
+        if (hasPrevious)
         Some(
         PaginationLink(
         href = controllers.routes.PropertyResultsController.onPageLoad(currentPage - 1, sortBy).url
@@ -183,7 +192,7 @@ fullWidth = true
         )
         else None,
         next =
-        if (results.has_next)
+        if (hasNext)
         Some(
         PaginationLink(
         href = controllers.routes.PropertyResultsController.onPageLoad(currentPage + 1, sortBy).url
