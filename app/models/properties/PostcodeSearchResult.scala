@@ -93,7 +93,7 @@ object ListEntry:
     Json.format[ListEntry]
 
 case class RelevantProperty(
-                             id: Option[String]
+                             id: Option[Long]
                            )
 
 object RelevantProperty:
