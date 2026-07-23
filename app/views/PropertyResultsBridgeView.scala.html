@@ -144,7 +144,7 @@ fullWidth = true
         Text(record.list_entry.addresses.property_full_address.getOrElse(""))
         ),
         TableRow(
-        Text(record.list_entry.relevant_property.id.getOrElse(""))
+        Text(record.list_entry.relevant_property.id.toString)
         ),
         TableRow(
         Text(record.list.id.getOrElse(""))

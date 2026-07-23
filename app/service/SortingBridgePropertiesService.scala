@@ -30,8 +30,8 @@ class SortingPostcodeAddressResultsService @Inject()() {
     def safeAddress(record: Record): String =
       normalise(record.list_entry.addresses.property_full_address)
 
-    def safePropertyReference(record: Record): String =
-      normalise(record.list_entry.relevant_property.id)
+    def safePropertyReference(record: Record): Long =
+      record.list_entry.relevant_property.id.getOrElse(0)
 
     def safeListReference(record: Record): String =
       normalise(record.list.id)
@@ -63,7 +63,7 @@ class SortingPostcodeAddressResultsService @Inject()() {
         records.sortBy(safePropertyReference)
 
       case "PropertyReferenceDESC" =>
-        records.sortBy(safePropertyReference)(Ordering[String].reverse)
+        records.sortBy(safePropertyReference)(Ordering[Long].reverse)
 
       case "ListReferenceASC" =>
         records.sortBy(safeListReference)
