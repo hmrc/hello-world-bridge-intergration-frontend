@@ -59,7 +59,7 @@ class PropertyResultsBridgeControllerSpec
       ),
       list_entry = ListEntry(
         relevant_property = RelevantProperty(
-          id = Some("property-1")
+          id = Some(1L)
         ),
         addresses = Addresses(
           property_full_address = Some("1 Test Street, Test Town, TT1 1TT"
@@ -85,7 +85,7 @@ class PropertyResultsBridgeControllerSpec
       ),
       list_entry = ListEntry(
         relevant_property = RelevantProperty(
-          id = Some("property-2")
+          id = Some(2L)
         ),
         addresses = Addresses(
           property_full_address = Some("2 Test Street, Test Town, TT1 1TT")
