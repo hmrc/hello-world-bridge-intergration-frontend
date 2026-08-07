@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.UserAnswers
+import models.bridge.search.{PostcodeSearchResult, Record, Results}
 import models.properties.*
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.*
