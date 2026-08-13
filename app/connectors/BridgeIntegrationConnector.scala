@@ -346,7 +346,7 @@ class BridgeIntegrationConnector @Inject()(
 
     val normalisedPostcode = postcode.replaceAll("\\s+", "").toUpperCase
 
-    val url = uri(s"postcode/$normalisedPostcode").toURL
+    val url = uri(s"postcode/$normalisedPostcode/CVW").toURL
 
     logger.info(
       Console.GREEN +
