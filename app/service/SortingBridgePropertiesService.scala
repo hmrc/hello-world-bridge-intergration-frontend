@@ -22,7 +22,7 @@ import models.properties.Record
 @Singleton
 class SortingPostcodeAddressResultsService @Inject()() {
 
-  def sort(records: List[Record], sortBy: String): List[Record] = {
+  def sort(records: Seq[Record], sortBy: String): Seq[Record] = {
 
     def normalise(value: Option[String]): String =
       value.getOrElse("").toLowerCase.trim
@@ -31,16 +31,19 @@ class SortingPostcodeAddressResultsService @Inject()() {
       normalise(record.list_entry.addresses.property_full_address)
 
     def safePropertyReference(record: Record): Long =
-      record.list_entry.relevant_property.id.getOrElse(0)
+      record.list_entry.relevant_property
+        .flatMap(_.vos_property_id)
+        .flatMap(_.trim.toLongOption)
+        .getOrElse(0L)
 
     def safeListReference(record: Record): String =
-      normalise(record.list.id)
+      normalise(record.list.id.value)
 
     def safeClassificationCode(record: Record): String =
       normalise(record.list.classification.code)
 
     def safeClassificationLabel(record: Record): String =
-      normalise(record.list.classification.label)
+      normalise(record.list.classification.meaning)
 
     def safeLocalAuthorityCode(record: Record): String =
       normalise(record.list.collection_authority.ons_code)
@@ -52,7 +55,6 @@ class SortingPostcodeAddressResultsService @Inject()() {
       normalise(record.list_entry.valuation.value)
 
     sortBy match {
-
       case "AddressASC" =>
         records.sortBy(safeAddress)
 
@@ -102,7 +104,6 @@ class SortingPostcodeAddressResultsService @Inject()() {
         records.sortBy(safeValuation)(Ordering[String].reverse)
 
       case _ =>
-        // Default sort: Address A → Z
         records.sortBy(safeAddress)
     }
   }

@@ -29,7 +29,8 @@ govukButton: GovukButton,
 govukDetails: GovukDetails
 )
 
-@(postcodeAddressSearchResult: PostcodeSearchResult,
+@(
+postcodeAddressSearchResult: PostcodeSearchResult,
 sortBy: String
 )(implicit request: Request[_], messages: Messages)
 
@@ -144,10 +145,10 @@ fullWidth = true
         Text(record.list_entry.addresses.property_full_address.getOrElse(""))
         ),
         TableRow(
-        Text(record.list_entry.relevant_property.id.toString)
+        Text(record.list_entry.relevant_property.flatMap(_.vos_property_id).getOrElse(""))
         ),
         TableRow(
-        Text(record.list.id.getOrElse(""))
+        Text(record.list.id.value.getOrElse(""))
         ),
         TableRow(
         Text(record.list_entry.valuation.value.getOrElse(""))
@@ -184,26 +185,28 @@ fullWidth = true
         }
         ),
         previous =
-        if (hasPrevious)
+        if (hasPrevious) {
         Some(
         PaginationLink(
         href = controllers.routes.PropertyResultsController.onPageLoad(currentPage - 1, sortBy).url
         )
         )
-        else None,
+        } else {
+        None
+        },
         next =
-        if (hasNext)
+        if (hasNext) {
         Some(
         PaginationLink(
         href = controllers.routes.PropertyResultsController.onPageLoad(currentPage + 1, sortBy).url
         )
         )
-        else None
+        } else {
+        None
+        }
         )
         )
         }
-
-
 
         <div class="govuk-!-margin-top-6">
             @linkComponent(

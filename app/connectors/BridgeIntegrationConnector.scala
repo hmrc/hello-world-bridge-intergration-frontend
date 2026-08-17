@@ -19,39 +19,40 @@ package connectors
 import config.FrontendAppConfig
 import forms.*
 import models.bridge.person.Persons
-import models.bridge.property.*
+import models.bridge.property.{Property as BridgeProperty, *}
 import models.properties.*
 import models.bridge.relationhship.Relationship
 import models.dashboard.RatepayerStatusResponse
 import models.properties.RatepayerPropertyLinksResponse
 import models.registration.RegisterRatepayer
+import play.api.Logging
 import play.api.http.Status.*
 import play.api.http.Status
-import play.api.i18n.Lang.logger
 import play.api.libs.json.*
 import play.api.libs.ws.writeableOf_JsValue
-import play.api.mvc.Results.*
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
 
-import java.net.{URI, URLEncoder}
-import java.nio.charset.StandardCharsets
+import java.net.URI
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-
 class BridgeIntegrationConnector @Inject()(
-                                    http: HttpClientV2,
-                                    appConfig: FrontendAppConfig
-                                  )(implicit ec: ExecutionContext) {
+                                            http: HttpClientV2,
+                                            appConfig: FrontendAppConfig
+                                          )(implicit ec: ExecutionContext) extends Logging {
 
-  private def uri(path: String) = new URI(s"${appConfig.bridgeIntegration}/bridge-integration/$path")
+  private def uri(path: String): URI =
+    new URI(s"${appConfig.bridgeIntegration}/bridge-integration/$path")
 
-  def isAllowedInPrivateBeta(credId: String)(implicit hc: HeaderCarrier): Future[Boolean] = {
-    http.get(uri(s"allowed-in-private-beta/$credId").toURL)
+  def isAllowedInPrivateBeta(
+                              credId: String
+                            )(implicit hc: HeaderCarrier): Future[Boolean] = {
+    http
+      .get(uri(s"allowed-in-private-beta/$credId").toURL)
       .execute[HttpResponse]
       .map { response =>
         response.status match {
@@ -63,27 +64,34 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-  def registerRatePayer(ratepayerRegistration: RegisterRatepayer)
-                       (implicit hc: HeaderCarrier): Future[Boolean] = {
-
-    http.post(uri(s"register-ratepayer/123456789567").toURL)
+  def registerRatePayer(
+                         ratepayerRegistration: RegisterRatepayer
+                       )(implicit hc: HeaderCarrier): Future[Boolean] = {
+    http
+      .post(uri("register-ratepayer/123456789567").toURL)
       .withBody(Json.toJson(ratepayerRegistration))
       .execute[HttpResponse]
       .map { response =>
         response.status match {
-          case OK => true
+          case OK =>
+            true
+
           case NOT_FOUND =>
             logger.warn("Ratepayer not found")
             false
+
           case BAD_REQUEST =>
             logger.warn("Invalid register ratepayer request")
             false
+
           case BAD_GATEWAY =>
             logger.error("Upstream service unavailable")
             false
+
           case INTERNAL_SERVER_ERROR =>
             logger.error(s"Server error: ${response.body}")
             false
+
           case other =>
             logger.error(s"Unexpected response status: $other")
             false
@@ -100,7 +108,7 @@ class BridgeIntegrationConnector @Inject()(
                                 payload: JsValue
                               )(implicit hc: HeaderCarrier): Future[Boolean] = {
     http
-      .post(uri(s"property-assessment/123456789567/assessment/27399677000").toURL)
+      .post(uri("property-assessment/123456789567/assessment/27399677000").toURL)
       .setHeader("Content-Type" -> "application/json")
       .withBody(payload)
       .execute[HttpResponse]
@@ -143,7 +151,6 @@ class BridgeIntegrationConnector @Inject()(
   def changePropertyLink(
                           payload: JsValue
                         )(implicit hc: HeaderCarrier): Future[Boolean] = {
-
     payload.validate[Relationship].fold(
       errors => {
         logger.warn(
@@ -172,9 +179,7 @@ class BridgeIntegrationConnector @Inject()(
                 false
 
               case BAD_REQUEST =>
-                logger.warn(
-                  s"Backend rejected relationship payload: ${response.body}"
-                )
+                logger.warn(s"Backend rejected relationship payload: ${response.body}")
                 false
 
               case BAD_GATEWAY =>
@@ -182,15 +187,11 @@ class BridgeIntegrationConnector @Inject()(
                 false
 
               case INTERNAL_SERVER_ERROR =>
-                logger.error(
-                  s"Server error from bridge: ${response.body}"
-                )
+                logger.error(s"Server error from bridge: ${response.body}")
                 false
 
               case other =>
-                logger.error(
-                  s"Unexpected response status from bridge: $other, body: ${response.body}"
-                )
+                logger.error(s"Unexpected response status from bridge: $other, body: ${response.body}")
                 false
             }
           }
@@ -206,11 +207,11 @@ class BridgeIntegrationConnector @Inject()(
     )
   }
 
-
-  def getDashboard(credId: String = "123456789567")
-                  (implicit hc: HeaderCarrier): Future[Option[RatepayerStatusResponse]] = {
-    val url = uri(s"dashboard/${credId}").toURL
-    http.get(url)
+  def getDashboard(
+                    credId: String = "123456789567"
+                  )(implicit hc: HeaderCarrier): Future[Option[RatepayerStatusResponse]] = {
+    http
+      .get(uri(s"dashboard/$credId").toURL)
       .execute[Option[RatepayerStatusResponse]]
       .recover {
         case ex =>
@@ -219,10 +220,11 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-  def exploreRatePayer(credId: String = "123456789567")
-                      (implicit hc: HeaderCarrier): Future[Option[Persons]] = {
-    val url = uri(s"explore-ratepayer/$credId").toURL
-    http.get(url)
+  def exploreRatePayer(
+                        credId: String = "123456789567"
+                      )(implicit hc: HeaderCarrier): Future[Option[Persons]] = {
+    http
+      .get(uri(s"explore-ratepayer/$credId").toURL)
       .execute[Option[Persons]]
       .recover {
         case ex =>
@@ -231,8 +233,11 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-  def getProperties(implicit hc: HeaderCarrier): Future[Option[RatepayerPropertyLinksResponse]] = {
-    http.get(uri(s"properties").toURL)
+  def getProperties(
+                     implicit hc: HeaderCarrier
+                   ): Future[Option[RatepayerPropertyLinksResponse]] = {
+    http
+      .get(uri("properties").toURL)
       .execute[Option[RatepayerPropertyLinksResponse]]
       .recover {
         case ex =>
@@ -241,9 +246,11 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-  def getRatepayerProperties(credId: String = "123456789567")
-                            (implicit hc: HeaderCarrier): Future[Option[RatepayerPropertyLinksResponse]] = {
-    http.get(uri(s"ratepayer-properties/$credId").toURL)
+  def getRatepayerProperties(
+                              credId: String = "123456789567"
+                            )(implicit hc: HeaderCarrier): Future[Option[RatepayerPropertyLinksResponse]] = {
+    http
+      .get(uri(s"ratepayer-properties/$credId").toURL)
       .execute[Option[RatepayerPropertyLinksResponse]]
       .recover {
         case ex =>
@@ -252,43 +259,44 @@ class BridgeIntegrationConnector @Inject()(
       }
   }
 
-
   def getPropertiesForAssessment(
                                   credId: String,
                                   assessmentId: String
                                 )(implicit hc: HeaderCarrier): Future[Option[PropertyAssessmentContext]] = {
-
     val url = uri(s"property-assessment/$credId/assessment/$assessmentId").toURL
 
-    http.get(url).execute[JsValue].map { json =>
-      val assessmentOpt =
-        (json \ "properties")
-          .asOpt[List[Property]]
-          .flatMap(_.headOption)
+    http
+      .get(url)
+      .execute[JsValue]
+      .map { json =>
+        val assessmentOpt =
+          (json \ "properties")
+            .asOpt[List[BridgeProperty]]
+            .flatMap(_.headOption)
 
-      assessmentOpt.map { assessment =>
-        PropertyAssessmentContext(
-          originalJson = json,
-          assessment = assessment
-        )
+        assessmentOpt.map { assessment =>
+          PropertyAssessmentContext(
+            originalJson = json,
+            assessment = assessment
+          )
+        }
       }
-    }.recover {
-      case ex =>
-        logger.warn(
-          s"Failed to retrieve property assessment for credId=$credId",
-          ex
-        )
-        None
-    }
+      .recover {
+        case ex =>
+          logger.warn(
+            s"Failed to retrieve property assessment for credId=$credId",
+            ex
+          )
+          None
+      }
   }
 
   def getRatepayerPropertyLinks(
                                  credId: String,
                                  assessmentId: String
-                               )(implicit hc: HeaderCarrier
-                               ): Future[JsValue] = {
-
+                               )(implicit hc: HeaderCarrier): Future[JsValue] = {
     val url = uri(s"property-link-job/$credId/assessment/$assessmentId").toURL
+
     http
       .get(url)
       .execute[JsValue]
@@ -300,7 +308,7 @@ class BridgeIntegrationConnector @Inject()(
           Json.obj("error" -> "Unable to fetch property links")
       }
   }
-  
+
   def findPropertyPostcodeSearch(
                                   searchParams: FindAPropertyForm
                                 )(implicit hc: HeaderCarrier): Future[Either[ErrorResponse, PostcodeSearchResult]] = {
@@ -309,30 +317,41 @@ class BridgeIntegrationConnector @Inject()(
         uri(s"postcode/${searchParams.postcode.value.toUpperCase.replaceAll("\\s", "")}").toURL
       } else {
         if (searchParams.propertyName.nonEmpty) {
-          val cleanedName = searchParams.propertyName.map(_.replaceAll("['()]", "")).getOrElse("")
+          val cleanedName =
+            searchParams.propertyName
+              .map(_.replaceAll("['()]", ""))
+              .getOrElse("")
+
           url"${appConfig.vmvAddressLookup}/vmv/rating-listing/api/properties?postcode=${searchParams.postcode.value}&propertyNameNumber=$cleanedName&size=15&searchDirection=FORWARD"
         } else {
           url"${appConfig.vmvAddressLookup}/vmv/rating-listing/api/properties?postcode=${searchParams.postcode.value}&size=15&searchDirection=FORWARD"
         }
       }
 
-    http.get(urlEndpoint)
+    http
+      .get(urlEndpoint)
       .execute[HttpResponse]
       .map { response =>
         response.status match {
           case OK | NOT_FOUND =>
             response.json.validate[PostcodeSearchResult] match {
-              case JsSuccess(valid, _) => Right(valid)
+              case JsSuccess(valid, _) =>
+                Right(valid)
+
               case JsError(errors) =>
-                println(Console.RED + s"I still screwed up and need to fix: ${response.json}" + Console.RESET)
+                logger.warn(
+                  s"Json validation failed for postcode search response. Errors: $errors. Body: ${response.body}"
+                )
                 Left(ErrorResponse(BAD_REQUEST, s"Json Validation Error: $errors"))
             }
+
           case _ =>
             Left(ErrorResponse(response.status, response.body))
         }
       }
       .recover {
-        case _ =>
+        case NonFatal(ex) =>
+          logger.error("Call to VMV find a property failed", ex)
           Left(ErrorResponse(Status.INTERNAL_SERVER_ERROR, "Call to VMV find a property failed"))
       }
   }
@@ -340,11 +359,11 @@ class BridgeIntegrationConnector @Inject()(
   def postcodeSearch(
                       searchParams: FindAPropertyBridgeForm
                     )(implicit hc: HeaderCarrier): Future[Either[ErrorResponse, PostcodeSearchResult]] = {
-
     val postcode: String =
       searchParams.postcode.value.trim.toUpperCase
 
-    val normalisedPostcode = postcode.replaceAll("\\s+", "").toUpperCase
+    val normalisedPostcode =
+      postcode.replaceAll("\\s+", "").toUpperCase
 
     val url = uri(s"postcode/$normalisedPostcode/CVW").toURL
 
@@ -364,23 +383,26 @@ class BridgeIntegrationConnector @Inject()(
             response.json.validate[PostcodeSearchResult] match {
               case JsSuccess(result, _) =>
                 Right(result)
+
               case JsError(errors) =>
                 Left(ErrorResponse(BAD_REQUEST, s"Json Validation Error: $errors"))
             }
 
           case NOT_FOUND =>
-            // If backend returns 404 for no results, preserve the shape expected by the UI flow.
             response.json.validate[PostcodeSearchResult] match {
               case JsSuccess(result, _) =>
                 Right(result)
+
               case JsError(_) =>
                 Left(ErrorResponse(NOT_FOUND, response.body))
             }
 
           case BAD_REQUEST =>
             Left(ErrorResponse(BAD_REQUEST, response.body))
+
           case status if status >= INTERNAL_SERVER_ERROR =>
             Left(ErrorResponse(status, response.body))
+
           case status =>
             Left(ErrorResponse(status, response.body))
         }
