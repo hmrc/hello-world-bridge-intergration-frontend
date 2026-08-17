@@ -65,24 +65,16 @@ class PropertyResultsController @Inject()(
 
       Redirect(routes.PropertyResultsController.onPageLoad( 1, sortBy))
     }
-  
-  def selectProperty(index: Int, sortBy: String): Action[AnyContent] =
-    identify.async { implicit request =>
-      repo.findByUserId(request.userId).map {
-        case Some(stored) =>
-          val sorted = sorting.sort(stored.properties.properties.toList, sortBy)
 
-          sorted.lift(index) match {
-            case Some(selected) =>
-              // TODO: Replace when ready
-              Redirect(routes.FindAPropertyController.onPageLoad())
-            case None =>
-              Redirect(routes.PropertyResultsController.onPageLoad(1, sortBy))
-          }
-
-        case None =>
-          Redirect(routes.FindAPropertyController.onPageLoad())
-      }
+  def selectProperty(
+                      index: Int,
+                      sortBy: String
+                    ): Action[AnyContent] =
+    identify {
+      _ =>
+        Redirect(
+          controllers.routes.ExplorePropertyController.onPageLoad()
+        )
     }
 }
 

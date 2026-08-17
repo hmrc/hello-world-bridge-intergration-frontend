@@ -68,3 +68,5 @@ GET        /ratepayer-property-links                                            
 POST       /ratepayer-property-links                                               controllers.PropertiesController.sort()
 
 GET        /explore-ratepayer                                                      controllers.ExploreRatePayerController.exploreRatePayer()
+
+GET        /explore-property                                                       controllers.ExplorePropertyController.onPageLoad()

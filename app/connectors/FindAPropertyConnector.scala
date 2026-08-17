@@ -18,7 +18,8 @@ package connectors
 
 import config.AppConfig
 import forms.FindAPropertyForm
-import models.properties.{PostcodeSearchResult, VMVProperties}
+import models.bridge.*
+import models.properties.VMVProperties
 import play.api.Logging
 import play.api.http.Status
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}

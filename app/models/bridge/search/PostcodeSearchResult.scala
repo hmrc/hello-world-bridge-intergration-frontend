@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.properties
+package uk.gov.hmrc.bridgeintegration.models.bridge.search
 
 import play.api.libs.json.{Json, OFormat}
 
