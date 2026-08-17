@@ -17,19 +17,20 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.bridge.search.*
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json
+import uk.gov.hmrc.bridgeintegration.models.bridge.search.*
+import uk.gov.hmrc.http.HttpReads
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
-
 
 import java.net.URL
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,7 +39,8 @@ class ExplorePropertyConnectorSpec
   extends AnyWordSpec
     with Matchers
     with MockitoSugar
-    with ScalaFutures {
+    with ScalaFutures
+    with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -49,21 +51,30 @@ class ExplorePropertyConnectorSpec
 
   private val bridgeIntegrationBaseUrl = "http://localhost:11111"
 
-  private def mockGet(response: Future[HttpResponse]): Unit = {
-    when(mockAppConfig.bridgeIntegration)
-      .thenReturn(bridgeIntegrationBaseUrl)
-
-    when(mockHttpClient.get(any[java.net.URL])(any[HeaderCarrier]))
-      .thenReturn(mockRequestBuilder)
-
-    when(mockRequestBuilder.execute(any(), any())).thenReturn(response)
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockHttpClient, mockRequestBuilder, mockAppConfig)
   }
-  
+
   private val connector =
     new ExplorePropertyConnector(
       http = mockHttpClient,
       appConfig = mockAppConfig
     )
+
+  private def mockGet(response: Future[HttpResponse]): Unit = {
+    when(mockAppConfig.bridgeIntegration)
+      .thenReturn(bridgeIntegrationBaseUrl)
+
+    when(mockHttpClient.get(any[URL])(any[HeaderCarrier]))
+      .thenReturn(mockRequestBuilder)
+
+    when(
+      mockRequestBuilder.execute(any[HttpReads[HttpResponse]],
+    any[ExecutionContext])
+
+    ).thenReturn(response)
+  }
 
   private val exploreResult: ExploreResult =
     ExploreResult(
@@ -159,7 +170,7 @@ class ExplorePropertyConnectorSpec
         )
       )
     )
-  
+
   "ExplorePropertyConnector .explore" should {
 
     "return Right ExploreResult when bridge-integration returns 200 OK with valid JSON" in {

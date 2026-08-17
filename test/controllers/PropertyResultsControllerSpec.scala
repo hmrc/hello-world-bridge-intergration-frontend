@@ -17,17 +17,17 @@
 package controllers
 
 import base.SpecBase
-import models.properties.{StoredVMVProperties, VMVProperties, PropertyValuation, VMVProperty, Valuation}
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.*
+import models.properties.{PropertyValuation, StoredVMVProperties, VMVProperties, VMVProperty}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{mock, when}
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject
+import play.api.test.CSRFTokenHelper.CSRFRequest
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.FindAPropertyRepo
 import service.SortingVMVPropertiesService
 import views.html.PropertyResultsView
-import play.api.inject
-import play.api.test.CSRFTokenHelper.CSRFRequest
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -36,8 +36,8 @@ class PropertyResultsControllerSpec
   extends SpecBase
     with MockitoSugar {
 
-  private val mockRepo     = mock[FindAPropertyRepo]
-  private val mockSorting  = mock[SortingVMVPropertiesService]
+  private val mockRepo    = mock[FindAPropertyRepo]
+  private val mockSorting = mock[SortingVMVPropertiesService]
 
   private def application =
     applicationBuilder(None)
@@ -47,11 +47,10 @@ class PropertyResultsControllerSpec
       )
       .build()
 
-
-  def testValuation(
-                     description: String,
-                     rv: BigDecimal
-                   ): PropertyValuation =
+  private def testValuation(
+                             description: String,
+                             rv: BigDecimal
+                           ): PropertyValuation =
     PropertyValuation(
       assessmentRef = 1L,
       assessmentStatus = "CURRENT",
@@ -67,55 +66,79 @@ class PropertyResultsControllerSpec
       listType = "Local"
     )
 
+  private val postcode = "BH1 1HU"
 
-  val postcode = "BH1 1HU"
+  private val valuation1 =
+    testValuation("Shop", 1000)
 
-  val valuation1: PropertyValuation = testValuation("Shop", 1000)
-  val valuation2: PropertyValuation = testValuation("Office", 2000)
+  private val valuation2 =
+    testValuation("Office", 2000)
 
-  val property1 = VMVProperty(
-    addressFull = s"0 test $postcode",
-    uarn = 1L,
-    localAuthorityCode = "test",
-    localAuthorityReference = "test",
-    valuations = List(valuation1)
-  )
+  private val property1 =
+    VMVProperty(
+      addressFull = s"0 test $postcode",
+      uarn = 1L,
+      localAuthorityCode = "test",
+      localAuthorityReference = "test",
+      valuations = List(valuation1)
+    )
 
-  val property2 = VMVProperty(
-    addressFull = s"1 test $postcode",
-    uarn = 2L,
-    localAuthorityCode = "test",
-    localAuthorityReference = "test",
-    valuations = List(valuation2)
-  )
+  private val property2 =
+    VMVProperty(
+      addressFull = s"1 test $postcode",
+      uarn = 2L,
+      localAuthorityCode = "test",
+      localAuthorityReference = "test",
+      valuations = List(valuation2)
+    )
 
-  val vmv = VMVProperties(
-    properties = List(property1, property2),
-    total = 2
-  )
+  private val vmv =
+    VMVProperties(
+      properties = List(property1, property2),
+      total = 2
+    )
 
-   val stored = StoredVMVProperties(
-    userId = userAnswersId,
-    properties = vmv
-  )
-
+  private val stored =
+    StoredVMVProperties(
+      userId = userAnswersId,
+      properties = vmv
+    )
 
   "onPageLoad" - {
 
     "return OK and render the view when data exists" in {
       val app = application
 
-      when(mockRepo.findByUserId(any())).thenReturn(Future.successful(Some(stored)))
-      when(mockSorting.sort(any(), any())).thenReturn(List(property1, property2))
+      when(mockRepo.findByUserId(any()))
+        .thenReturn(Future.successful(Some(stored)))
 
-      val request = FakeRequest(GET, routes.PropertyResultsController.onPageLoad(1, "AddressASC").url).withCSRFToken
-      val result  = route(app, request).value
+      when(mockSorting.sort(any(), any()))
+        .thenReturn(List(property1, property2))
 
-      val view = app.injector.instanceOf[PropertyResultsView]
+      val request =
+        FakeRequest(
+          GET,
+          routes.PropertyResultsController
+            .onPageLoad(1, "AddressASC")
+            .url
+        ).withCSRFToken
+
+      val result = route(app, request).value
+
+      val view =
+        app.injector.instanceOf[PropertyResultsView]
 
       status(result) mustEqual OK
+
       contentAsString(result) mustEqual
-        view(vmv, List(property1, property2), 1, 2, 10, "AddressASC")(request, messages(app)).toString
+        view(
+          vmv,
+          List(property1, property2),
+          1,
+          2,
+          10,
+          "AddressASC"
+        )(request, messages(app)).toString
 
       app.stop()
     }
@@ -123,18 +146,27 @@ class PropertyResultsControllerSpec
     "redirect to FindAProperty when no stored data exists" in {
       val app = application
 
-      when(mockRepo.findByUserId(any())).thenReturn(Future.successful(None))
+      when(mockRepo.findByUserId(any()))
+        .thenReturn(Future.successful(None))
 
-      val request = FakeRequest(GET, routes.PropertyResultsController.onPageLoad(1, "AddressASC").url).withCSRFToken
-      val result  = route(app, request).value
+      val request =
+        FakeRequest(
+          GET,
+          routes.PropertyResultsController
+            .onPageLoad(1, "AddressASC")
+            .url
+        ).withCSRFToken
+
+      val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.FindAPropertyController.onPageLoad().url
+
+      redirectLocation(result).value mustEqual
+        routes.FindAPropertyController.onPageLoad().url
 
       app.stop()
     }
   }
-
 
   "sort" - {
 
@@ -142,15 +174,23 @@ class PropertyResultsControllerSpec
       val app = application
 
       val request =
-        FakeRequest(POST, routes.PropertyResultsController.sort.url)
-          .withFormUrlEncodedBody("sortBy" -> "DescriptionDESC")
+        FakeRequest(
+          POST,
+          routes.PropertyResultsController.sort.url
+        )
+          .withFormUrlEncodedBody(
+            "sortBy" -> "DescriptionDESC"
+          )
           .withCSRFToken
 
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
+
       redirectLocation(result).value mustEqual
-        routes.PropertyResultsController.onPageLoad(1, "DescriptionDESC").url
+        routes.PropertyResultsController
+          .onPageLoad(1, "DescriptionDESC")
+          .url
 
       app.stop()
     }
@@ -159,67 +199,66 @@ class PropertyResultsControllerSpec
       val app = application
 
       val request =
-        FakeRequest(POST, routes.PropertyResultsController.sort.url)
-          .withCSRFToken
+        FakeRequest(
+          POST,
+          routes.PropertyResultsController.sort.url
+        ).withCSRFToken
 
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
+
       redirectLocation(result).value mustEqual
-        routes.PropertyResultsController.onPageLoad(1, "AddressASC").url
+        routes.PropertyResultsController
+          .onPageLoad(1, "AddressASC")
+          .url
 
       app.stop()
     }
   }
 
-
   "selectProperty" - {
 
-    "redirect to correct page" in {
+    "redirect to ExploreProperty page" in {
       val app = application
 
-      when(mockRepo.findByUserId(any())).thenReturn(Future.successful(Some(stored)))
-      when(mockSorting.sort(any(), any())).thenReturn(List(property1, property2))
+      val request =
+        FakeRequest(
+          GET,
+          routes.PropertyResultsController
+            .selectProperty(0, "AddressASC")
+            .url
+        ).withCSRFToken
 
-      val request = FakeRequest(GET, routes.PropertyResultsController.selectProperty(0, "AddressASC").url).withCSRFToken
-      val result  = route(app, request).value
-
-      status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.FindAPropertyController.onPageLoad().url //  TODO !!!
-
-      app.stop()
-    }
-
-    "redirect back to results when index is out of range" in {
-      val app = application
-
-      when(mockRepo.findByUserId(any())).thenReturn(Future.successful(Some(stored)))
-      when(mockSorting.sort(any(), any())).thenReturn(List(property1, property2))
-
-      val request = FakeRequest(GET, routes.PropertyResultsController.selectProperty(99, "AddressASC").url).withCSRFToken
-      val result  = route(app, request).value
+      val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
+
       redirectLocation(result).value mustEqual
-        routes.PropertyResultsController.onPageLoad(1, "AddressASC").url
+        routes.ExplorePropertyController.onPageLoad().url
 
       app.stop()
     }
 
-    "redirect to FindAProperty when no stored data exists" in {
+    "redirect to ExploreProperty page regardless of index" in {
       val app = application
 
-      when(mockRepo.findByUserId(any())).thenReturn(Future.successful(None))
+      val request =
+        FakeRequest(
+          GET,
+          routes.PropertyResultsController
+            .selectProperty(999, "AddressASC")
+            .url
+        ).withCSRFToken
 
-      val request = FakeRequest(GET, routes.PropertyResultsController.selectProperty(0, "AddressASC").url).withCSRFToken
-      val result  = route(app, request).value
+      val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.FindAPropertyController.onPageLoad().url
+
+      redirectLocation(result).value mustEqual
+        routes.ExplorePropertyController.onPageLoad().url
 
       app.stop()
     }
   }
 }
-
-

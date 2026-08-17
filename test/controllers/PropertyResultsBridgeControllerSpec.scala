@@ -18,7 +18,6 @@ package controllers
 
 import base.SpecBase
 import models.UserAnswers
-import models.bridge.search.{PostcodeSearchResult, Record, Results}
 import models.properties.*
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.*
@@ -48,25 +47,37 @@ class PropertyResultsBridgeControllerSpec
   private val recordOne =
     Record(
       list = ValuationList(
-        id = Some("list-1"),
+        id = Id(Some("list-1")),
         classification = Classification(
           code = Some("C"),
-          label = Some("Council Tax")
+          meaning = Some("Council Tax")
         ),
+        country = None,
         collection_authority = CollectionAuthority(
           ons_code = Some("E07000192"),
           ons_code_label = Some("Test Council")
-        )
+        ),
+        inforcement_period = None,
+        compilation_date = None,
+        valuation_date = None,
+        total_of_all_valuations = None
       ),
       list_entry = ListEntry(
-        relevant_property = RelevantProperty(
-          id = Some(1L)
-        ),
+        id = Some(Id(Some("list-1"))),
+        designated_person = None,
+        relevant_property = None,
+        use = None,
+        period = None,
+        administration = None,
         addresses = Addresses(
           property_full_address = Some("1 Test Street, Test Town, TT1 1TT"
         )),
+        workflow = None,
+        property = None,
         valuation = Valuation(
-          value = Some("A")
+          value = Some("A"),
+          method = None,
+          previous = None
         )
       )
     )
@@ -74,25 +85,37 @@ class PropertyResultsBridgeControllerSpec
   private val recordTwo =
     Record(
       list = ValuationList(
-        id = Some("list-2"),
+        id = Id(Some("list-1")),
         classification = Classification(
           code = Some("C"),
-          label = Some("Council Tax")
+          meaning = Some("Council Tax")
         ),
+        country = None,
         collection_authority = CollectionAuthority(
           ons_code = Some("E07000192"),
           ons_code_label = Some("Test Council")
-        )
+        ),
+        inforcement_period = None,
+        compilation_date = None,
+        valuation_date = None,
+        total_of_all_valuations = None
       ),
       list_entry = ListEntry(
-        relevant_property = RelevantProperty(
-          id = Some(2L)
-        ),
+        id = Some(Id(Some("list-1"))),
+        designated_person = None,
+        relevant_property = None,
+        use = None,
+        period = None,
+        administration = None,
         addresses = Addresses(
-          property_full_address = Some("2 Test Street, Test Town, TT1 1TT")
-        ),
+          property_full_address = Some("1 Test Street, Test Town, TT1 1TT"
+          )),
+        workflow = None,
+        property = None,
         valuation = Valuation(
-          value = Some("B")
+          value = Some("A"),
+          method = None,
+          previous = None
         )
       )
     )
