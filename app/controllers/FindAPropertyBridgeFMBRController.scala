@@ -24,33 +24,33 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.FindAPropertyBridgeRepo
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import views.html.{FindAPropertyBridgeView, FindAPropertyView}
+import views.html.{FindAPropertyBridgeFMBRView, FindAPropertyView}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FindAPropertyBridgeController @Inject()(findAPropertyBridgeView: FindAPropertyBridgeView,
-                                              identify: IdentifierAction,
-                                              connector: BridgeIntegrationConnector,
-                                              repo: FindAPropertyBridgeRepo,
-                                              mcc: MessagesControllerComponents
+class FindAPropertyBridgeFMBRController @Inject()(findAPropertyBridgeFMBRView: FindAPropertyBridgeFMBRView,
+                                                  identify: IdentifierAction,
+                                                  connector: BridgeIntegrationConnector,
+                                                  repo: FindAPropertyBridgeRepo,
+                                                  mcc: MessagesControllerComponents
                                        )(implicit ec: ExecutionContext)
 extends FrontendController(mcc) with I18nSupport {
 
   def onPageLoad: Action[AnyContent] =
     identify.async { implicit request =>
-      Future.successful(Ok(findAPropertyBridgeView(form)))
+      Future.successful(Ok(findAPropertyBridgeFMBRView(form)))
     }
 
   def onSubmit: Action[AnyContent] =
     identify.async { implicit request =>
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(findAPropertyBridgeView(formWithErrors))),
+          Future.successful(BadRequest(findAPropertyBridgeFMBRView(formWithErrors))),
 
         findAPropertyBridge => {
-          connector.postcodeSearch("CVW", findAPropertyBridge).flatMap {
+          connector.postcodeSearch("FBR", findAPropertyBridge).flatMap {
 
             case Right(searchResult) if searchResult.results.records.isEmpty =>
               repo.upsert(request.userId, searchResult).map { _ =>
