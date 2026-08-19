@@ -90,7 +90,7 @@ class FindAPropertyBridgeControllerSpec
 
       val error = ErrorResponse(418, "test response")
 
-      when(mockConnector.postcodeSearch(any())(any()))
+      when(mockConnector.postcodeSearch(any(),any())(any()))
         .thenReturn(Future.successful(Left(error)))
 
       val request =

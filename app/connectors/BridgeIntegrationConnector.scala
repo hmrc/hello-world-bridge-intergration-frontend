@@ -357,6 +357,7 @@ class BridgeIntegrationConnector @Inject()(
   }
 
   def postcodeSearch(
+                      listType: String,
                       searchParams: FindAPropertyBridgeForm
                     )(implicit hc: HeaderCarrier): Future[Either[ErrorResponse, PostcodeSearchResult]] = {
     val postcode: String =
@@ -366,7 +367,7 @@ class BridgeIntegrationConnector @Inject()(
       postcode.replaceAll("\\s+", "").toUpperCase
 
     val url =
-      uri(s"postcode/$normalisedPostcode/CVW").toURL
+      uri(s"postcode/$normalisedPostcode/$listType").toURL
 
     logger.info(
       Console.GREEN +
