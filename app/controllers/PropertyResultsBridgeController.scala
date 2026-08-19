@@ -16,19 +16,18 @@
 
 package controllers
 
-import controllers.actions.IdentifierAction
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.FindAPropertyBridgeRepo
 import services.SortingPostcodeAddressResultsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import views.html.PropertyResultsBridgeView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class PropertyResultsBridgeController @Inject()(
-                                                 identify: IdentifierAction,
                                                  repo: FindAPropertyBridgeRepo,
                                                  sorting: SortingPostcodeAddressResultsService,
                                                  view: PropertyResultsBridgeView,
@@ -40,8 +39,11 @@ class PropertyResultsBridgeController @Inject()(
   private val pageSize = 10
 
   def onPageLoad(page: Int, sortBy: String): Action[AnyContent] =
-    identify.async { implicit request =>
-      repo.findByUserId(request.userId).map {
+    Action.async { implicit request =>
+      val hc = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+      val userId = hc.sessionId.map(_.value).getOrElse("id")
+
+      repo.findByUserId(userId).map {
         case Some(stored) =>
           val sortedRecords =
             sorting.sort(stored.properties.results.records.toList, sortBy)
@@ -85,8 +87,11 @@ class PropertyResultsBridgeController @Inject()(
     }
 
   def selectProperty(index: Int, sortBy: String): Action[AnyContent] =
-    identify.async { implicit request =>
-      repo.findByUserId(request.userId).map {
+    Action.async { implicit request =>
+      val hc = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+      val userId = hc.sessionId.map(_.value).getOrElse("id")
+
+      repo.findByUserId(userId).map {
         case Some(stored) =>
           val sortedRecords =
             sorting.sort(stored.properties.results.records.toList, sortBy)
