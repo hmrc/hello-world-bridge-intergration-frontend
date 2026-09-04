@@ -54,33 +54,33 @@ class PropertyResultsBridgeControllerSpec
         ),
         country = None,
         collection_authority = CollectionAuthority(
-          ons_code = Some("E07000192"),
-          ons_code_label = Some("Test Council")
+          code = Some("E07000192"),
+          label = Some("Test Council")
         ),
         inforcement_period = None,
-        compilation_date = None,
-        valuation_date = None,
-        total_of_all_valuations = None
+        administration = None
       ),
       list_entry = ListEntry(
         id = Some(Id(Some("list-1"))),
         designated_person = None,
         relevant_property = None,
         use = None,
-        period = None,
-        administration = None,
-        addresses = Addresses(
-          property_full_address = Some("1 Test Street, Test Town, TT1 1TT"
-        )),
-        workflow = None,
-        property = None,
         valuation = Valuation(
           value = Some("A"),
           method = None,
           previous = None
-        )
+        ),
+        period = None,
+        administration = None,
+        workflow = None,
+        property = Some
+          (Property(
+            id = Some(Id(Some("list-1"))),
+            collection_authority_ref = None,
+            address = Some(Address(full = Some("1 Test Street, Test Town, TT1 1TT"), None, None,None)),
+            workflow = None),
       )
-    )
+    ))
 
   private val recordTwo =
     Record(
@@ -92,31 +92,32 @@ class PropertyResultsBridgeControllerSpec
         ),
         country = None,
         collection_authority = CollectionAuthority(
-          ons_code = Some("E07000192"),
-          ons_code_label = Some("Test Council")
+          code = Some("E07000192"),
+          label = Some("Test Council")
         ),
         inforcement_period = None,
-        compilation_date = None,
-        valuation_date = None,
-        total_of_all_valuations = None
+        administration = None
       ),
       list_entry = ListEntry(
         id = Some(Id(Some("list-1"))),
         designated_person = None,
         relevant_property = None,
         use = None,
-        period = None,
-        administration = None,
-        addresses = Addresses(
-          property_full_address = Some("1 Test Street, Test Town, TT1 1TT"
-          )),
-        workflow = None,
-        property = None,
         valuation = Valuation(
           value = Some("A"),
           method = None,
           previous = None
-        )
+        ),
+        period = None,
+        administration = None,
+        workflow = None,
+        property = Some
+          (Property(
+            id = Some(Id(Some("list-1"))),
+            collection_authority_ref = None,
+            address = Some(Address(full = Some("1 Test Street, Test Town, TT1 1TT"), None, None,None)),
+            workflow = None),
+          )
       )
     )
 
