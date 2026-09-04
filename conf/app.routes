@@ -4,6 +4,9 @@
 
 GET         /                                                                      controllers.IndexController.onPageLoad()
 
+GET        /property-search-bridge-fmbr                                            controllers.FindAPropertyBridgeFMBRController.onPageLoad()
+POST       /property-search-bridge-fmbr                                            controllers.FindAPropertyBridgeFMBRController.onSubmit()
+
 GET         /assets/*file                                                          controllers.Assets.versioned(path="/public", file: Asset)
 
 GET         /language/:lang                                                        controllers.LanguageSwitchController.switchToLanguage(lang: String)
@@ -43,9 +46,6 @@ GET        /property-results/select/:index                                      
 
 GET        /property-search-bridge                                                 controllers.FindAPropertyBridgeController.onPageLoad()
 POST       /property-search-bridge                                                 controllers.FindAPropertyBridgeController.onSubmit()
-
-GET        /property-search-bridge-fmbr                                            controllers.FindAPropertyBridgeFMBRController.onPageLoad()
-POST       /property-search-bridge-fmbr                                            controllers.FindAPropertyBridgeFMBRController.onSubmit()
 
 GET        /property-results-bridge                                                controllers.PropertyResultsBridgeController.onPageLoad(page: Int ?= 1 ,sortBy: String ?= "AddressASC")
 GET        /property-results-bridge/select/:index                                  controllers.PropertyResultsBridgeController.selectProperty(index: Int, sortBy: String ?= "AddressASC")

@@ -16,6 +16,7 @@
 
 package controllers
 
+import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.FindAPropertyBridgeRepo
@@ -34,7 +35,7 @@ class PropertyResultsBridgeController @Inject()(
                                                  mcc: MessagesControllerComponents
                                                )(implicit ec: ExecutionContext)
 
-  extends FrontendController(mcc) with I18nSupport {
+  extends FrontendController(mcc) with I18nSupport with Logging {
 
   private val pageSize = 10
 

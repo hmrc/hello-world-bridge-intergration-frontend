@@ -28,7 +28,11 @@ class SortingPostcodeAddressResultsService @Inject()() {
       value.getOrElse("").toLowerCase.trim
 
     def safeAddress(record: Record): String =
-      normalise(record.list_entry.addresses.property_full_address)
+      normalise(
+        record.list_entry.property
+          .flatMap(_.address)
+          .flatMap(_.full)
+      )
 
     def safePropertyReference(record: Record): Long =
       record.list_entry.relevant_property
@@ -46,10 +50,10 @@ class SortingPostcodeAddressResultsService @Inject()() {
       normalise(record.list.classification.meaning)
 
     def safeLocalAuthorityCode(record: Record): String =
-      normalise(record.list.collection_authority.ons_code)
+      normalise(record.list.collection_authority.code)
 
     def safeLocalAuthorityName(record: Record): String =
-      normalise(record.list.collection_authority.ons_code_label)
+      normalise(record.list.collection_authority.label)
 
     def safeValuation(record: Record): String =
       normalise(record.list_entry.valuation.value)
