@@ -24,6 +24,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.FindAPropertyBridgeRepo
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import views.html.{FindAPropertyBridgeView, FindAPropertyView}
 
 import javax.inject.{Inject, Singleton}
@@ -45,6 +46,8 @@ extends FrontendController(mcc) with I18nSupport {
 
   def onSubmit: Action[AnyContent] =
     identify.async { implicit request =>
+      val hc = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+      val userId = hc.sessionId.map(_.value).getOrElse("id")
       form.bindFromRequest().fold(
         formWithErrors =>
           Future.successful(BadRequest(findAPropertyBridgeView(formWithErrors))),
@@ -53,12 +56,12 @@ extends FrontendController(mcc) with I18nSupport {
           connector.postcodeSearch("CVW", findAPropertyBridge).flatMap {
 
             case Right(searchResult) if searchResult.results.records.isEmpty =>
-              repo.upsert(request.userId, searchResult).map { _ =>
+              repo.upsert(userId, searchResult).map { _ =>
                 Redirect(routes.NoResultsFoundController.onPageLoad)
               }
 
             case Right(searchResult) =>
-              repo.upsert(request.userId, searchResult).map { _ =>
+              repo.upsert(userId, searchResult).map { _ =>
                 Redirect(routes.PropertyResultsBridgeController.onPageLoad())
               }
 

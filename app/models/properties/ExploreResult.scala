@@ -16,16 +16,42 @@
 
 package models.properties
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
+
 
 case class ExploreResult(
-                         list: ValuationList,
-                         list_entry: ListEntry
-                       )
+                          results: ExploreResults
+                        )
 
 object ExploreResult:
   implicit val format: OFormat[ExploreResult] =
     Json.format[ExploreResult]
+
+case class ExploreResults(
+                           records: Seq[ExploreRecord]
+                         )
+
+object ExploreResults:
+  implicit val format: OFormat[ExploreResults] =
+    Json.format[ExploreResults]
+
+case class ExploreRecord(
+                          data: ExploreData
+                        )
+
+object ExploreRecord:
+  implicit val format: OFormat[ExploreRecord] =
+    Json.format[ExploreRecord]
+
+case class ExploreData(
+                        list: ValuationList,
+                        list_entry: ListEntry
+                      )
+
+object ExploreData:
+  implicit val format: OFormat[ExploreData] =
+    Json.format[ExploreData]
 
 case class Id(
                value: Option[String]
@@ -45,8 +71,8 @@ object Classification:
     Json.format[Classification]
 
 case class Country(
-                    ons_code: Option[String],
-                    ons_code_label: Option[String]
+                    code: Option[String],
+                    label: Option[String]
                   )
 
 object Country:
@@ -54,8 +80,8 @@ object Country:
     Json.format[Country]
 
 case class CollectionAuthority(
-                                ons_code: Option[String],
-                                ons_code_label: Option[String]
+                                code: Option[String],
+                                label: Option[String]
                               )
 
 object CollectionAuthority:
@@ -71,20 +97,35 @@ object InforcementPeriod:
   implicit val format: OFormat[InforcementPeriod] =
     Json.format[InforcementPeriod]
 
+case class ListAdministration(
+                               compilation_date: Option[String],
+                               valuation_date: Option[String],
+                               total_of_all_valuations: Option[String]
+                             )
+
+object ListAdministration:
+  implicit val format: OFormat[ListAdministration] =
+    Json.format[ListAdministration]
+
 case class ValuationList(
                           id: Id,
                           classification: Classification,
                           country: Option[Country],
                           collection_authority: CollectionAuthority,
                           inforcement_period: Option[InforcementPeriod],
-                          compilation_date: Option[String],
-                          valuation_date: Option[String],
-                          total_of_all_valuations: Option[String]
+                          administration: Option[ListAdministration]
                         )
 
 object ValuationList:
-  implicit val format: OFormat[ValuationList] =
-    Json.format[ValuationList]
+
+  implicit val format: OFormat[ValuationList] = (
+    (__ \ "id").format[Id] and
+      (__ \ "class").format[Classification] and
+      (__ \ "country").formatNullable[Country] and
+      (__ \ "collection_authority").format[CollectionAuthority] and
+      (__ \ "inforcement_period").formatNullable[InforcementPeriod] and
+      (__ \ "administration").formatNullable[ListAdministration]
+    )(ValuationList.apply, Tuple.fromProductTyped)
 
 case class DesignatedPerson(
                              name: Option[String],
@@ -163,16 +204,30 @@ object Workflow:
   implicit val format: OFormat[Workflow] =
     Json.format[Workflow]
 
-case class Addresses(
-                      property_full_address: Option[String]
-                    )
+case class Address(
+                    full: Option[String],
+                    first_line: Option[String],
+                    postcode: Option[String],
+                    known_as: Option[String]
+                  )
 
-object Addresses:
-  implicit val format: OFormat[Addresses] =
-    Json.format[Addresses]
+object Address:
+  implicit val format: OFormat[Address] =
+    Json.format[Address]
+
+case class PropertyWorkflow(
+                             improvement_ind: Option[String]
+                           )
+
+object PropertyWorkflow:
+  implicit val format: OFormat[PropertyWorkflow] =
+    Json.format[PropertyWorkflow]
 
 case class Property(
-                     improvement_ind: Option[String]
+                     id: Option[Id],
+                     collection_authority_ref: Option[String],
+                     address: Option[Address],
+                     workflow: Option[PropertyWorkflow]
                    )
 
 object Property:
@@ -188,7 +243,6 @@ case class ListEntry(
                       period: Option[Period],
                       administration: Option[Administration],
                       workflow: Option[Workflow],
-                      addresses: Addresses,
                       property: Option[Property]
                     )
 

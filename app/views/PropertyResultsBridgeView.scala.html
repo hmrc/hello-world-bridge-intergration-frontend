@@ -68,7 +68,9 @@ results.has_next.getOrElse(false)
 
 @postcode = @{
 records.headOption
-.flatMap(_.list_entry.addresses.property_full_address)
+.flatMap(_.list_entry.property)
+.flatMap(_.address)
+.flatMap(_.full)
 .map(_.takeRight(8))
 .getOrElse("")
 }
@@ -142,7 +144,7 @@ fullWidth = true
         rows = indexedRecords.map { case (record, index) =>
         Seq(
         TableRow(
-        Text(record.list_entry.addresses.property_full_address.getOrElse(""))
+        Text(record.list_entry.property.flatMap(_.address).flatMap(_.full).getOrElse(""))
         ),
         TableRow(
         Text(record.list_entry.relevant_property.flatMap(_.vos_property_id).getOrElse(""))
