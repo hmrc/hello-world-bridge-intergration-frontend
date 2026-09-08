@@ -42,7 +42,7 @@ class ExplorePropertyConnector @Inject()(
   ): Future[Either[ErrorResponse, ExploreResult]] = {
 
     val urlEndpoint =
-      url"${appConfig.bridgeIntegration}/bridge-integration/explore"
+      url"${appConfig.bridgeIntegration}/bridge-integration/explore/38DA4B95-5061-4423-8024-9CAC37956E42/CVW"
 
     http.get(urlEndpoint)
       .execute[HttpResponse]
