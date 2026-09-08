@@ -31,7 +31,6 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class ExplorePropertyController @Inject()(
                                            view: ExplorePropertyView,
-                                           identify: IdentifierAction,
                                            connector: ExplorePropertyConnector,
                                            repo: ExplorePropertyRepo,
                                            mcc: MessagesControllerComponents
@@ -40,7 +39,7 @@ class ExplorePropertyController @Inject()(
     with I18nSupport with Logging {
 
   def onPageLoad(): Action[AnyContent] =
-    identify.async { implicit request =>
+    Action.async { implicit request =>
 
       connector.explore().flatMap {
 
