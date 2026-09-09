@@ -33,7 +33,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class FindAPropertyBridgeFMBRController @Inject()(findAPropertyBridgeFMBRView: FindAPropertyBridgeFMBRView,
-                                                  identify: IdentifierAction,
                                                   connector: BridgeIntegrationConnector,
                                                   repo: FindAPropertyBridgeRepo,
                                                   mcc: MessagesControllerComponents
@@ -41,12 +40,12 @@ class FindAPropertyBridgeFMBRController @Inject()(findAPropertyBridgeFMBRView: F
 extends FrontendController(mcc) with I18nSupport with Logging{
 
   def onPageLoad: Action[AnyContent] =
-    identify.async { implicit request =>
+    Action.async { implicit request =>
       Future.successful(Ok(findAPropertyBridgeFMBRView(form)))
     }
 
   def onSubmit: Action[AnyContent] =
-    identify.async { implicit request =>
+    Action.async { implicit request =>
       val hc = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
       val userId = hc.sessionId.map(_.value).getOrElse("id")
       form.bindFromRequest().fold(
