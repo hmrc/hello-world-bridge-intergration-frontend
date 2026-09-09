@@ -23,6 +23,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.ExplorePropertyRepo
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import views.html.ExplorePropertyView
 
 import javax.inject.{Inject, Singleton}
@@ -40,14 +41,15 @@ class ExplorePropertyController @Inject()(
 
   def onPageLoad(): Action[AnyContent] =
     Action.async { implicit request =>
-
+      val hc = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+      val userId = hc.sessionId.map(_.value).getOrElse("id")
       connector.explore().flatMap {
 
         case Right(result) =>
 
           logger.info(s"Explore result received: $result")
 
-          repo.upsert(request.userId, result).map { _ =>
+          repo.upsert(userId, result).map { _ =>
             Ok(view(result))
           }
 
